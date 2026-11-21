@@ -1,31 +1,87 @@
 {
   "id": "./",
-  "name": "Taller de Palitos",
-  "short_name": "Taller de Palitos",
-  "description": "Anima muñecos de palitos cuadro por cuadro: capas, esqueletos que se doblan, papel cebolla, degradados, gráfico de velocidad y un editor de video con música. Todo se guarda en tu computadora.",
-  "lang": "es",
+  "name": "Stickman Workshop",
+  "short_name": "Stickman Workshop",
+  "description": "Animate stick figures frame by frame: layers, skeletons that bend, onion skin, gradients, a speed graph and a video editor with music and sound effects. Everything is saved on your computer. Available in English and Spanish.",
+  "lang": "en",
   "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "orientation": "landscape",
   "background_color": "#16161d",
   "theme_color": "#16161d",
-  "categories": ["entertainment", "graphics", "kids", "productivity"],
+  "categories": [
+    "entertainment",
+    "graphics",
+    "kids",
+    "productivity"
+  ],
   "icons": [
-    { "src": "icons/icon-48.png", "sizes": "48x48", "type": "image/png" },
-    { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
-    { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
-    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-256.png", "sizes": "256x256", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "file_handlers": [
-    { "action": "./", "accept": { "application/json": [".json"] } }
+    {
+      "action": "./",
+      "accept": {
+        "application/json": [
+          ".json"
+        ]
+      }
+    }
   ],
-  "launch_handler": { "client_mode": "focus-existing" }
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }

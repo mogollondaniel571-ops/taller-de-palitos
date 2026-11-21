@@ -4,12 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>Taller de Palitos</title>
+<script>
+(function(){var ME='es',L=null;try{L=localStorage.getItem('tp-lang');}catch(e){}
+if(L&&L!==ME){location.replace((L==='en'?'en.html':'./')+location.search);return;}
+if(!L){document.addEventListener('DOMContentLoaded',function(){
+var o=document.createElement('div');o.id='langPick';
+o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#16161d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font:600 18px system-ui,sans-serif';
+o.innerHTML='<img src="icons/icon-192.png" width="110" height="110" alt=""><div style="font-size:30px;font-weight:900">Stickman Workshop</div><div style="opacity:.75">Choose your language · Elige tu idioma</div><div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"><button data-l="en">🇺🇸 English</button><button data-l="es">🇪🇸 Español</button></div>';
+o.querySelectorAll('button').forEach(function(b){b.style.cssText='font:800 20px system-ui,sans-serif;padding:16px 34px;border-radius:14px;border:2px solid #ffc93c;background:#24232f;color:#fff;cursor:pointer;min-width:190px';
+b.onclick=function(){var l=b.getAttribute('data-l');try{localStorage.setItem('tp-lang',l);}catch(e){}if(l!==ME)location.replace((l==='en'?'en.html':'./')+location.search);else o.remove();};});
+document.body.appendChild(o);});}
+window.TP_LANG=ME;})();
+</script>
+<title>Stickman Workshop</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#16161d">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<meta name="description" content="Taller de Palitos: anima muñecos de palitos cuadro por cuadro, con esqueletos, capas y editor de video.">
+<meta name="description" content="Stickman Workshop: anima muñecos de palitos cuadro por cuadro, con esqueletos, capas y editor de video.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -871,7 +883,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
 <body>
 <div class="app">
   <header class="top">
-    <h1 class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#ffcf33"/><circle cx="16" cy="9.5" r="3.6" fill="none" stroke="#171a24" stroke-width="2"/><path d="M16 13.5v7M10 17l6-1.5 6 1.5M16 20.5l-4 6M16 20.5l4 6" fill="none" stroke="#171a24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Taller de Palitos</span></h1>
+    <h1 class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#ffcf33"/><circle cx="16" cy="9.5" r="3.6" fill="none" stroke="#171a24" stroke-width="2"/><path d="M16 13.5v7M10 17l6-1.5 6 1.5M16 20.5l-4 6M16 20.5l4 6" fill="none" stroke="#171a24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Stickman Workshop</span></h1>
     <div class="name-field">
       <input id="projName" type="text" maxlength="60" aria-label="Nombre del proyecto" autocomplete="off" spellcheck="false">
       <span class="sizetag" id="sizeTag"></span>
@@ -5064,7 +5076,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'btn small primary'; b.id = 'btnSkelConv';
     b.textContent = '🦴 Convertir dibujo a esqueleto';
-    b.title = 'Dibuja tu personaje entero en una capa, toca este botón y marca las articulaciones. El Taller lo corta en partes solo.';
+    b.title = 'Dibuja tu personaje entero en una capa, toca este botón y marca las articulaciones. La app lo corta en partes solo.';
     b.style.marginBottom = '6px';
     b.addEventListener('click', wzOpen);
     anchor.parentElement.insertBefore(b, anchor);
@@ -8229,7 +8241,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     }
     // 3) Crear perfil: nombre, color y clave opcional
     function createScreen(welcome) {
-      show(welcome ? '¡Bienvenido al Taller de Palitos!' : 'Nuevo perfil');
+      show(welcome ? '¡Bienvenido al Stickman Workshop!' : 'Nuevo perfil');
       if (welcome) body.appendChild(el('p', '', 'Crea tu perfil para que el taller te recuerde. Solo un nombre, sin correo ni nada más.')).className = 'hint';
       const lab = el('label'); lab.className = 'field'; lab.textContent = 'Nombre';
       const name = el('input'); name.type = 'text'; name.maxLength = 24; name.autocomplete = 'off'; name.spellcheck = false; lab.appendChild(name);
@@ -8290,6 +8302,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       if (cur) {
         menu.append(
           menuBtn('Cambiar de perfil', () => { closeMenu(); open('login', null); }),
+          menuBtn('🌐 English / Español', () => { closeMenu(); try { localStorage.removeItem('tp-lang'); } catch (_) {} location.reload(); }),
           menuBtn('Ver el tutorial', () => { closeMenu(); TUT.start(); }),
           menuBtn('Cerrar sesión', () => { closeMenu(); logout(); }),
           menuBtn('Borrar mi perfil…', () => confirmDel(), { warn: true })
@@ -8323,7 +8336,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     const root = $('#tut'), hole = $('#tutHole'), card = $('#tutCard');
     let steps = [], i = 0, active = false, opened = { l: false, r: false };
     const STEPS = [
-      { t: '¡Bienvenido al Taller de Palitos!', x: 'Aquí dibujas y animas. Te enseño lo básico, son unos cuantos toques. Puedes salir con «Saltar» y volver a verlo cuando quieras desde tu perfil.' },
+      { t: '¡Bienvenido al Stickman Workshop!', x: 'Aquí dibujas y animas. Te enseño lo básico, son unos cuantos toques. Puedes salir con «Saltar» y volver a verlo cuando quieras desde tu perfil.' },
       { sel: ['#stage'], t: 'Tu lienzo', x: 'Aquí dibujas con el dedo, el mouse o el lápiz de la tableta. Tocar con 2 dedos deshace el último trazo.' },
       { sel: ['#brushes'], t: 'Pinceles', x: 'Cada pincel dibuja distinto. Toca uno y prueba. El Lápiz es el normal. Clic derecho (o mantener) en un pincel lo pone en ⭐ Favoritos.' },
       { sel: ['#fxGroup'], t: 'Efectos', x: 'Humo, lluvia, hojas, pasto, nubes, agua, lava, rayo, chispas, aura, glitch, burbujas, cristal, carbón, velocidad y brillo. Muchos usan tu color (rayo, aura, cristal, carbón, brillo). Un trazo de fuego o rayo te ahorra dibujarlo frame por frame.' },
@@ -9324,7 +9337,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       await save();
       toast('Proyecto abierto.');
     } catch (_) {
-      toast('No pude abrir ese archivo. Tiene que ser un proyecto o una plantilla de Taller de Palitos.');
+      toast('No pude abrir ese archivo. Tiene que ser un proyecto o una plantilla de Stickman Workshop.');
     }
   }
 
