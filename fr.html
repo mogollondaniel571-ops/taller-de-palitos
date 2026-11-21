@@ -2160,7 +2160,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       const ul = el('ul', 'peerlist');
       for (const p of peers) {
         const li = el('li'); const d = el('span', 'pdot'); d.style.background = p.color;
-        li.append(d, el('span', null, p.name + (p.id === 'h' ? ' (hôte)' : '') + (p.id === me.id ? ' · tú' : '')));
+        li.append(d, el('span', null, p.name + (p.id === 'h' ? ' (hôte)' : '') + (p.id === me.id ? ' · toi' : '')));
         ul.append(li);
       }
       return ul;
@@ -7490,7 +7490,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     cell(trCls, trTxt, 'Transition qui entre dans cette image', (b) => transMenu(i, b));
     let fxTxt = '';
     if (f.fx) fxTxt = (f.fx.imp ? (f.fx.imp === 2 ? '⚡◑' : '⚡') : '') + (f.fx.shk ? '📳' : '') + (f.fx.fl ? '💥' : '');
-    cell('tk-fx' + (fxTxt ? ' on' : ''), fxTxt, 'Impacto, temblor o flash', (b) => fxMenu(i, b));
+    cell('tk-fx' + (fxTxt ? ' on' : ''), fxTxt, 'Impact, tremblement ou flash', (b) => fxMenu(i, b));
     // sonido: los que empiezan en este frame, o una raya si sigue sonando
     const a = tkSt[i] || 0, z = i + 1 < tkSt.length ? tkSt[i + 1] : tkTotal;
     const starts = audioClips.filter((cl) => cl.start >= a - 1e-6 && cl.start < z - 1e-6);
@@ -8214,7 +8214,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       add.appendChild(el('span', '', 'Nouveau profil'));
       add.addEventListener('click', () => createScreen());
       grid.appendChild(add);
-      body.appendChild(el('p', '', 'Toca tu perfil para entrar. Cada perfil tiene sus propios proyectos.')).className = 'hint';
+      body.appendChild(el('p', '', 'Touche ton profil pour entrer. Chaque profil a ses propres projets.')).className = 'hint';
       body.appendChild(grid);
       const g = guestBtn(); if (g) body.appendChild(g);
       body.appendChild(el('p', 'margin-top:10px', 'Les profils sont enregistrés seulement sur cet ordinateur.')).className = 'hint';
@@ -8242,7 +8242,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     // 3) Crear perfil: nombre, color y clave opcional
     function createScreen(welcome) {
       show(welcome ? 'Bienvenue dans Stickman Workshop !' : 'Nouveau profil');
-      if (welcome) body.appendChild(el('p', '', 'Crea tu perfil para que el taller te recuerde. Solo un nombre, sin correo ni nada más.')).className = 'hint';
+      if (welcome) body.appendChild(el('p', '', 'Crée ton profil pour que l\'appli se souvienne de toi. Juste un nom, sans e-mail ni rien d\'autre.')).className = 'hint';
       const lab = el('label'); lab.className = 'field'; lab.textContent = 'Nom';
       const name = el('input'); name.type = 'text'; name.maxLength = 24; name.autocomplete = 'off'; name.spellcheck = false; lab.appendChild(name);
       body.appendChild(lab);
@@ -10859,7 +10859,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
           menu.append(menuBtn(TR_ICON[k] + '  ' + nm + (c.tr && c.tr.k === k ? '  ✓' : ''), () => {
             menu.textContent = '';
             menu.append(askLine(nm + ': combien de temps ça dure ?'));
-            for (const d of [0.3, 0.5, 0.8, 1, 1.3]) menu.append(menuBtn(fmtSec(d) + (c.tr && c.tr.k === k && Math.abs(c.tr.d - d) < 0.01 ? '  ✓' : ''), () => { closeMenu(); c.tr = { k, d }; changed(); toast(TR_ICON[k] + ' ' + nm + ' de ' + fmtSec(d) + '.'); }));
+            for (const d of [0.3, 0.5, 0.8, 1, 1.3]) menu.append(menuBtn(fmtSec(d) + (c.tr && c.tr.k === k && Math.abs(c.tr.d - d) < 0.01 ? '  ✓' : ''), () => { closeMenu(); c.tr = { k, d }; changed(); toast(TR_ICON[k] + ' ' + nm + ' sur ' + fmtSec(d) + '.'); }));
           }));
         }
       });
@@ -11058,7 +11058,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
         const filename = 'Ma vidéo ' + new Date().toISOString().slice(0, 10) + '.mp4';
         if (downloads) await downloads.save({ filename, data: blob });
         else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 20000); }
-        msg('✅ Terminé : «' + filename + '» (' + (blob.size / 1048576).toFixed(1) + ' MB' + (au ? ', avec son' : '') + '). Lo encuentras en Descargas.' + (conSon && !au ? ' Ojo: salió sin sonido porque este navegador no sabe meter audio en MP4.' : ''));
+        msg('✅ Terminé : «' + filename + '» (' + (blob.size / 1048576).toFixed(1) + ' MB' + (au ? ', avec son' : '') + '). Tu le trouveras dans Téléchargements.' + (conSon && !au ? ' Attention : la vidéo est muette car ce navigateur ne sait pas mettre de son dans un MP4.' : ''));
       } catch (e) {
         msg(e && e.message === 'cancel' ? 'Annulé.' : 'La vidéo n\'a pas pu être créée. Essaie en 720p.');
       } finally {
@@ -11224,7 +11224,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       q.addEventListener('input', () => { fabQ = q.value; fabList(); });
       q.addEventListener('keydown', (e) => e.stopPropagation());
       const sel2 = document.createElement('select'); sel2.setAttribute('aria-label', 'Catégorie');
-      const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Todas las categorías (' + FAB.list.length + ')'; sel2.appendChild(o0);
+      const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Toutes les catégories (' + FAB.list.length + ')'; sel2.appendChild(o0);
       for (const [k, n] of FAB.cats) { const o = document.createElement('option'); o.value = k; o.textContent = n + ' (' + FAB.list.filter((x) => x.c === k).length + ')'; sel2.appendChild(o); }
       sel2.addEventListener('change', () => { fabCat = sel2.value; fabList(); });
       const card = document.createElement('div'); card.className = 'fab-card'; card.id = 'fabCard'; card.hidden = true;
@@ -11264,12 +11264,12 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       } else if (libTab === 'fx') {
         for (const [k, d] of [['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]]) {
           const nm = FX_NAME[k];
-          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, ''), 'Dura ' + fmtSec(d) + ' (lo puedes estirar)', (t) => placeBar(E.fx, 'fx', k, d, t)));
+          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, ''), 'Dure ' + fmtSec(d) + ' (tu peux l\'étirer)', (t) => placeBar(E.fx, 'fx', k, d, t)));
         }
       } else if (libTab === 'cam') {
         for (const k of Object.keys(CAM_NAME)) {
           const nm = CAM_NAME[k];
-          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, ''), 'Dura ' + fmtSec(CAM_DUR[k]) + ' (lo puedes estirar)', (t) => placeBar(E.cam, 'cam', k, CAM_DUR[k], t)));
+          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, ''), 'Dure ' + fmtSec(CAM_DUR[k]) + ' (tu peux l\'étirer)', (t) => placeBar(E.cam, 'cam', k, CAM_DUR[k], t)));
         }
       } else {
         const up = libItem('⬆', 'Importer un son ou une chanson…', 'C\'est enregistré dans « Mes sons »', () => $('#edLibFile').click());
