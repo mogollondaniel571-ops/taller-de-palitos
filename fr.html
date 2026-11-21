@@ -4625,10 +4625,28 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     for (const l of f.layers) if (l.visible) { const b = bboxOf(l); if (b) m.set(l, b); }
     return m;
   }
+  // El punto del dibujo de la parte más cercano a un lugar (así el pivote cae sobre la línea, no en una esquina vacía).
+  function nearestInk(l, q) {
+    const d = l.ctx.getImageData(0, 0, W, H).data;
+    let best = null, bd = Infinity;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (d[(y * W + x) * 4 + 3] < 40) continue;
+      const dd = (x - q.x) * (x - q.x) + (y - q.y) * (y - q.y);
+      if (dd < bd) { bd = dd; best = { x, y }; }
+    }
+    return best;
+  }
   function rigOne(l, boxes) {
     const b = boxes.get(l);
     if (!b) return false;
-    const pv = pivotFor(b, centerOfOthers(boxes, l));
+    const c = centerOfOthers(boxes, l);
+    let pv = pivotFor(b, c);
+    if (c) {
+      const inside = c.x >= b.x0 && c.x <= b.x1 && c.y >= b.y0 && c.y <= b.y1;
+      // el tronco gira desde abajo (cadera); brazos, piernas y cabeza desde la punta que toca al cuerpo
+      const q = inside ? { x: (b.x0 + b.x1) / 2, y: b.y1 } : c;
+      pv = nearestInk(l, q) || pv;
+    }
     state.rig.parts[l.key] = { px: pv.x, py: pv.y };
     return true;
   }
@@ -5141,6 +5159,169 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     u.addEventListener('click', wzUndo);
     anchor.parentElement.insertBefore(u, anchor);
   })();
+
+  /* ---------- Previsualizar: mover todas las articulaciones de un grupo sin cambiar de capa ---------- */
+  // Desde los 3 puntitos de un grupo. Cada parte muestra su articulación y una punta amarilla:
+  // arrastras la parte (o su punta) y gira; lo que cuelga de ella (brazo del torso, mano del brazo…) la sigue.
+  let POSE = null;
+  let poseTips = new WeakMap();
+  const poseOn = () => !!(POSE && groupById(POSE.gid) && state.tool === 'skel');
+  function posePartsOf(f) {
+    const g = groupById(POSE.gid);
+    return g ? f.layers.filter((l) => l.visible && isBone(l) && g.keys.includes(l.key)) : [];
+  }
+  function poseAlpha(l) {
+    let c = poseTips.get(l);
+    if (!c) { c = { d: l.ctx.getImageData(0, 0, W, H).data }; poseTips.set(l, c); }
+    return c;
+  }
+  // La punta de la parte: el pedazo de dibujo más lejano a su articulación.
+  function poseTip(l) {
+    const p = state.rig.parts[l.key], c = poseAlpha(l);
+    if (!p) return null;
+    if (c.tip && c.px === p.px && c.py === p.py) return c.tip;
+    let best = null, bd = -1;
+    for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) {
+      if (c.d[(y * W + x) * 4 + 3] < 40) continue;
+      const d = (x - p.px) * (x - p.px) + (y - p.py) * (y - p.py);
+      if (d > bd) { bd = d; best = { x, y }; }
+    }
+    c.px = p.px; c.py = p.py; c.tip = best;
+    return best;
+  }
+  // ¿Qué tan cerca queda un punto del dibujo de una parte? (para saber qué cuelga de qué)
+  function poseNear(l, q, r) {
+    const d = poseAlpha(l).d;
+    const x0 = Math.max(0, Math.floor(q.x - r)), x1 = Math.min(W - 1, Math.ceil(q.x + r));
+    const y0 = Math.max(0, Math.floor(q.y - r)), y1 = Math.min(H - 1, Math.ceil(q.y + r));
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (d[(y * W + x) * 4 + 3] > 40 && (x - q.x) * (x - q.x) + (y - q.y) * (y - q.y) <= r * r) return true;
+    return false;
+  }
+  // Árbol del personaje: la parte que toca más articulaciones es el tronco; de ahí cuelgan las demás.
+  function poseTree(f) {
+    const ls = posePartsOf(f), R = 14;
+    const pv = (l) => { const q = state.rig.parts[l.key]; return { x: q.px, y: q.py }; };
+    // la articulación de b está sobre el dibujo de a (y no es la misma articulación: las piernas no cuelgan del torso)
+    const touches = (a, b) => a !== b && Math.hypot(pv(a).x - pv(b).x, pv(a).y - pv(b).y) > R && poseNear(a, pv(b), R);
+    let root = null, rc = -1;
+    for (const a of ls) { const n = ls.filter((b) => touches(a, b)).length; if (n > rc) { rc = n; root = a; } }
+    const kids = new Map(ls.map((l) => [l, []]));
+    if (!root) return kids;
+    const seen = new Set([root]), q = [root];
+    while (q.length) {
+      const a = q.shift();
+      for (const b of ls) if (!seen.has(b) && touches(a, b)) { seen.add(b); kids.get(a).push(b); q.push(b); }
+    }
+    return kids;
+  }
+  function poseDesc(kids, l, out = []) { for (const k of kids.get(l) || []) { out.push(k); poseDesc(kids, k, out); } return out; }
+
+  function poseStart(g) {
+    POSE = { gid: g.id };
+    poseTips = new WeakMap();
+    state.selGroup = g.id;
+    if (state.tool !== 'skel') setTool('skel');
+    const f = frame();
+    // las partes del grupo que todavía no giran solas (el torso, por ejemplo) reciben su articulación
+    const loose = f.layers.filter((l) => l.visible && g.keys.includes(l.key) && !isBone(l));
+    if (loose.length) { const bx = boxesOf(f); for (const l of loose) rigOne(l, bx); markDirty(); }
+    renderLayers(); requestRender();
+    poseBar(true);
+    toast('Aperçu : fais glisser n’importe quelle partie (ou son bout jaune) pour la tourner. Ce qui y est attaché suit.');
+  }
+  function poseStop() { POSE = null; poseBar(false); requestRender(); }
+  function poseBar(on) {
+    let b = document.getElementById('poseBar');
+    if (!on) { if (b) b.remove(); return; }
+    if (b) return;
+    b = document.createElement('div');
+    b.id = 'poseBar';
+    b.style.cssText = 'position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:8000;background:#16141f;color:#fff;border:2px solid #ffc93c;border-radius:999px;padding:6px 8px 6px 16px;display:flex;gap:10px;align-items:center;font:600 14px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.4)';
+    const t = document.createElement('span'); t.textContent = '👁 Aperçu : ' + (groupById(POSE.gid) || {}).name;
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'btn small primary'; x.textContent = 'Terminé';
+    x.addEventListener('click', poseStop);
+    b.append(t, x);
+    document.body.appendChild(b);
+  }
+
+  const _drawGizmoPose = drawGizmo;
+  drawGizmo = function () {
+    _drawGizmoPose();
+    if (POSE && (!groupById(POSE.gid) || state.tool !== 'skel')) poseStop();
+    if (!poseOn() || state.playing) return;
+    const f = frame();
+    if (!f) return;
+    const u = unit();
+    gctx.save();
+    for (const l of posePartsOf(f)) {
+      const tip = poseTip(l);
+      if (!tip) continue;
+      const m = layerM(l, f), pv = state.rig.parts[l.key];
+      const a = mApply(m, { x: pv.px, y: pv.py }), b = mApply(m, tip), sel = POSE.sel === l.key;
+      gctx.strokeStyle = sel ? 'rgba(255,201,60,.95)' : 'rgba(36,87,214,.55)'; gctx.lineWidth = (sel ? 3 : 2) * u;
+      gctx.beginPath(); gctx.moveTo(a.x, a.y); gctx.lineTo(b.x, b.y); gctx.stroke();
+      gctx.beginPath(); gctx.arc(a.x, a.y, 5 * u, 0, Math.PI * 2);
+      gctx.fillStyle = '#ffffff'; gctx.strokeStyle = '#2457d6'; gctx.lineWidth = 2.5 * u; gctx.fill(); gctx.stroke();
+      gctx.beginPath(); gctx.arc(b.x, b.y, (sel ? 9 : 7) * u, 0, Math.PI * 2);
+      gctx.fillStyle = '#ffc93c'; gctx.strokeStyle = '#1d1b1a'; gctx.fill(); gctx.stroke();
+    }
+    gctx.restore();
+  };
+
+  const _skelDownPose = skelDown;
+  skelDown = function (e) {
+    if (!poseOn()) return _skelDownPose(e);
+    const f = frame(), p = pt(e), u = unit(), g = groupById(POSE.gid);
+    state.selGroup = g.id;
+    // el rombo y el círculo del grupo siguen moviendo/girando a todo el personaje
+    const gt = { kind: 'group', g }, c = worldPivot(gt, f), ha = handleAngle(gt, f);
+    const h = { x: c.x + Math.cos(ha) * ROT_R * u, y: c.y + Math.sin(ha) * ROT_R * u };
+    if (Math.hypot(p.x - h.x, p.y - h.y) <= 24 * u || Math.hypot(p.x - c.x, p.y - c.y) <= 13 * u) return _skelDownPose(e);
+    const parts = posePartsOf(f);
+    let best = null, bd = 18 * u;
+    for (const l of parts) {
+      const tip = poseTip(l); if (!tip) continue;
+      const w = mApply(layerM(l, f), tip), d = Math.hypot(p.x - w.x, p.y - w.y);
+      if (d < bd) { bd = d; best = l; }
+    }
+    if (!best) { const l = pickPart(p, f); if (l && parts.includes(l)) best = l; }
+    if (!best) return;
+    e.preventDefault();
+    try { view.setPointerCapture(e.pointerId); } catch (_) {}
+    const tg = { kind: 'part', l: best }, cur = getT(tg), piv = worldPivot(tg, f);
+    const snap = (t) => (t ? { x: t.x, y: t.y, r: t.r } : null);
+    const kids = poseDesc(poseTree(f), best).map((l) => ({ tg: { kind: 'part', l }, prev: snap(l.t), t0: snap(l.t) || { x: 0, y: 0, r: 0 } }));
+    POSE.sel = best.key;
+    skelDrag = {
+      id: e.pointerId, pose: true, mode: 'grab', target: tg, start: p, piv, moved: false, wasSel: false, kids,
+      prev: snap(cur), t0: snap(cur) || { x: 0, y: 0, r: 0 }, a0: Math.atan2(p.y - piv.y, p.x - piv.x)
+    };
+    requestRender();
+  };
+  view.addEventListener('pointermove', (e) => {
+    const d = skelDrag;
+    if (!d || !d.pose || e.pointerId !== d.id) return;
+    e.stopImmediatePropagation();
+    const p = pt(e), a = Math.atan2(p.y - d.piv.y, p.x - d.piv.x), da = normAng(a - d.a0);
+    if (!d.moved) {
+      if (Math.abs(da) < 0.02) return;
+      d.moved = true; d.batch = newId();
+      pushPose(d.target, d.prev, d.batch);
+      for (const k of d.kids) pushPose(k.tg, k.prev, d.batch);
+    }
+    setT(d.target, { x: d.t0.x, y: d.t0.y, r: normAng(d.t0.r + da) });
+    // lo que cuelga gira junto, alrededor de la articulación de la parte que mueves (todo dentro del mismo grupo)
+    const pp = state.rig.parts[d.target.l.key], P = { x: pp.px + d.t0.x, y: pp.py + d.t0.y };
+    const cs = Math.cos(da), sn = Math.sin(da);
+    for (const k of d.kids) {
+      const kp = state.rig.parts[k.tg.l.key], C = { x: kp.px + k.t0.x, y: kp.py + k.t0.y };
+      const dx = C.x - P.x, dy = C.y - P.y;
+      const nx = P.x + cs * dx - sn * dy, ny = P.y + sn * dx + cs * dy;
+      setT(k.tg, { x: k.t0.x + nx - C.x, y: k.t0.y + ny - C.y, r: normAng(k.t0.r + da) });
+    }
+    requestRender();
+  }, true);
+  window.addEventListener('keydown', (e) => { if (POSE && e.key === 'Escape') poseStop(); });
 
   /* ---------- Degradado y fondos ya hechos ---------- */
   const GR_PRESETS = [
@@ -5909,6 +6090,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     menu.append(
       menuBtn('Modifier le groupe…', () => { closeMenu(); openGroupDlg(g, null); }),
       menuBtn('Déplacer le pivot', () => startPlace('group', g)),
+      menuBtn((POSE && POSE.gid === g.id) ? '👁 Quitter l’aperçu' : '👁 Aperçu (bouger les articulations)', () => { closeMenu(); if (POSE && POSE.gid === g.id) poseStop(); else poseStart(g); }),
       menuBtn('Réinitialiser la pose', () => { closeMenu(); resetPose({ kind: 'group', g }); }),
       menuBtn('Dégrouper', () => buildGroupMenu(g, true), { warn: true })
     );
