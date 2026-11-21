@@ -1007,6 +1007,11 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
         <div class="tool-row">
           <button class="btn small" id="fillPlain" type="button" aria-pressed="true" title="A single flat color">Smooth</button>
           <button class="btn small" id="fillWater" type="button" aria-pressed="false" title="Water waves in the color you pick (try a blue)">Water</button>
+          <button class="btn small" data-fillfx="lauto" type="button" aria-pressed="false" title="Tap something already painted: it adds shadow and light based on where the sun is">☀ Auto</button>
+          <button class="btn small" data-fillfx="lshade" type="button" aria-pressed="false" title="Tap something already painted: darkens all of it (flat shadow)">Shadow</button>
+          <button class="btn small" data-fillfx="llight" type="button" aria-pressed="false" title="Tap something already painted: lights all of it (flat light)">Light</button>
+          <button class="btn small" data-fillfx="lrim" type="button" aria-pressed="false" title="Tap something already painted: lights only the edge facing the sun">Backlight</button>
+          <button class="btn small" data-fillfx="lbloom" type="button" aria-pressed="false" title="Tap a fire, eye or lamp: it glows in its own color and spills light around">✨ Glow</button>
         </div>
       </div>
       <div class="tool-group">
@@ -3826,6 +3831,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     const src = state.fillAll ? mergedData(layer) : layer.ctx.getImageData(0, 0, W, H);
     const sd = src.data;
     const { mask, count, sa } = floodMask(sd, x, y, state.tol);
+    if (LIGHT[state.fillFx]) { lightFill(layer, mask, sa); return; }
     const own = layer.ctx.getImageData(0, 0, W, H);
     const o = own.data;
     const [fr, fg, fb] = hexRgb(state.color);
@@ -3853,9 +3859,31 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     if (empty && count > W * H * 0.9) toast('The fill covered almost the whole canvas. If your shape isn\'t closed, undo and close the gap.');
   }
 
+  // Rellenar con las herramientas de luz: la zona que tocas recibe la sombra, la luz o el resplandor de una sola vez.
+  function lightFill(layer, mask, sa) {
+    const kind = state.fillFx, cfg = LIGHT[kind];
+    if (sa < 128 && cfg.fx !== 'glow') { toast('This works on something already painted: fill it with color first, then tap again with light or shadow.'); return; }
+    pushUndo(layer);
+    const d = { layer, kind, color: state.color };
+    lightInit(d);
+    const ls = d.ls;
+    // el resplandor también se derrama un poco alrededor de lo que tocaste
+    const area = cfg.fx === 'glow' ? growMask(mask, Math.max(4, Math.round(state.light.band * SC * 1.6))) : mask;
+    for (let i = 0, n = W * H; i < n; i++) if (area[i]) { ls.m[i] = 255; lightPx(ls, i); }
+    layer.ctx.putImageData(ls.out, 0, 0);
+    requestRender(); renderLayers(); renderFrames(); markDirty();
+  }
+
   /* ---------- Herramientas ---------- */
   state.fillFx = 'plain';
-  const paintFillFx = () => { $('#fillPlain').setAttribute('aria-pressed', String(state.fillFx === 'plain')); $('#fillWater').setAttribute('aria-pressed', String(state.fillFx === 'water')); };
+  const paintFillFx = () => {
+    $('#fillPlain').setAttribute('aria-pressed', String(state.fillFx === 'plain')); $('#fillWater').setAttribute('aria-pressed', String(state.fillFx === 'water'));
+    for (const b of document.querySelectorAll('[data-fillfx]')) b.setAttribute('aria-pressed', String(state.fillFx === b.dataset.fillfx));
+  };
+  for (const b of document.querySelectorAll('[data-fillfx]')) b.addEventListener('click', () => {
+    state.fillFx = b.dataset.fillfx; paintFillFx();
+    toast(state.fillFx === 'lbloom' ? 'Glow fill: tap what you want to shine.' : 'Light & shadow fill: tap a part that’s already painted. Change the sun and strength in “Light & shadow”.');
+  });
   $('#fillPlain').addEventListener('click', () => { state.fillFx = 'plain'; paintFillFx(); });
   $('#fillWater').addEventListener('click', () => { state.fillFx = 'water'; paintFillFx(); });
   state.sym = '';
@@ -5541,7 +5569,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     // silueta de la capa tal como se ve en este frame (con su pose de esqueleto)
     const sil = document.createElement('canvas'); sil.width = W; sil.height = H;
     const sx = sil.getContext('2d');
-    drawLayer(sx, src, f);
+    for (const s of (Array.isArray(src) ? src : [src])) drawLayer(sx, s, f);
     const d = sx.getImageData(0, 0, W, H).data;
     let y1 = -1, x0 = W, x1 = -1;
     for (let y = H - 1; y >= 0 && y1 < 0; y -= 2) for (let x = 0; x < W; x += 2) if (d[(y * W + x) * 4 + 3] > 30) { y1 = y; break; }
@@ -5585,6 +5613,34 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
     }
     dropOnion(); renderLayers(); renderFrames(); requestRender(); markDirty();
     toast(n ? 'Shadow ready in ' + n + (n === 1 ? ' frame' : ' frames') + '. If you change the pose, do it again and it updates.' : 'I didn\'t find a drawing on that layer.');
+  }
+  // Sombra de un personaje completo (todas las capas del grupo juntas), hacia donde elijas.
+  function makeGroupShadow(g, dir, all) {
+    if (!COLLAB.structOK()) return;
+    const key = 'g' + g.id + '_sombra';
+    let n = 0;
+    for (const f of all ? state.frames : [frame()]) {
+      const srcs = f.layers.filter((l) => l.visible && g.keys.includes(l.key));
+      let sh = f.layers.find((l) => l.key === key);
+      const img = srcs.length ? castShadowFor(f, srcs, dir, 0.35) : null;
+      if (!img) { if (sh) f.layers.splice(f.layers.indexOf(sh), 1); continue; }
+      if (!sh) { sh = makeLayer(('Shadow of ' + g.name).slice(0, 40), true, null, key); f.layers.splice(Math.min(...srcs.map((l) => f.layers.indexOf(l))), 0, sh); }
+      sh.ctx.clearRect(0, 0, W, H); sh.ctx.drawImage(img, 0, 0);
+      n++;
+    }
+    dropOnion(); renderLayers(); renderFrames(); requestRender(); markDirty();
+    toast(n ? 'Shadow ready in ' + n + (n === 1 ? ' frame' : ' frames') + '. If you change the pose, do it again and it updates.' : 'I didn’t find any drawing in that group.');
+  }
+  function buildGroupShadowMenu(g) {
+    menu.textContent = '';
+    const q = document.createElement('div'); q.className = 'ask';
+    q.textContent = 'Shadow of «' + g.name + '» on the floor. It\'s calculated from the feet (the lowest part of the drawing).';
+    menu.append(q);
+    const opts = [['izq', '↖ To the left'], ['der', '↗ To the right'], ['abajo', '⬤ Right below (noon)']];
+    for (const [d, n] of opts) {
+      menu.append(menuBtn(n + ' · this frame', () => { closeMenu(); makeGroupShadow(g, d, false); }));
+      menu.append(menuBtn(n + ' · all frames', () => { closeMenu(); makeGroupShadow(g, d, true); }));
+    }
   }
   function buildShadowMenu(layer) {
     menu.textContent = '';
@@ -6091,6 +6147,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       menuBtn('Edit group…', () => { closeMenu(); openGroupDlg(g, null); }),
       menuBtn('Move pivot', () => startPlace('group', g)),
       menuBtn((POSE && POSE.gid === g.id) ? '👁 Exit preview' : '👁 Preview (move joints)', () => { closeMenu(); if (POSE && POSE.gid === g.id) poseStop(); else poseStart(g); }),
+      menuBtn('🌑 Character shadow…', () => buildGroupShadowMenu(g)),
       menuBtn('Reset pose', () => { closeMenu(); resetPose({ kind: 'group', g }); }),
       menuBtn('Ungroup', () => buildGroupMenu(g, true), { warn: true })
     );
