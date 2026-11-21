@@ -1,6 +1,6 @@
 // Stickman Workshop: funciona sin internet. Cambia VERSION en cada actualización.
-const VERSION = 'tp-v31';
-const CORE = ['./', 'index.html', 'en.html', 'manifest.webmanifest', 'privacidad.html', 'icons/icon-192.png', 'icons/icon-512.png'];
+const VERSION = 'tp-v32';
+const CORE = ['./', 'index.html', 'en.html', 'ja.html', 'zh.html', 'fr.html', 'manifest.webmanifest', 'privacidad.html', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
@@ -13,7 +13,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   // La página: primero internet (para recibir actualizaciones), si no hay, la copia guardada.
   if (req.mode === 'navigate') {
-    const page = /en\.html$/.test(url.pathname) ? 'en.html' : 'index.html';
+    const m = url.pathname.match(/(en|ja|zh|fr)\.html$/); const page = m ? m[1] + '.html' : 'index.html';
     e.respondWith(fetch(req).then((r) => { const cp = r.clone(); caches.open(VERSION).then((c) => c.put(page, cp)); return r; })
       .catch(() => caches.match(page)));
     return;

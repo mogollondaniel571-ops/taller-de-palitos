@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <script>
-(function(){var ME='es',L=null;try{L=localStorage.getItem('tp-lang');}catch(e){}
-if(L&&L!==ME){location.replace((L==='en'?'en.html':'./')+location.search);return;}
+(function(){var ME='es',F={"es": "./", "en": "en.html", "ja": "ja.html", "zh": "zh.html", "fr": "fr.html"},L=null;try{L=localStorage.getItem('tp-lang');}catch(e){}
+if(L&&L!==ME&&F[L]){location.replace(F[L]+location.search);return;}
 if(!L){document.addEventListener('DOMContentLoaded',function(){
 var o=document.createElement('div');o.id='langPick';
-o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#16161d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font:600 18px system-ui,sans-serif';
-o.innerHTML='<img src="icons/icon-192.png" width="110" height="110" alt=""><div style="font-size:30px;font-weight:900">Stickman Workshop</div><div style="opacity:.75">Choose your language · Elige tu idioma</div><div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"><button data-l="en">🇺🇸 English</button><button data-l="es">🇪🇸 Español</button></div>';
-o.querySelectorAll('button').forEach(function(b){b.style.cssText='font:800 20px system-ui,sans-serif;padding:16px 34px;border-radius:14px;border:2px solid #ffc93c;background:#24232f;color:#fff;cursor:pointer;min-width:190px';
-b.onclick=function(){var l=b.getAttribute('data-l');try{localStorage.setItem('tp-lang',l);}catch(e){}if(l!==ME)location.replace((l==='en'?'en.html':'./')+location.search);else o.remove();};});
+o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#16161d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font:600 18px system-ui,sans-serif;padding:20px';
+o.innerHTML='<img src="icons/icon-192.png" width="110" height="110" alt=""><div style="font-size:30px;font-weight:900">Stickman Workshop</div><div style="opacity:.75;text-align:center">Choose your language · Elige tu idioma · 言語を選択 · 选择语言 · Choisis ta langue</div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:720px"><button data-l="en">English</button><button data-l="es">Español</button><button data-l="ja">日本語</button><button data-l="zh">中文</button><button data-l="fr">Français</button></div>';
+o.querySelectorAll('button').forEach(function(b){b.style.cssText='font:800 20px system-ui,sans-serif;padding:16px 28px;border-radius:14px;border:2px solid #ffc93c;background:#24232f;color:#fff;cursor:pointer;min-width:170px';
+b.onclick=function(){var l=b.getAttribute('data-l');try{localStorage.setItem('tp-lang',l);}catch(e){}if(l!==ME)location.replace(F[l]+location.search);else o.remove();};});
 document.body.appendChild(o);});}
 window.TP_LANG=ME;})();
 </script>
@@ -8302,7 +8302,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       if (cur) {
         menu.append(
           menuBtn('Cambiar de perfil', () => { closeMenu(); open('login', null); }),
-          menuBtn('🌐 English / Español', () => { closeMenu(); try { localStorage.removeItem('tp-lang'); } catch (_) {} location.reload(); }),
+          menuBtn('🌐 Idioma · Language · 言語 · 语言 · Langue', () => { closeMenu(); try { localStorage.removeItem('tp-lang'); } catch (_) {} location.reload(); }),
           menuBtn('Ver el tutorial', () => { closeMenu(); TUT.start(); }),
           menuBtn('Cerrar sesión', () => { closeMenu(); logout(); }),
           menuBtn('Borrar mi perfil…', () => confirmDel(), { warn: true })
@@ -8342,6 +8342,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       { sel: ['#fxGroup'], t: 'Efectos', x: 'Humo, lluvia, hojas, pasto, nubes, agua, lava, rayo, chispas, aura, glitch, burbujas, cristal, carbón, velocidad y brillo. Muchos usan tu color (rayo, aura, cristal, carbón, brillo). Un trazo de fuego o rayo te ahorra dibujarlo frame por frame.' },
       { sel: ['#lightGroup'], t: 'Luz y sombra', x: 'Pinceles para iluminar como en el anime: pinta tu dibujo primero y luego pásale Sombra, Luz o Auto (pone la sombra solo según donde esté el sol). Contraluz, Resplandor y Destello para brillos.' },
       { sel: ['#moreBrushGroup'], t: 'Más pinceles', x: 'Fuego, Neón, Estática TV, Acuarela, Arcoíris y más. Toca el título para plegar o abrir la lista.' },
+      { sel: ['#toolGrad', '#toolLiq'], t: 'Degradado y licuar', x: '🌈 Degradado pinta colores que se mezclan y trae fondos ya hechos (cielos, atardecer, noche…). 🫠 Licuar empuja tu dibujo como plastilina para estirarlo o deformarlo.' },
       { sel: ['#toolEraser', '#toolImg'], t: 'Otras herramientas', x: 'Borrador, Rellenar (pinta una zona cerrada de un toque), Texto, Seleccionar (mueve pedazos del dibujo) e Imagen (mete un PNG, JPG o GIF).' },
       { sel: ['#size'], group: true, t: 'Grosor, pulso y presión', x: 'Grosor es lo gordo del trazo. Pulso hace que la línea tiemble menos: súbelo si quieres líneas más lisas.' },
       { sel: ['#swatches'], t: 'Colores', x: 'Toca un color para dibujar con él. El círculo de arcoíris abre la rueda para elegir cualquiera.' },
@@ -8351,14 +8352,21 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       { sel: ['#btnGuides'], art: true, t: 'Guías', x: 'Tercios, cuadrícula y centro para dibujar más ordenado. En miniaturas también hay una zona segura que marca dónde YouTube pone el tiempo.' },
       { sel: ['.timeline'], anim: true, t: 'Línea de tiempo', x: 'Cada cuadrito es un frame, una imagen de tu animación. Con «+ Frame» agregas otro y con Reproducir ves cómo se mueve.' },
       { sel: ['#toolSkel'], anim: true, t: 'Esqueleto', x: 'Convierte tus capas en partes que se mueven. Elige un punto y arrástralo para girar o mover esa parte sin redibujarla.' },
+      { sel: ['#btnSkelConv', '#toolSkel'], anim: true, t: 'Convertir dibujo a esqueleto', x: 'Dibuja tu muñeco entero en una sola capa, entra a Esqueleto y toca «🦴 Convertir dibujo a esqueleto». Marca hombros, codos, cadera y rodillas, y la app lo corta en partes que se doblan. Si a tu dibujo le falta una parte, toca «Saltar».' },
+      { sel: ['.timeline'], anim: true, t: 'Entremedios y gráfico de velocidad', x: 'En los 3 puntitos de un frame, «Entremedios» crea solo los frames del medio. «Con gráfico de velocidad» te deja decidir cómo acelera y frena el movimiento.' },
       { sel: ['#btnOnion'], anim: true, t: 'Papel cebolla', x: 'Muestra en rojo el frame anterior y en azul el siguiente, para dibujar el movimiento con calma.' },
       { sel: ['#btnCam'], anim: true, t: 'Cámara', x: 'Acerca y mueve la cámara en un frame para hacer zooms y paneos.' },
+      { sel: ['#pqSel'], anim: true, t: 'Calidad de vista previa', x: 'Si tu computadora va lenta al reproducir, elige Normal o Rendimiento. El video exportado siempre sale en calidad completa.' },
+      { sel: ['.layers'], t: 'Más trucos de capas', x: 'En los 3 puntitos de una capa tienes 🌑 Sombra en el piso (la sombra se hace sola) y 🏔️ Profundidad: lo que está lejos se mueve más lento cuando la cámara se mueve.' },
       { sel: ['#btnNew'], t: 'Proyecto nuevo', x: 'Aquí eliges el nombre, el formato (YouTube, TikTok, Instagram…), la resolución y si harás una Miniatura, un Arte o una Animación.' },
       { sel: ['#btnProjects'], t: 'Mis proyectos', x: 'Todo se guarda solo en este dispositivo. Aquí abres, cambias o borras tus proyectos.' },
       { sel: ['#btnTpl'], t: 'Personajes y objetos', x: 'Guarda tus personajes, objetos y fondos para usarlos en otros proyectos.' },
-      { sel: ['#btnExport'], t: 'Exportar', x: 'En Animación sale un video MP4. En Miniatura y Arte, una imagen PNG o JPG.' },
+      { sel: ['#btnEditor'], t: 'Editor de video', x: 'Junta tus escenas y ponles transiciones, efectos, movimientos de cámara y sonido. Si subes una canción, la regla marca los golpes del ritmo para que cortes a tiempo.' },
+      { sel: ['#btnExport'], t: 'Exportar', x: 'Animación sale en MP4 o GIF; Miniatura y Arte, en PNG o JPG. Puedes ponerle tu 🏷️ Firma al video y sacar una 🕹️ Hoja de sprites para usar la animación en tus juegos.' },
+      { sel: ['#workTime'], t: 'Tiempo de trabajo', x: 'Este reloj cuenta cuánto llevas trabajando en este proyecto. Solo avanza mientras dibujas o mueves cosas.' },
+      { sel: ['#btnRoom'], t: 'Animar con amigos', x: 'Crea una sala y hasta 4 personas animan juntas en vivo. Cada quien dibuja en sus propias capas.' },
       { sel: ['#btnDraw'], t: 'Modo dibujo', x: 'Esconde los paneles y deja casi todo el lienzo. Con F entras y sales.' },
-      { sel: ['#btnProfile'], t: 'Tu perfil', x: 'Aquí puedes volver a ver este tutorial cuando quieras. ¡Ya sabes lo básico, a dibujar!' }
+      { sel: ['#btnProfile'], t: 'Tu perfil', x: 'Aquí cambias de perfil o de idioma 🌐 y puedes volver a ver este tutorial cuando quieras. ¡Ya sabes lo básico, a dibujar!' }
     ];
     const vis = (el) => !!el && el.getClientRects().length > 0;
     function rectOf(sels) {

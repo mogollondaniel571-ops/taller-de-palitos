@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <script>
-(function(){var ME='en',L=null;try{L=localStorage.getItem('tp-lang');}catch(e){}
-if(L&&L!==ME){location.replace((L==='en'?'en.html':'./')+location.search);return;}
+(function(){var ME='en',F={"es": "./", "en": "en.html", "ja": "ja.html", "zh": "zh.html", "fr": "fr.html"},L=null;try{L=localStorage.getItem('tp-lang');}catch(e){}
+if(L&&L!==ME&&F[L]){location.replace(F[L]+location.search);return;}
 if(!L){document.addEventListener('DOMContentLoaded',function(){
 var o=document.createElement('div');o.id='langPick';
-o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#16161d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font:600 18px system-ui,sans-serif';
-o.innerHTML='<img src="icons/icon-192.png" width="110" height="110" alt=""><div style="font-size:30px;font-weight:900">Stickman Workshop</div><div style="opacity:.75">Choose your language · Elige tu idioma</div><div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"><button data-l="en">🇺🇸 English</button><button data-l="es">🇪🇸 Español</button></div>';
-o.querySelectorAll('button').forEach(function(b){b.style.cssText='font:800 20px system-ui,sans-serif;padding:16px 34px;border-radius:14px;border:2px solid #ffc93c;background:#24232f;color:#fff;cursor:pointer;min-width:190px';
-b.onclick=function(){var l=b.getAttribute('data-l');try{localStorage.setItem('tp-lang',l);}catch(e){}if(l!==ME)location.replace((l==='en'?'en.html':'./')+location.search);else o.remove();};});
+o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#16161d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font:600 18px system-ui,sans-serif;padding:20px';
+o.innerHTML='<img src="icons/icon-192.png" width="110" height="110" alt=""><div style="font-size:30px;font-weight:900">Stickman Workshop</div><div style="opacity:.75;text-align:center">Choose your language · Elige tu idioma · 言語を選択 · 选择语言 · Choisis ta langue</div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:720px"><button data-l="en">English</button><button data-l="es">Español</button><button data-l="ja">日本語</button><button data-l="zh">中文</button><button data-l="fr">Français</button></div>';
+o.querySelectorAll('button').forEach(function(b){b.style.cssText='font:800 20px system-ui,sans-serif;padding:16px 28px;border-radius:14px;border:2px solid #ffc93c;background:#24232f;color:#fff;cursor:pointer;min-width:170px';
+b.onclick=function(){var l=b.getAttribute('data-l');try{localStorage.setItem('tp-lang',l);}catch(e){}if(l!==ME)location.replace(F[l]+location.search);else o.remove();};});
 document.body.appendChild(o);});}
 window.TP_LANG=ME;})();
 </script>
@@ -8302,7 +8302,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       if (cur) {
         menu.append(
           menuBtn('Switch profile', () => { closeMenu(); open('login', null); }),
-          menuBtn('🌐 English / Español', () => { closeMenu(); try { localStorage.removeItem('tp-lang'); } catch (_) {} location.reload(); }),
+          menuBtn('🌐 Idioma · Language · 言語 · 语言 · Langue', () => { closeMenu(); try { localStorage.removeItem('tp-lang'); } catch (_) {} location.reload(); }),
           menuBtn('Watch the tutorial', () => { closeMenu(); TUT.start(); }),
           menuBtn('Log out', () => { closeMenu(); logout(); }),
           menuBtn('Delete my profile…', () => confirmDel(), { warn: true })
@@ -8342,6 +8342,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       { sel: ['#fxGroup'], t: 'Effects', x: 'Smoke, rain, leaves, grass, clouds, water, lava, lightning, sparks, aura, glitch, bubbles, crystal, charcoal, speed and shine. Many use your color (lightning, aura, crystal, charcoal, shine). One stroke of fire or lightning saves you drawing it frame by frame.' },
       { sel: ['#lightGroup'], t: 'Light and shadow', x: 'Brushes for anime-style lighting: paint your drawing first and then go over it with Shadow, Light or Auto (puts the shadow by itself depending on where the sun is). Backlight, Glow and Flash for shines.' },
       { sel: ['#moreBrushGroup'], t: 'More brushes', x: 'Fire, Neon, TV static, Watercolor, Rainbow and more. Tap the title to fold or open the list.' },
+      { sel: ['#toolGrad', '#toolLiq'], t: 'Gradient and liquify', x: '🌈 Gradient paints colors that blend together and has ready-made backgrounds (skies, sunset, night…). 🫠 Liquify pushes your drawing like clay to stretch or warp it.' },
       { sel: ['#toolEraser', '#toolImg'], t: 'Other tools', x: 'Eraser, Fill (paints a closed area in one tap), Text, Select (moves pieces of the drawing) and Image (puts in a PNG, JPG or GIF).' },
       { sel: ['#size'], group: true, t: 'Thickness, steady and pressure', x: 'Thickness is how fat the stroke is. Steady makes the line shake less: raise it for smoother lines.' },
       { sel: ['#swatches'], t: 'Colors', x: 'Tap a color to draw with it. The rainbow circle opens the wheel to pick any color.' },
@@ -8351,14 +8352,21 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
       { sel: ['#btnGuides'], art: true, t: 'Guides', x: 'Thirds, grid and center to draw more neatly. Thumbnails also have a safe zone that marks where YouTube puts the time.' },
       { sel: ['.timeline'], anim: true, t: 'Timeline', x: 'Each little square is a frame, one picture of your animation. With «+ Frame» you add another and with Play you see it move.' },
       { sel: ['#toolSkel'], anim: true, t: 'Skeleton', x: 'Turns your layers into parts that move. Pick a point and drag it to rotate or move that part without redrawing it.' },
+      { sel: ['#btnSkelConv', '#toolSkel'], anim: true, t: 'Convert drawing to skeleton', x: 'Draw your whole stickman on a single layer, go to Skeleton and tap «🦴 Convert drawing to skeleton». Mark the shoulders, elbows, hip and knees, and the app cuts it into parts that bend. If your drawing is missing a part, tap «Skip».' },
+      { sel: ['.timeline'], anim: true, t: 'In-betweens and speed graph', x: 'In a frame\'s 3 dots, «In-betweens» creates the middle frames by itself. «With speed graph» lets you decide how the movement speeds up and slows down.' },
       { sel: ['#btnOnion'], anim: true, t: 'Onion skin', x: 'Shows the previous frame in red and the next in blue, to draw the movement calmly.' },
       { sel: ['#btnCam'], anim: true, t: 'Camera', x: 'Zoom and move the camera in a frame to make zooms and pans.' },
+      { sel: ['#pqSel'], anim: true, t: 'Preview quality', x: 'If your computer is slow when playing, pick Normal or Performance. The exported video always comes out at full quality.' },
+      { sel: ['.layers'], t: 'More layer tricks', x: 'In a layer\'s 3 dots you have 🌑 Floor shadow (the shadow makes itself) and 🏔️ Depth: things far away move slower when the camera moves.' },
       { sel: ['#btnNew'], t: 'New project', x: 'Here you pick the name, the format (YouTube, TikTok, Instagram…), the resolution and whether you\'ll make a Thumbnail, an Art piece or an Animation.' },
       { sel: ['#btnProjects'], t: 'My projects', x: 'Everything is saved only on this device. Here you open, change or delete your projects.' },
       { sel: ['#btnTpl'], t: 'Characters and objects', x: 'Save your characters, objects and backgrounds to use them in other projects.' },
-      { sel: ['#btnExport'], t: 'Export', x: 'Animation gives you an MP4 video. Thumbnail and Art give a PNG or JPG image.' },
+      { sel: ['#btnEditor'], t: 'Video editor', x: 'Put your scenes together and add transitions, effects, camera moves and sound. If you upload a song, the ruler marks the beats so you can cut on time.' },
+      { sel: ['#btnExport'], t: 'Export', x: 'Animation comes out as MP4 or GIF; Thumbnail and Art as PNG or JPG. You can add your 🏷️ Signature to the video and export a 🕹️ Sprite sheet to use the animation in your games.' },
+      { sel: ['#workTime'], t: 'Work time', x: 'This clock counts how long you\'ve been working on this project. It only moves while you draw or move things.' },
+      { sel: ['#btnRoom'], t: 'Animate with friends', x: 'Create a room and up to 4 people animate together live. Everyone draws on their own layers.' },
       { sel: ['#btnDraw'], t: 'Drawing mode', x: 'Hides the panels and leaves almost all canvas. F goes in and out.' },
-      { sel: ['#btnProfile'], t: 'Your profile', x: 'You can watch this tutorial again here anytime. You know the basics now, go draw!' }
+      { sel: ['#btnProfile'], t: 'Your profile', x: 'Here you switch profile or language 🌐 and you can watch this tutorial again anytime. You know the basics now, go draw!' }
     ];
     const vis = (el) => !!el && el.getClientRects().length > 0;
     function rectOf(sels) {
