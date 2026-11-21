@@ -1541,7 +1541,7 @@ body.clean .work { grid-template-columns: minmax(0, 1fr) !important; }
   let W = 1280, H = 720, SC = 1;
   const $ = (s) => document.querySelector(s);
   const view = $('#view');
-  const vctx = view.getContext('2d', { desynchronized: true });
+  const vctx = view.getContext('2d'); // sin modo «desynchronized»: en lienzos grandes (2K) mostraba la imagen a medio dibujar y parpadeaba
 
   const COLORS = [
     ['#1d1b1a', '黒'], ['#e0382b', '赤'], ['#2f6fe4', '青'],
