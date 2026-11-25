@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stickman">
 <meta name="color-scheme" content="dark">
 <script>
 (function(){var ME='es',F={"es": "./", "en": "en.html", "ja": "ja.html", "zh": "zh.html", "fr": "fr.html"},L=null;try{L=localStorage.getItem('tp-lang');}catch(e){}
@@ -1189,6 +1193,119 @@ body.is-pro .pro-tag { display: none; }
 [data-brush] { position: relative; }
 body:not(.is-pro) :is([data-brush="rayo"], [data-brush="aura"], [data-brush="glitch"], [data-brush="lava"], [data-brush="cristal"], [data-brush="velocidad"], [data-brush="brillo"])::after { content: '👑'; position: absolute; top: 1px; right: 3px; font-size: 0.58rem; pointer-events: none; }
 body:not(.is-pro) #ed .ed-join:not(.on)::after { content: '👑'; position: absolute; top: -9px; right: -7px; font-size: 0.55rem; pointer-events: none; }
+
+/* =====================================================================
+   v41 · Diseño de tablet (iPad, tabletas 2K y pantallas táctiles)
+   ===================================================================== */
+body.tablet { -webkit-touch-callout: none; }
+body.tablet .btn, body.tablet .rail .rb, body.tablet .rtabs button, body.tablet .tf, body.tablet .fgap { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+
+/* Barra de arriba: nunca se sale de la pantalla */
+body.tablet .top { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; gap: 0.6rem; height: 3.6rem; padding: 0 max(0.7rem, env(safe-area-inset-right, 0px)) 0 max(0.7rem, env(safe-area-inset-left, 0px)); }
+body.tablet .top::-webkit-scrollbar { display: none; }
+body.tablet .top > * { flex: none; }
+body.tablet .top-actions { flex-wrap: nowrap; gap: 0.35rem; }
+body.tablet .top-actions > * { flex: none; }
+body.tablet .top .btn { min-height: 2.75rem; min-width: 2.75rem; }
+body.tablet .name-field { width: clamp(8rem, 18vw, 15rem); min-width: 0; }
+body.tablet .name-field input { width: 100%; font-size: 16px; }
+body.tablet #status { display: none; }
+@media (max-width: 1500px) {
+  body.tablet .top-actions .btn:not(.primary):not(.pro-btn) .t { display: none; }
+  body.tablet .quickbar .btn .t { display: none; }
+}
+@media (max-width: 1050px) {
+  body.tablet .brand span { display: none; }
+  body.tablet .top-actions .btn.primary .t, body.tablet .top-actions .pro-btn span { display: none; }
+  body.tablet .top-actions .vsep { display: none; }
+}
+
+/* Barra de herramientas rápidas: botones grandes, se desliza con el dedo */
+body.tablet .quickbar { gap: 0.25rem; padding: 0.35rem 0.6rem; scrollbar-width: none; }
+body.tablet .quickbar::-webkit-scrollbar { display: none; }
+body.tablet .quickbar .btn { min-height: 2.75rem; min-width: 2.75rem; }
+
+/* Columna de modos y herramientas: botones para el dedo */
+body.tablet .rail { gap: 0.45rem; padding: 0.6rem 0; }
+body.tablet .rail .rb { width: 3.1rem; height: 3.1rem; border-radius: 12px; }
+body.tablet .rail .rb.mode { width: 3.35rem; height: 3.35rem; border-radius: 14px; }
+body.tablet .rail .rb svg { width: 1.45rem; height: 1.45rem; }
+html body.tablet .work, html body.tablet:not(.focus) .work { grid-template-columns: 4.9rem minmax(0, 1fr) 19.5rem; }
+@media (min-width: 761px) {
+  html body.tablet.focus .work { grid-template-columns: 4.9rem minmax(0, 1fr); }
+  body.tablet.focus .tools { left: 4.9rem; }
+  body.tablet.focus .edge.l { left: 4.9rem; }
+}
+@media (min-width: 761px) and (max-height: 820px) {
+  body.tablet .rail { gap: 0.3rem; padding: 0.4rem 0; }
+  body.tablet .rail .rb { width: 2.75rem; height: 2.75rem; }
+  body.tablet .rail .rb.mode { width: 2.9rem; height: 2.9rem; }
+}
+body.tablet #railTip { font-size: 0.95rem; padding: 0.5rem 0.8rem; border-radius: 10px; }
+body.tablet .rtabs button { min-height: 3rem; font-size: 0.88rem; }
+
+/* Cajones del modo dibujo: más anchos y las pestañas fáciles de tocar */
+body.tablet.focus .edge { width: 2.6rem; height: 6rem; margin-top: -3rem; }
+
+/* Tira de frames: todo se toca bien con el dedo */
+body.tablet .tl-head { gap: 0.35rem; }
+body.tablet .tl-head .btn { min-height: 2.75rem; }
+body.tablet .tl-head .btn.icon { min-width: 2.75rem; }
+body.tablet .tl-head #btnPreview .t, body.tablet .tl-head #btnCopyFrame .t, body.tablet .tl-head #btnPasteFrame .t { display: none; }
+body.tablet #frames { gap: 0.9rem; padding: 0.4rem 0.4rem 0.6rem 1.1rem; }
+body.tablet .tf .fbar { height: 22px; font-size: 0.7rem; }
+body.tablet .tf .fthumb { width: calc(6.2rem * var(--tlz, 1)); height: calc(3.5rem * var(--tlz, 1)); }
+body.tablet .tf .fdots { top: 25px; width: 2.5rem; height: 2.5rem; }
+body.tablet .tf .fgap { opacity: 1; width: 1.75rem; height: 1.75rem; left: -0.45rem; top: 11px; font-size: 1.1rem; }
+body.tablet .tf .fres { width: 22px; right: -11px; top: 35%; }
+body.tablet .tf .fres::after { left: 8px; width: 6px; }
+body.tablet .tf .flp { padding: 5px 9px; font-size: 0.68rem; }
+body.tablet .fadd { min-height: 3.2rem; }
+body.tablet .tlzoom input { width: 6.5rem; }
+
+/* Menús y ventanas */
+body.tablet #menu button { min-height: 3.1rem; font-size: 0.95rem; }
+body.tablet .pro-card .btn { min-height: 3rem; }
+
+/* Tableta vertical (iPad parado) */
+@media (orientation: portrait) and (min-width: 600px) {
+  body.tablet .tl-head { flex-wrap: wrap; overflow: visible; }
+  body.tablet .tl-head .fps { flex: 1 1 12rem; }
+  body.tablet .tl-head .fcount { display: none; }
+  html body.tablet:not(.focus) .work { grid-template-columns: 4.9rem minmax(0, 1fr) 17rem; }
+}
+
+/* Editor de video en tableta */
+body.tablet #ed .ed-top .btn, body.tablet #ed .ed-bar .btn.small { min-height: 2.75rem; }
+body.tablet #ed .ed-tabs button { min-height: 3rem; }
+body.tablet #ed .ed-clip, body.tablet #ed .ed-bar2 { touch-action: none; }
+body.tablet #ed .ed-join { width: 34px; height: 34px; margin: -17px 0 0 -17px; }
+body.tablet .ed-insp .ei-row { grid-template-columns: 5rem 2.2rem minmax(0, 1fr) 3rem; gap: 0.45rem; min-height: 2.75rem; }
+body.tablet .ed-insp .ei-kf { width: 2.2rem; height: 2.2rem; font-size: 0.95rem; }
+body.tablet .ed-insp .ei-nav .btn, body.tablet .ed-insp > .btn { min-height: 2.75rem; }
+body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
+@media (max-width: 1100px) {
+  html body.tablet #ed { grid-template-columns: 0 minmax(0, 1fr) 16rem; }
+  html body.tablet #ed .ed-lib { display: none; }
+  html body.tablet #ed.lib-open { grid-template-columns: 15rem minmax(0, 1fr) 16rem; }
+  html body.tablet #ed.lib-open .ed-lib { display: flex; }
+  #edLibToggle { display: inline-flex !important; }
+}
+#edLibToggle { display: none; }
+@media (orientation: portrait) and (min-width: 600px) and (max-width: 1100px) {
+  html body.tablet #ed { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(14rem, 1fr) auto auto auto; overflow-y: auto; }
+  html body.tablet #ed.lib-open { grid-template-columns: minmax(0, 1fr); }
+  html body.tablet #ed .ed-stage { grid-column: 1; grid-row: 2; }
+  html body.tablet #ed.lib-open .ed-lib { grid-column: 1; grid-row: 5; max-height: 40vh; border-right: 0; border-top: 1px solid var(--line); }
+  html body.tablet #ed .ed-insp { grid-column: 1; grid-row: 5; max-height: 38vh; border-left: 0; border-top: 1px solid var(--line); }
+  html body.tablet #ed.lib-open .ed-insp { display: none; }
+}
+
+/* Paneles de Degradado, Licuar y asistente: al lado de la columna, sin taparla */
+@media (min-width: 761px) {
+  #grPanel, #lqPanel, #wzPanel { left: 5.2rem !important; top: 7.3rem !important; max-height: calc(100vh - 8.3rem) !important; overflow-y: auto !important; }
+  body.tablet #grPanel, body.tablet #lqPanel, body.tablet #wzPanel { left: 5.6rem !important; }
+}
 </style>
 
 </head>
@@ -11879,7 +11996,7 @@ body:not(.is-pro) #ed .ed-join:not(.on)::after { content: '👑'; position: abso
     function clipDown(e, c, el, part) {
       if (e.button !== 0) return;
       stop();
-      sel = { kind: 'clip', id: c.id }; lastProj = c.proj;
+      sel = { kind: 'clip', id: c.id }; if (!isM(c.proj)) lastProj = c.proj;
       for (const x of rowV.querySelectorAll('.ed-clip.sel')) x.classList.remove('sel');
       el.classList.add('sel'); syncBtns();
       const in0 = c.in, out0 = c.out, dmax = durOf(c.proj);
@@ -12034,7 +12151,7 @@ body:not(.is-pro) #ed .ed-join:not(.on)::after { content: '👑'; position: abso
     }
     $('#edDel').addEventListener('click', del);
     $('#edEdit').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); if (c) goAnim(c.proj); });
-    $('#edAnim').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); goAnim(c ? c.proj : (lastProj || state.id)); });
+    $('#edAnim').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); let p = c ? c.proj : lastProj; if (!p || isM(p) || (p !== state.id && !recOf(p))) p = state.id; goAnim(p); });
 
     /* --- sonido y voz --- */
     async function addSound(file, at, name) {
@@ -13011,12 +13128,12 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
   if (!work || $('.rail')) return;
   const L = (document.documentElement.lang || 'es').slice(0, 2);
   const T = {
-    es: { mode: 'Modo', draw: 'Dibujo', anim: 'Animar', skel: 'Esqueleto', video: 'Editor de video', pen: 'Pincel', eraser: 'Borrador', fill: 'Relleno', lasso: 'Lazo', shapes: 'Formas', text: 'Texto', sel: 'Selección', pick: 'Cuentagotas', cam: 'Cámara', img: 'Imagen', tTool: 'Herramienta', tFx: 'Efectos', tLay: 'Capas', tap2: 'Toca otra vez para usar' },
-    en: { mode: 'Mode', draw: 'Draw', anim: 'Animate', skel: 'Skeleton', video: 'Video editor', pen: 'Brush', eraser: 'Eraser', fill: 'Fill', lasso: 'Lasso', shapes: 'Shapes', text: 'Text', sel: 'Selection', pick: 'Eyedropper', cam: 'Camera', img: 'Image', tTool: 'Tool', tFx: 'Effects', tLay: 'Layers', tap2: 'Tap again to use' },
-    fr: { mode: 'Mode', draw: 'Dessin', anim: 'Animer', skel: 'Squelette', video: 'Montage vidéo', pen: 'Pinceau', eraser: 'Gomme', fill: 'Remplissage', lasso: 'Lasso', shapes: 'Formes', text: 'Texte', sel: 'Sélection', pick: 'Pipette', cam: 'Caméra', img: 'Image', tTool: 'Outil', tFx: 'Effets', tLay: 'Calques', tap2: 'Touchez encore pour utiliser' },
-    ja: { mode: 'モード', draw: '描画', anim: 'アニメ', skel: 'スケルトン', video: '動画編集', pen: 'ブラシ', eraser: '消しゴム', fill: '塗りつぶし', lasso: 'なげなわ', shapes: '図形', text: 'テキスト', sel: '選択', pick: 'スポイト', cam: 'カメラ', img: '画像', tTool: 'ツール', tFx: 'エフェクト', tLay: 'レイヤー', tap2: 'もう一度タップで使用' }
+    es: { mode: 'Modo', draw: 'Dibujo', anim: 'Animar', skel: 'Esqueleto', video: 'Editor de video', pen: 'Pincel', eraser: 'Borrador', fill: 'Relleno', lasso: 'Lazo', shapes: 'Formas', text: 'Texto', sel: 'Selección', grad: 'Degradado y fondos', liq: 'Licuar', pick: 'Cuentagotas', cam: 'Cámara', img: 'Imagen', tTool: 'Herramienta', tFx: 'Efectos', tLay: 'Capas', tap2: 'Toca otra vez para usar' },
+    en: { mode: 'Mode', draw: 'Draw', anim: 'Animate', skel: 'Skeleton', video: 'Video editor', pen: 'Brush', eraser: 'Eraser', fill: 'Fill', lasso: 'Lasso', shapes: 'Shapes', text: 'Text', sel: 'Selection', grad: 'Gradient and backgrounds', liq: 'Liquify', pick: 'Eyedropper', cam: 'Camera', img: 'Image', tTool: 'Tool', tFx: 'Effects', tLay: 'Layers', tap2: 'Tap again to use' },
+    fr: { mode: 'Mode', draw: 'Dessin', anim: 'Animer', skel: 'Squelette', video: 'Montage vidéo', pen: 'Pinceau', eraser: 'Gomme', fill: 'Remplissage', lasso: 'Lasso', shapes: 'Formes', text: 'Texte', sel: 'Sélection', grad: 'Dégradé et fonds', liq: 'Liquéfier', pick: 'Pipette', cam: 'Caméra', img: 'Image', tTool: 'Outil', tFx: 'Effets', tLay: 'Calques', tap2: 'Touchez encore pour utiliser' },
+    ja: { mode: 'モード', draw: '描画', anim: 'アニメ', skel: 'スケルトン', video: '動画編集', pen: 'ブラシ', eraser: '消しゴム', fill: '塗りつぶし', lasso: 'なげなわ', shapes: '図形', text: 'テキスト', sel: '選択', grad: 'グラデーションと背景', liq: 'ゆがみ', pick: 'スポイト', cam: 'カメラ', img: '画像', tTool: 'ツール', tFx: 'エフェクト', tLay: 'レイヤー', tap2: 'もう一度タップで使用' }
   }[L] || null;
-  const t = T || { mode: 'Modo', draw: 'Dibujo', anim: 'Animar', skel: 'Esqueleto', video: 'Editor de video', pen: 'Pincel', eraser: 'Borrador', fill: 'Relleno', lasso: 'Lazo', shapes: 'Formas', text: 'Texto', sel: 'Selección', pick: 'Cuentagotas', cam: 'Cámara', img: 'Imagen', tTool: 'Herramienta', tFx: 'Efectos', tLay: 'Capas', tap2: 'Toca otra vez para usar' };
+  const t = T || { mode: 'Modo', draw: 'Dibujo', anim: 'Animar', skel: 'Esqueleto', video: 'Editor de video', pen: 'Pincel', eraser: 'Borrador', fill: 'Relleno', lasso: 'Lazo', shapes: 'Formas', text: 'Texto', sel: 'Selección', grad: 'Degradado y fondos', liq: 'Licuar', pick: 'Cuentagotas', cam: 'Cámara', img: 'Imagen', tTool: 'Herramienta', tFx: 'Efectos', tLay: 'Capas', tap2: 'Toca otra vez para usar' };
 
   const ic = {
     anim: '<circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M12 10l-5 3M12 10l5 3M12 15l-4 6M12 15l4 6"/>',
@@ -13031,7 +13148,9 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
     sel: '<rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/>',
     pick: '<path d="M15 4l5 5-2 2-5-5z"/><path d="M13 8l-8 8v3h3l8-8"/>',
     cam: '<rect x="3" y="7" width="13" height="11" rx="2"/><path d="M16 11l5-3v9l-5-3"/>',
-    img: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 8"/>'
+    img: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 8"/>',
+    grad: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16M4 15h16" stroke-dasharray="2 2"/>',
+    liq: '<path d="M5 4h14v6c0 2-1.5 2-1.5 4s1.5 2 1.5 4v2H5z"/><path d="M9 13c0 1.5 1 3 1 4"/>'
   };
   const pressed = (sel) => { const b = $(sel); return !!b && b.getAttribute('aria-pressed') === 'true'; };
   const key = (k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
@@ -13051,6 +13170,8 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
     { id: 'text', tip: t.text, k: 'T', act: () => $('#toolText').click(), on: () => pressed('#toolText') },
     { id: 'sel', tip: t.sel, k: 'V', act: () => $('#toolSel').click(), on: () => pressed('#toolSel') },
     { id: 'pick', tip: t.pick, k: 'I', act: () => $('#btnPick').click(), on: () => pressed('#btnPick') },
+    { id: 'grad', tip: t.grad, act: () => $('#toolGrad').click(), on: () => { const g = document.getElementById('grPanel'); return !!g && !!g.offsetParent; } },
+    { id: 'liq', tip: t.liq, act: () => $('#toolLiq').click(), on: () => { const g = document.getElementById('lqPanel'); return !!g && !!g.offsetParent; } },
     { sep: 1 },
     { id: 'cam', tip: t.cam, k: 'C', act: () => $('#btnCam').click(), on: () => pressed('#btnCam') },
     { id: 'img', tip: t.img, act: () => $('#toolImg').click(), on: () => false }
@@ -13138,6 +13259,42 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
   new MutationObserver(sync).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['aria-pressed'] });
   sync();
   window.dispatchEvent(new Event('resize'));
+})();
+</script>
+<script>
+/* v41 · Diseño de tablet: detecta iPad / tabletas táctiles y ajusta la app */
+(function () {
+  const ua = navigator.userAgent || '';
+  const iPadOS = /Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1;
+  const coarse = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const isTablet = coarse || iPadOS || /iPad|Android(?!.*Mobile)|Tablet/i.test(ua);
+  if (!isTablet) return;
+  document.body.classList.add('tablet');
+  // iPad con teclado y trackpad no se reporta como táctil: arranca igual en modo dibujo
+  if (iPadOS && !coarse && window.innerWidth < 1400 && !document.body.classList.contains('focus')) {
+    const b = document.getElementById('btnDraw');
+    if (b) b.click();
+  }
+  const L = (document.documentElement.lang || 'es').slice(0, 2);
+  const T = { es: 'Archivos y escenas', en: 'Files and scenes', fr: 'Fichiers et scènes', ja: 'ファイルとシーン' }[L] || 'Archivos y escenas';
+  // Editor: en pantallas angostas la biblioteca se abre y se cierra con un botón
+  const ed = document.getElementById('ed'), anchor = document.getElementById('edImport') || document.getElementById('edAdd');
+  if (ed && anchor && !document.getElementById('edLibToggle')) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn small'; b.id = 'edLibToggle';
+    b.setAttribute('aria-pressed', 'false'); b.title = T; b.setAttribute('aria-label', T);
+    b.textContent = '📚 ' + T;
+    b.addEventListener('click', () => {
+      const on = !ed.classList.contains('lib-open');
+      ed.classList.toggle('lib-open', on);
+      b.setAttribute('aria-pressed', String(on));
+      window.dispatchEvent(new Event('resize'));
+    });
+    anchor.before(b);
+  }
+  // Recalcula el tamaño del lienzo al girar la tableta
+  const refit = () => { window.dispatchEvent(new Event('resize')); };
+  window.addEventListener('orientationchange', () => { setTimeout(refit, 120); setTimeout(refit, 500); });
 })();
 </script>
 </body>
