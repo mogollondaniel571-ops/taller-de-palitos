@@ -1306,6 +1306,12 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
   #grPanel, #lqPanel, #wzPanel { left: 5.2rem !important; top: 7.3rem !important; max-height: calc(100vh - 8.3rem) !important; overflow-y: auto !important; }
   body.tablet #grPanel, body.tablet #lqPanel, body.tablet #wzPanel { left: 5.6rem !important; }
 }
+
+/* v42 · Fuentes importadas */
+.fonts-extra { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.fonts-extra .btn { flex: 1 1 auto; }
+.fonts .font-own { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; font-size: 0.95rem; }
+#textPanel { max-height: calc(100vh - 2rem); overflow-y: auto; }
 </style>
 
 </head>
@@ -3943,6 +3949,107 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     });
     $('#textFonts').appendChild(b);
   }
+  /* v42 · Fuentes importadas (TTF, OTF, WOFF, WOFF2): se guardan en este navegador y salen junto a las demás */
+  (function () {
+    const box = $('#textFonts');
+    if (!box || !window.FontFace || !window.indexedDB) return;
+    const L = (document.documentElement.lang || 'es').slice(0, 2);
+    const D = {
+      es: { imp: '＋ Importar fuente', tip: 'Usa tus propias letras: archivos .ttf, .otf, .woff o .woff2', del: '🗑️ Quitar «{n}»', ok: '🔤 Fuente «{n}» lista. Ya puedes escribir con ella.', bad: 'No pude abrir «{n}». Usa un archivo .ttf, .otf, .woff o .woff2.', big: '«{n}» pesa más de 15 MB.', gone: 'Fuente «{n}» quitada. El texto que ya pusiste no cambia.', dup: 'Ya tienes «{n}».' },
+      en: { imp: '＋ Import font', tip: 'Use your own letters: .ttf, .otf, .woff or .woff2 files', del: '🗑️ Remove “{n}”', ok: '🔤 Font “{n}” ready. You can write with it now.', bad: 'I couldn’t open “{n}”. Use a .ttf, .otf, .woff or .woff2 file.', big: '“{n}” is larger than 15 MB.', gone: 'Font “{n}” removed. Text you already placed doesn’t change.', dup: 'You already have “{n}”.' },
+      fr: { imp: '＋ Importer une police', tip: 'Utilise tes propres lettres : fichiers .ttf, .otf, .woff ou .woff2', del: '🗑️ Retirer « {n} »', ok: '🔤 Police « {n} » prête. Tu peux écrire avec.', bad: 'Impossible d’ouvrir « {n} ». Utilise un fichier .ttf, .otf, .woff ou .woff2.', big: '« {n} » pèse plus de 15 Mo.', gone: 'Police « {n} » retirée. Le texte déjà posé ne change pas.', dup: 'Tu as déjà « {n} ».' },
+      ja: { imp: '＋ フォントを読み込む', tip: '自分のフォントを使えます：.ttf・.otf・.woff・.woff2', del: '🗑️ 「{n}」を削除', ok: '🔤 フォント「{n}」を追加しました。すぐに使えます。', bad: '「{n}」を開けません。.ttf・.otf・.woff・.woff2 を使ってください。', big: '「{n}」は 15 MB を超えています。', gone: 'フォント「{n}」を削除しました。置いた文字は変わりません。', dup: '「{n}」はもうあります。' }
+    };
+    const t = (k, n) => ((D[L] || D.es)[k] || D.es[k]).replace('{n}', n || '');
+    // base de datos propia, aparte de la de los proyectos
+    const db = new Promise((ok, no) => {
+      const r = indexedDB.open('tp-fonts', 1);
+      r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains('fonts')) r.result.createObjectStore('fonts', { keyPath: 'id' }); };
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => no(r.error);
+    });
+    const tx = async (mode) => (await db).transaction('fonts', mode).objectStore('fonts');
+    const wrap = (q) => new Promise((ok, no) => { q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error); });
+    const recs = new Map();
+
+    const extra = document.createElement('div');
+    extra.className = 'fonts-extra';
+    const imp = document.createElement('button');
+    imp.type = 'button'; imp.className = 'btn small'; imp.textContent = t('imp'); imp.title = t('tip');
+    const del = document.createElement('button');
+    del.type = 'button'; del.className = 'btn small danger'; del.hidden = true;
+    const file = document.createElement('input');
+    file.type = 'file'; file.multiple = true; file.hidden = true;
+    file.accept = '.ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2';
+    extra.append(imp, del, file);
+    box.after(extra);
+    imp.addEventListener('click', () => file.click());
+
+    function pick(id) {
+      textFont = id;
+      for (const o of box.children) o.setAttribute('aria-pressed', String(o.dataset.font === id));
+      if (textPend) { textPend.font = id; requestRender(); }
+      syncDel();
+    }
+    function syncDel() {
+      const r = recs.get(textFont);
+      del.hidden = !r;
+      if (r) del.textContent = t('del', r.name);
+    }
+    for (const o of box.children) o.addEventListener('click', () => setTimeout(syncDel, 0));
+    function addFont(r) {
+      if (!FONTS.some((f) => f[0] === r.id)) FONTS.push([r.id, r.name, "'" + r.fam + "', system-ui"]);
+      recs.set(r.id, r);
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn small font-own'; b.textContent = r.name; b.dataset.font = r.id;
+      b.title = r.name; b.style.fontFamily = "'" + r.fam + "', system-ui";
+      b.setAttribute('aria-pressed', String(r.id === textFont));
+      b.addEventListener('click', () => pick(r.id));
+      box.appendChild(b);
+    }
+    async function loadFace(r) {
+      const face = new FontFace(r.fam, await r.blob.arrayBuffer());
+      await face.load();
+      document.fonts.add(face);
+    }
+    // las que ya importaste antes
+    (async () => {
+      try {
+        const all = await wrap((await tx('readonly')).getAll());
+        all.sort((a, b) => (a.at || 0) - (b.at || 0));
+        for (const r of all) { try { await loadFace(r); addFont(r); } catch (_) {} }
+        syncDel();
+      } catch (_) {}
+    })();
+    file.addEventListener('change', async (e) => {
+      const fs = [...(e.target.files || [])];
+      e.target.value = '';
+      let last = null;
+      for (const f of fs) {
+        const name = (f.name || 'Fuente').replace(/\.(ttf|otf|woff2?)$/i, '').replace(/[-_]+/g, ' ').trim().slice(0, 24) || 'Fuente';
+        if (f.size > 15 * 1024 * 1024) { toast(t('big', name)); continue; }
+        if ([...recs.values()].some((r) => r.name === name && r.size === f.size)) { toast(t('dup', name)); continue; }
+        const id = 'own-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        const r = { id, name, fam: 'tpf ' + id, blob: f, size: f.size, at: Date.now() };
+        try { await loadFace(r); } catch (_) { toast(t('bad', f.name || name)); continue; }
+        try { await wrap((await tx('readwrite')).put(r)); } catch (_) {}
+        addFont(r); last = r;
+      }
+      if (last) { pick(last.id); toast(t('ok', last.name)); }
+    });
+    del.addEventListener('click', async () => {
+      const r = recs.get(textFont);
+      if (!r) return;
+      try { await wrap((await tx('readwrite')).delete(r.id)); } catch (_) {}
+      recs.delete(r.id);
+      const k = FONTS.findIndex((f) => f[0] === r.id);
+      if (k >= 0) FONTS.splice(k, 1);
+      const b = box.querySelector('[data-font="' + r.id + '"]');
+      if (b) b.remove();
+      pick(FONTS[0][0]);
+      toast(t('gone', r.name));
+    });
+  })();
   $('#textVal').addEventListener('input', () => { if (textPend) { textPend.text = $('#textVal').value; requestRender(); } });
   $('#textSize').addEventListener('input', (e) => {
     $('#textSizeOut').textContent = e.target.value;
