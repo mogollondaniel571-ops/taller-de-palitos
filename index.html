@@ -580,6 +580,7 @@ body.no-tracks .ftr, body.no-tracks .tl-lab { display: none; }
 .ed-labels span { display: flex; align-items: center; padding-left: 0.55rem; font: 700 0.72rem/1 var(--font-body); color: #fff; border-bottom: 1px solid rgba(255, 255, 255, 0.55); box-sizing: border-box; }
 .ed-labels .l-r, .ed-ruler { height: 26px; }
 .ed-labels .l-v, .ed-row.v { height: 74px; }
+.ed-labels .l-o, .ed-row.o { height: 32px; }
 .ed-labels .l-f, .ed-row.f { height: 32px; }
 .ed-labels .l-a, .ed-row.a { height: 48px; }
 .ed-labels .l-c, .ed-row.c { height: 32px; }
@@ -609,6 +610,7 @@ body.no-tracks .ftr, body.no-tracks .tl-lab { display: none; }
 .ed-bar2 { position: absolute; top: 4px; bottom: 4px; border-radius: 6px; overflow: hidden; cursor: grab; box-sizing: border-box; border: 1.5px solid transparent; font: 700 0.66rem/1 var(--font-body); color: #fff; display: flex; align-items: center; padding: 0 8px; white-space: nowrap; }
 .ed-bar2 > span { overflow: hidden; text-overflow: ellipsis; pointer-events: none; position: relative; z-index: 1; text-shadow: 0 1px 2px #000; }
 .ed-bar2.fx { background: #b8323a; }
+.ed-bar2.ov { background: #5b3fb5; }
 .ed-bar2.cam { background: #b7791f; }
 .ed-bar2.au { background: #17694a; }
 .ed-bar2.au canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.55; pointer-events: none; }
@@ -1154,6 +1156,7 @@ html body #ed .ed-row { border-bottom: 1px solid #2b2733; }
 html body #ed .ed-clip { background-color: #3b3450; border-color: #5d5378; }
 html body #ed .ed-clip.sel, html body #ed .ed-bar2.sel { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(217, 204, 255, 0.35); }
 html body #ed .ed-bar2.fx { background: #a94a66; }
+html body #ed .ed-bar2.ov { background: #6d54c2; }
 html body #ed .ed-bar2.cam { background: #ad7741; }
 html body #ed .ed-bar2.au { background: #2c7d61; }
 html body #ed .ed-join { width: 26px; height: 26px; top: 50%; bottom: auto; margin: -13px 0 0 -13px; border-radius: 50%; background: var(--raise2); border: 2px solid var(--accent); font-weight: 800; z-index: 6; }
@@ -1649,11 +1652,12 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     <span class="ed-zoom" title="Acercar o alejar la línea de tiempo (también Ctrl + rueda)">🔍<input id="edZoom" type="range" min="10" max="400" value="60" aria-label="Zoom de la línea de tiempo"></span>
   </div>
   <div class="ed-tl">
-    <div class="ed-labels" aria-hidden="true"><span class="l-r"></span><span class="l-v">🎞️ Escenas</span><span class="l-f">⚡ Efectos</span><span class="l-c">🎥 Cámara</span><span class="l-a">🔊 Sonido</span></div>
+    <div class="ed-labels" aria-hidden="true"><span class="l-r"></span><span class="l-v">🎞️ Escenas</span><span class="l-o">🧩 Encima</span><span class="l-f">⚡ Efectos</span><span class="l-c">🎥 Cámara</span><span class="l-a">🔊 Sonido</span></div>
     <div class="ed-scroll" id="edScroll">
       <div class="ed-inner" id="edInner">
         <div class="ed-ruler" id="edRuler"></div>
         <div class="ed-row v" id="edRowV"></div>
+        <div class="ed-row o" id="edRowO"></div>
         <div class="ed-row f" id="edRowF"></div>
         <div class="ed-row c" id="edRowC"></div>
         <div class="ed-row a" id="edRowA"></div>
@@ -11748,7 +11752,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
   const ED = (() => {
     const ed = $('#ed'), view = $('#edView'), vx = view.getContext('2d');
     const scroll = $('#edScroll'), inner = $('#edInner'), ruler = $('#edRuler');
-    const rowV = $('#edRowV'), rowF = $('#edRowF'), rowC = $('#edRowC'), rowA = $('#edRowA'), head = $('#edHead');
+    const rowV = $('#edRowV'), rowO = $('#edRowO'), rowF = $('#edRowF'), rowC = $('#edRowC'), rowA = $('#edRowA'), head = $('#edHead');
     const FX_NAME = { shk1: '📳 Temblor suave', shk2: '📳 Temblor fuerte', flash: '💥 Flash blanco', imp: '⚡ Impacto anime', vign: '🕶️ Viñeta', bw: '⚫ Blanco y negro', sepia: '🟤 Sepia', blur: '🌫️ Desenfoque', bri: '🔆 Más brillo', dark: '🌑 Oscurecer', blink: '💡 Parpadeo', invert: '🔄 Negativo', sat: '🌈 Colores vivos', bars: '🎞️ Barras de cine', glitch: '👾 Glitch', rgb: '🔴 Separación RGB', vhs: '📼 VHS', pixel: '🟦 Pixelar', mirror: '🪞 Espejo', wave: '🌊 Ondas', zblur: '💨 Zoom borroso', duo: '💜 Neón duotono', grain: '🎥 Grano de película', scan: '📺 Pantalla vieja', cinema: '🎬 Color de cine' };
     const EFX_LIST = [['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]].concat(['vign','bw','sepia','blur','bri','dark','blink','invert','sat','bars','glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema'].map((k) => [k, 1]));
     const EFXP = new Set(['glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema']);
@@ -11843,7 +11847,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const CAM_NAME = { zin: '🔍 Acercar lento', zout: '🔭 Alejar lento', punch: '💢 Golpe de zoom', panl: '⬅ Paneo a la izquierda', panr: '➡ Paneo a la derecha', up: '⬆ Subir la cámara', down: '⬇ Bajar la cámara' };
     const CAM_DUR = { zin: 2, zout: 2, punch: 0.6, panl: 2, panr: 2, up: 1.5, down: 1.5 };
     const MIN = 1 / 24;
-    let E = { clips: [], fx: [], cam: [], audio: [], ratio: 'auto', media: [], comp: {} };
+    let E = { clips: [], fx: [], cam: [], audio: [], ratio: 'auto', media: [], comp: {}, ov: [] };
     const RATIOS = { auto: ['Igual que mis animaciones', 0, 0], '16:9': ['16:9 · YouTube', 1920, 1080], '9:16': ['9:16 · TikTok', 1080, 1920], '1:1': ['1:1 · Cuadrado', 1080, 1080], '4:5': ['4:5 · Instagram', 1080, 1350], '4:3': ['4:3 · Clásico', 1440, 1080] };
     const resWH = () => { const r = RATIOS[E.ratio] || RATIOS.auto; return r[1] ? [r[1], r[2]] : [W, H]; };
     const ratioName = (rw, rh) => { for (const k of Object.keys(RATIOS)) { const r = RATIOS[k]; if (r[1] && Math.abs(r[1] / r[2] - rw / rh) < 0.01) return k; } return ''; };
@@ -11878,6 +11882,11 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function redo() { if (!HX.r.length) return; HX.u.push(HX.cur); hApply(HX.r.pop()); }
     function parseTL(o, T0) {
       const num = (v, d) => (isFinite(+v) ? +v : d);
+      if (Array.isArray(o.ov) && T0.ov) for (const c of o.ov.slice(0, 100)) {
+        if (!c || typeof c.proj !== 'string' || c.proj.slice(0, 2) !== 'm:') continue;
+        const dur = clampV(num(c.dur, 3), 0.1, 3600), i0 = Math.max(0, num(c.in, 0));
+        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined });
+      }
       for (const f of Array.isArray(o.cam) ? o.cam.slice(0, 200) : []) {
         if (!f || !CAM_NAME[f.k]) continue;
         T0.cam.push({ id: String(f.id || newId()), k: f.k, start: Math.max(0, num(f.start, 0)), dur: clampV(num(f.dur, 1), 0.1, 600), tk: clampV(num(f.tk, 0) | 0, 0, 7) });
@@ -11885,7 +11894,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const c of Array.isArray(o.clips) ? o.clips.slice(0, 200) : []) {
         if (!c || typeof c.proj !== 'string') continue;
         const tr = c.tr && TR_KINDS.includes(c.tr.k) ? { k: c.tr.k, d: clampV(num(c.tr.d, 0.6), 0.2, 1.3) } : null;
-        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150) });
+        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150) });
       }
       for (const f of Array.isArray(o.fx) ? o.fx.slice(0, 200) : []) {
         if (!f || !FX_NAME[f.k]) continue;
@@ -11901,7 +11910,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function loadE1() {
       let o = null;
       try { o = JSON.parse(localStorage.getItem(storeKey()) || 'null'); } catch (_) { o = null; }
-      E = { clips: [], fx: [], cam: [], audio: [], ratio: 'auto', media: [], comp: {} };
+      E = { clips: [], fx: [], cam: [], audio: [], ratio: 'auto', media: [], comp: {}, ov: [] };
       ROOT = null; path = []; multi.clear();
       if (!o || typeof o !== 'object') return;
       if (RATIOS[o.ratio]) E.ratio = o.ratio;
@@ -11924,7 +11933,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const durOf = (proj) => (isC(proj) ? Math.max(MIN, compOf(proj) ? totalTL(compOf(proj)) : 0) : isM(proj) ? mDur(proj) : proj === state.id ? totalSecs() : (recOf(proj) ? recDur(recOf(proj)) : 0));
     const nameOf = (proj) => (isC(proj) ? ((compOf(proj) || {}).name || e4('cmpName')) : isM(proj) ? (medOf(proj) || {}).name : proj === state.id ? state.name : (recOf(proj) ? recOf(proj).name : 'Escena')) || 'Escena';
     const thumbOf = (proj) => { if (isC(proj)) { const sb = compOf(proj), f0 = sb && sb.clips[0]; return f0 ? thumbOf(f0.proj) : ''; } if (isM(proj)) return (medOf(proj) || {}).thumb || ''; const r = recOf(proj); return r && typeof r.thumb === 'string' ? r.thumb : ''; };
-    const lenOf = (c) => Math.max(MIN, (c.out - c.in) / c.spd);
+    const lenOf = (c) => (c.start != null ? Math.max(MIN, c.dur) : Math.max(MIN, (c.out - c.in) / c.spd));
     function layout(TL) { TL = TL || E; let t = 0; return TL.clips.map((c) => { const o = { c, s: t, e: t + lenOf(c) }; t = o.e; return o; }); }
     const videoEnd = () => { const L = layout(); return L.length ? L[L.length - 1].e : 0; };
     function totalE() {
@@ -11932,6 +11941,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const a of E.audio) t = Math.max(t, a.start + (a.out - a.in));
       for (const f of E.fx) t = Math.max(t, f.start + f.dur);
       for (const f of E.cam) t = Math.max(t, f.start + f.dur);
+      for (const f of (E.ov || [])) t = Math.max(t, f.start + f.dur);
       return t;
     }
     const liveScene = () => ({ frames: state.frames, rig: state.rig, fps: state.fps, own: false, cache: liveCache });
@@ -12031,9 +12041,25 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     // La transición queda centrada en el corte: mitad sobre el final de la escena que sale y mitad sobre el inicio de la que entra.
     const trHalf = (b, a) => Math.min(b.c.tr.d / 2, (a.e - a.s) / 2, (b.e - b.s) / 2);
+    let ovT = false;
+    const vidUsed = new Set(), bufO = document.createElement('canvas');
+    // Clips puestos encima del video (fotos sin fondo, videos): se dibujan con fondo transparente.
+    function ovDraw(ax, Tg, w, h, TL) {
+      const list = TL.ov.filter((o) => !o.hid && Tg >= o.start && Tg < o.start + o.dur).sort((a, b) => (a.tk | 0) - (b.tk | 0));
+      for (const o of list) {
+        const e = medEl(o.proj.slice(2)); if (!e) continue;
+        let local = o.in + (Tg - o.start);
+        if (e.kind === 'vid') local = Math.min(local, Math.max(0, (e.dur || local) - 0.05));
+        const ox = sized(bufO, w, h); ox.setTransform(1, 0, 0, 1, 0, 0); ox.globalAlpha = 1; ox.clearRect(0, 0, w, h);
+        ovT = true;
+        try { if (mediaShot(ox, o, local, w, h)) applyTf(ox, o, local, w, h); } finally { ovT = false; }
+        ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = 1; ax.drawImage(bufO, 0, 0); ax.restore();
+      }
+    }
     // Devuelve false si alguna escena todavía está cargando.
     function drawE(ctx, Tg, w, h, getSc, TL, depth) {
       TL = TL || E; depth = depth | 0;
+      if (!depth) vidUsed.clear();
       const L = layout(TL);
       const ax = sized(depth ? dbuf(depth, 'A') : bufA, w, h);
       let ok = true;
@@ -12058,6 +12084,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           else ok = false;
         }
       }
+      if (!depth && TL.ov && TL.ov.length) ovDraw(ax, Tg, w, h, TL);
       // efectos de la pista roja
       let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0; const act = [];
       for (const f of TL.fx) {
@@ -12097,9 +12124,72 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       ctx.drawImage(ax.canvas, sx + cx - ((zz - 1) * w) / 2, sy + cy - ((zz - 1) * h) / 2, w * zz, h * zz);
       if (flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + flash.toFixed(3) + ')'; ctx.fillRect(0, 0, w, h); }
       ctx.restore();
+      if (!depth && playing && !edExp) for (const o of medEls.values()) if (o.kind === 'vid' && !vidUsed.has(o) && !o.el.paused) o.el.pause();
       return ok;
     }
     function previewSize() { const [rw, rh] = resWH(), k = Math.min(1, 960 / Math.max(rw, rh)); return [Math.round(rw * k), Math.round(rh * k)]; }
+    /* --- caja con 4 puntitos sobre la vista previa: mover y escalar --- */
+    const box = document.createElement('div');
+    box.style.cssText = 'position:absolute;display:none;z-index:4;box-sizing:border-box;border:1.5px solid #9b82ff;pointer-events:none';
+    const boxBody = document.createElement('div'); boxBody.style.cssText = 'position:absolute;inset:0;cursor:move;pointer-events:auto'; box.appendChild(boxBody);
+    const boxHd = [['nw', -1, -1, 'nwse-resize'], ['ne', 1, -1, 'nesw-resize'], ['sw', -1, 1, 'nesw-resize'], ['se', 1, 1, 'nwse-resize']].map(([id, sx, sy, cur]) => {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:absolute;width:13px;height:13px;margin:-7px 0 0 -7px;background:#fff;border:2px solid #7c5cff;border-radius:3px;pointer-events:auto;cursor:' + cur + ';touch-action:none;left:' + (sx < 0 ? '0' : '100%') + ';top:' + (sy < 0 ? '0' : '100%');
+      d.dataset.h = id; box.appendChild(d); return d;
+    });
+    boxBody.style.touchAction = 'none';
+    view.parentElement.appendChild(box);
+    let boxG = null;
+    function boxContent(c, w, h) {
+      let sw = 0, sh = 0;
+      if (isM(c.proj)) { const e = medEl(c.proj.slice(2)); if (e) { sw = e.kind === 'img' ? e.el.naturalWidth : e.el.videoWidth; sh = e.kind === 'img' ? e.el.naturalHeight : e.el.videoHeight; } }
+      else { sw = W; sh = H; }
+      if (!sw || !sh) return [w, h];
+      const k0 = Math.min(w / sw, h / sh); return [sw * k0, sh * k0];
+    }
+    function boxUpdate() {
+      boxG = null;
+      const s = isOpen && !playing && !edExp ? selObj() : null;
+      if (!s || s.kind !== 'clip') { box.style.display = 'none'; return; }
+      const c = s.o, local = localOf(s);
+      if (local == null) { box.style.display = 'none'; return; }
+      const t = tfAt(c, local), w = view.width, h = view.height;
+      const rs = view.getBoundingClientRect(), pr = view.parentElement.getBoundingClientRect();
+      const k = Math.min(rs.width / w, rs.height / h), dw = w * k, dh = h * k;
+      const ox = rs.left - pr.left + (rs.width - dw) / 2, oy = rs.top - pr.top + (rs.height - dh) / 2;
+      const [cw, ch] = boxContent(c, w, h), sc = t.z / 100, sx = sc * (c.fs ? t.sx / 100 : 1), sy = sc * (c.fs ? t.sy / 100 : 1);
+      const bw = Math.max(6, cw * sx * k), bh = Math.max(6, ch * sy * k), cx = ox + (w / 2 + (t.x / 100) * w) * k, cy = oy + (h / 2 + (t.y / 100) * h) * k;
+      box.style.display = 'block'; box.style.left = (cx - bw / 2) + 'px'; box.style.top = (cy - bh / 2) + 'px'; box.style.width = bw + 'px'; box.style.height = bh + 'px';
+      box.style.transform = 'rotate(' + t.r + 'deg)';
+      boxG = { c, local, t, k, dw, dh, ccx: pr.left + cx, ccy: pr.top + cy };
+    }
+    function boxSet(c, p, v, local) {
+      v = Math.max(TFR[p][0], Math.min(TFR[p][1], Math.round(v * 10) / 10));
+      const ks = c.kf && c.kf[p];
+      if (ks && ks.length && local != null) upsertKey(ks, local, v); else { if (!c.tf) c.tf = {}; c.tf[p] = v; }
+    }
+    function boxDrag(e, kind) {
+      if (e.button !== 0 || !boxG) return;
+      e.preventDefault(); e.stopPropagation();
+      const G = boxG, c = G.c, t0 = G.t, a = (t0.r * Math.PI) / 180, ca = Math.cos(a), sa = Math.sin(a);
+      const un = (px, py) => { const vx = px - G.ccx, vy = py - G.ccy; return [vx * ca + vy * sa, -vx * sa + vy * ca]; };
+      const u0 = un(e.clientX, e.clientY), d0 = Math.hypot(u0[0], u0[1]) || 1;
+      const x0 = e.clientX, y0 = e.clientY;
+      const mv = (ev) => {
+        if (kind === 'move') {
+          boxSet(c, 'x', t0.x + ((ev.clientX - x0) / G.dw) * 100, G.local); boxSet(c, 'y', t0.y + ((ev.clientY - y0) / G.dh) * 100, G.local);
+        } else {
+          const u = un(ev.clientX, ev.clientY);
+          if (c.fs && Math.abs(u0[0]) > 4 && Math.abs(u0[1]) > 4) { boxSet(c, 'sx', t0.sx * Math.abs(u[0] / u0[0]), G.local); boxSet(c, 'sy', t0.sy * Math.abs(u[1] / u0[1]), G.local); }
+          else boxSet(c, 'z', t0.z * (Math.hypot(u[0], u[1]) / d0), G.local);
+        }
+        lastShots.clear(); paint();
+      };
+      const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); done(false); };
+      window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    }
+    boxBody.addEventListener('pointerdown', (e) => boxDrag(e, 'move'));
+    for (const d of boxHd) d.addEventListener('pointerdown', (e) => boxDrag(e, 'scale'));
     function paint() {
       if (!isOpen) return;
       const [w, h] = previewSize();
@@ -12111,6 +12201,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       // precarga la escena que sigue
       const L = layout(), k = L.findIndex((o) => T < o.e);
       if (k >= 0 && L[k + 1]) ensure(L[k + 1].c.proj);
+      boxUpdate();
     }
 
     /* --- sonido --- */
@@ -12234,7 +12325,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       $('#edSpeed').disabled = !c;
       $('#edEdit').disabled = !c || isM(c.proj) || isC(c.proj);
       $('#edDel').disabled = !sel;
-      { const bg = $('#edBg'), mm = c && isM(c.proj) ? medOf(c.proj) : null; if (bg) bg.disabled = !(mm && mm.kind === 'img'); }
+      { const bg = $('#edBg'), oc = sel && sel.kind === 'ov' ? (E.ov || []).find((x) => x.id === sel.id) : c, mm = oc && isM(oc.proj) ? medOf(oc.proj) : null; if (bg) bg.disabled = !(mm && mm.kind === 'img'); }
       const isCmp = !!(c && isC(c.proj)) && !multi.size;
       const bc = $('#edComp'), bu = $('#edUncomp'), bb = $('#edBack'), bm = $('#edMulti');
       if (bc) { bc.textContent = isCmp ? e4('cmpOpen') : e4('cmpBtn'); bc.title = isCmp ? e4('cmpOpenTip') : e4('cmpTip'); }
@@ -12409,7 +12500,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     /* --- pistas: varias líneas por tipo, con imán --- */
     function trh(kind) { return kind === 'au' ? 44 : 28; }
-    function lanesOf(kind, TL) { TL = TL || E; return kind === 'fx' ? TL.fx : kind === 'cam' ? TL.cam : TL.audio; }
+    function lanesOf(kind, TL) { TL = TL || E; return kind === 'ov' ? (TL.ov || (TL.ov = [])) : kind === 'fx' ? TL.fx : kind === 'cam' ? TL.cam : TL.audio; }
     function lenB(o, kind) { return kind === 'au' ? o.out - o.in : o.dur; }
     function laneFree(list, kind, o, tk, s, d) {
       for (const q of list) {
@@ -12422,7 +12513,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function fitLane(list, kind, o, tk, s, d) { for (let t = clampV(tk | 0, 0, 7); t < 8; t++) if (laneFree(list, kind, o, t, s, d)) return t; return 7; }
     function laneCount(kind) { let n = 0; for (const o of lanesOf(kind)) n = Math.max(n, (o.tk | 0) + 1); return Math.min(8, n + 1); }
     function fixLanes(TL) {
-      for (const kind of ['fx', 'cam', 'au']) {
+      for (const kind of ['ov', 'fx', 'cam', 'au']) {
         const list = lanesOf(kind, TL), done = [];
         for (const o of list) {
           o.tk = clampV(o.tk | 0, 0, 7);
@@ -12435,13 +12526,13 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     function snapPts(skip) {
       const p = [0, T];
-      for (const kind of ['fx', 'cam', 'au']) for (const q of lanesOf(kind)) { if (q !== skip) p.push(q.start, q.start + lenB(q, kind)); }
+      for (const kind of ['ov', 'fx', 'cam', 'au']) for (const q of lanesOf(kind)) { if (q !== skip) p.push(q.start, q.start + lenB(q, kind)); }
       for (const o of layout()) p.push(o.s, o.e);
       return p;
     }
     function snapNear(v, pts) { let best = null, bd = 8 / pps; for (const p of pts) { const d = Math.abs(p - v); if (d < bd) { bd = d; best = p; } } return best; }
     function sizeRows() {
-      for (const [kind, row, lab] of [['fx', rowF, '.l-f'], ['cam', rowC, '.l-c'], ['au', rowA, '.l-a']]) {
+      for (const [kind, row, lab] of [['ov', rowO, '.l-o'], ['fx', rowF, '.l-f'], ['cam', rowC, '.l-c'], ['au', rowA, '.l-a']]) {
         const n = laneCount(kind), th = trh(kind), h = n * th;
         row.style.height = h + 'px';
         row.style.backgroundImage = 'repeating-linear-gradient(to bottom, transparent 0, transparent ' + (th - 1) + 'px, rgba(255,255,255,0.09) ' + (th - 1) + 'px, rgba(255,255,255,0.09) ' + th + 'px)';
@@ -12492,6 +12583,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           if (c.tr) { const z = document.createElement('div'); z.className = 'ed-trz'; const hz = trHalf(o, L[k - 1]); z.style.left = ((o.s - hz) * pps) + 'px'; z.style.width = (2 * hz) * pps + 'px'; rowV.appendChild(z); }
         }
       });
+      rowO.textContent = '';
+      for (const f of (E.ov || [])) { const m0 = medOf(f.proj); const b = barEl(f, 'ov', (m0 && m0.kind === 'vid' ? '🎬 ' : '🖼️ ') + ((m0 && m0.name) || ''), f.start, f.dur); if (f.hid) b.style.opacity = '0.35'; rowO.appendChild(b); }
       // efectos
       rowF.textContent = '';
       for (const f of E.fx) rowF.appendChild(barEl(f, 'fx', FX_NAME[f.k], f.start, f.dur));
@@ -12510,6 +12603,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       placeHead(false);
       syncBtns();
       edInsp();
+      if (libTab === 'lay') renderLayers();
+      boxUpdate();
     }
     function barEl(o, kind, label, start, dur) {
       const el = document.createElement('div');
@@ -12620,7 +12715,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       track(e, (dx, ev) => go(ev), () => {});
     }
     ruler.addEventListener('pointerdown', scrubDown);
-    for (const r of [rowV, rowF, rowC, rowA]) r.addEventListener('pointerdown', (e) => { if (e.target === r) { sel = null; render(); scrubDown(e); } });
+    for (const r of [rowV, rowO, rowF, rowC, rowA]) r.addEventListener('pointerdown', (e) => { if (e.target === r) { sel = null; render(); scrubDown(e); } });
     function zoomTo(np, anchorX) {
       const ax = anchorX == null ? scroll.clientWidth / 2 : anchorX;
       const tAt = (scroll.scrollLeft + ax) / pps;
@@ -12713,7 +12808,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     });
     function del() {
       if (!sel) return;
-      if (sel.kind === 'clip') E.clips = E.clips.filter((x) => x.id !== sel.id);
+      if (sel.kind === 'ov') E.ov = (E.ov || []).filter((x) => x.id !== sel.id);
+      else if (sel.kind === 'clip') E.clips = E.clips.filter((x) => x.id !== sel.id);
       else if (sel.kind === 'fx') E.fx = E.fx.filter((x) => x.id !== sel.id);
       else if (sel.kind === 'cam') E.cam = E.cam.filter((x) => x.id !== sel.id);
       else E.audio = E.audio.filter((x) => x.id !== sel.id);
@@ -12722,7 +12818,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     $('#edDel').addEventListener('click', del);
     $('#edUndo').addEventListener('click', undo);
     $('#edRedo').addEventListener('click', redo);
-    $('#edBg').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); const m = c && isM(c.proj) ? medOf(c.proj) : null; if (m && m.kind === 'img') bgOpen(m); });
+    $('#edBg').addEventListener('click', () => { const c = sel && (sel.kind === 'ov' ? (E.ov || []).find((x) => x.id === sel.id) : E.clips.find((x) => x.id === sel.id)); const m = c && isM(c.proj) ? medOf(c.proj) : null; if (m && m.kind === 'img') bgOpen(m, c); });
     $('#edEdit').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); if (c) goAnim(c.proj); });
     $('#edAnim').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); let p = c ? c.proj : lastProj; if (!p || isM(p) || isC(p) || (p !== state.id && !recOf(p))) p = state.id; goAnim(p); });
 
@@ -12911,6 +13007,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
           tl.classList.remove('drop');
           if (gh) gh.remove();
+          lastUp = ev;
           if (!moved) { onPlace(null); return; }
           if (overTL(ev)) onPlace(timeAt(ev.clientX)); else toast('Suéltalo encima de la línea de tiempo.');
         };
@@ -13057,6 +13154,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const b of document.querySelectorAll('.ed-tabs button')) b.setAttribute('aria-pressed', String(b.dataset.tab === libTab));
       $('#edFab').hidden = libTab !== 'fab';
       if (libTab === 'med') { renderMedia(); return; }
+      if (libTab === 'lay') { renderLayers(); return; }
       if (libTab === 'fab') { fabBuild(); fabCard(); fabList(); return; }
       if (libTab === 'esc') {
         const nw = libItem('✨', 'Nueva animación', 'Crea una escena y entra a dibujarla', () => newScene());
@@ -13127,7 +13225,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     /* ===== v38 · Etapa 4: fotos y videos, inspector con ◆, sonido pro ===== */
     const E4L = (document.documentElement.lang || 'es').slice(0, 2);
     const E4D = {
-      es: { bgTip: 'Quitar el fondo de esta foto', bgTitle: '✂️ Quitar fondo', bgCk: '🎨 Por color', bgAi: '🤖 Con IA 👑', bgPick: 'Toca la foto para elegir el color del fondo.', bgTol: 'Cuánto color quitar', bgSoft: 'Borde suave', bgAiHint: 'La IA separa a la persona o el objeto del fondo. Se baja un modelo pequeño (unos 19 MB) solo la primera vez y después funciona sin internet.', bgGo: 'Quitar fondo con IA', bgSave: 'Guardar como foto nueva', bgCancel: 'Cancelar', bgDl: 'Descargando el modelo (solo la primera vez)…', bgRun: 'Quitando el fondo…', bgErr: 'No pude quitar el fondo con IA. Revisa tu internet e inténtalo otra vez.', bgDone: '✂️ Foto sin fondo guardada en «Archivos»', bgNeed: 'Primero toca «Quitar fondo con IA».', bgBg: 'Fondo de vista previa', flow: 'Flujo', flowT: 'Flujo hasta el siguiente ◆', flowLast: 'Este es el último ◆: no lleva flujo.', fl_lin: 'Lineal', fl_ease: 'Suave (cúbica entra y sale)', fl_in: 'Arranca lento', fl_out: 'Frena al final', fl_expo: 'Arranque brusco', fl_expi: 'Explosión final', fl_bounce: 'Retroceso (se pasa y vuelve)', fl_back: 'Anticipación (se echa atrás)', fl_ball: 'Rebote (pelota)', fl_elas: 'Elástico (resorte)', fl_sine: 'Seno (muy suave)', fl_flow2: 'Flow 2', fl_adv: 'ADV Flow 2', fl_bnc1: 'Bounce 1', mask: 'Máscara', mkNone: 'Ninguna', mkInv: 'Invertir', mkTxt: 'Texto de la máscara', mS: 'Tamaño máscara', mF: 'Borde suave', mX: 'Máscara X', mY: 'Máscara Y', circ: '⚪ Círculo', rect: '⬜ Rectángulo', star: '⭐ Estrella', heart: '❤️ Corazón', hor: '➖ Horizontal', two: '🟰 Dos líneas', vert: '❙ Vertical', diag: '◢ Diagonal', text: '🔤 Texto', cmpBtn: '📦 Compuesto', cmpTip: 'Junta las escenas elegidas, con los efectos y sonidos que tengan encima, en un solo clip. Elige varias con Shift o con ☑ Varias.', multiBtn: '☑ Varias', multiTip: 'Actívalo para elegir varias escenas tocándolas (sirve en tablet).', cmpOpen: '📂 Abrir', cmpOpenTip: 'Entra al clip compuesto para editarlo por dentro', cmpUn: '↩ Separar', cmpUnTip: 'Deshace el clip compuesto y devuelve las escenas a la línea de tiempo', cmpBack: '← Salir del compuesto', cmpIn: 'Dentro de «{n}»', cmpName: 'Compuesto', cmpMade: '📦 Clip compuesto listo. Doble clic para entrar y editarlo.', cmpNeed: 'Elige una o más escenas primero (Shift + clic, o ☑ Varias).', cmpDeep: 'Un compuesto no puede tener más de 3 niveles.', cmpTrim: 'Quita el recorte y la velocidad antes de separarlo.', medTab: 'Archivos', medTip: 'Tus fotos y videos. Arrástralos a la pista de escenas o tócalos para ponerlos al final. También puedes soltarlos encima del editor.', imp: 'Importar fotos o videos…', impSub: 'JPG, PNG, GIF, MP4, WEBM, MOV', impBtn: '📁 Importar', photo: 'Foto', video: 'Video', scene: 'Escena', placed: '«{n}» en la línea de tiempo.', badFile: '«{n}» no es una foto, video ni sonido.', noFit: 'No cupo «{n}» en la memoria del navegador.', badVid: 'No pude abrir «{n}». Prueba con MP4 o JPG.', inUse: 'Ese archivo está en la línea de tiempo. Quítalo de ahí primero.', delMed: 'Quitar de Archivos', insp: 'Propiedades', none: 'Elige un clip o un sonido en la línea de tiempo para editarlo.', noneSub: 'Aquí cambias zoom, posición, giro, opacidad y volumen. Con ◆ los animas: pon un ◆, mueve la línea roja, cambia el valor y la app hace el movimiento sola.', tf: 'Transformar', z: 'Zoom', x: 'Posición X', y: 'Posición Y', r: 'Giro', o: 'Opacidad', vol: 'Volumen', fi: 'Aparece', fo: 'Desaparece', dur: 'Duración', fades: 'Entrada y salida', outHint: 'Pon la línea roja encima de este clip para usar ◆.', kfAdd: 'Poner ◆ aquí', kfDel: 'Quitar este ◆', prev: 'Ir al ◆ anterior', next: 'Ir al ◆ siguiente', curve: 'Curva desde este ◆', reset: '↺ Restablecer', cutHere: '✂️ Cortar en la línea roja', cutOut: 'Pon la línea roja encima del sonido para cortarlo.', cutAu: '✂️ Sonido cortado en {t}.', clipAudio: 'Sonido del video', spdMute: 'El video suena solo a velocidad normal.', noAnim: 'Este clip es una foto o un video: no se dibuja en el animador.', drop: 'Suelta aquí tus fotos, videos o sonidos', stretch: 'Estíralo o muévelo en la línea de tiempo.', fx: 'Efecto', cam: 'Cámara', snd: 'Sonido' },
+      es: { sx: 'Escala X', sy: 'Escala Y', fs: '↔ Escala libre (ancho y alto)', bgHere: 'Quitar fondo a esta foto', mB: 'Borde', mBc: 'Color del borde', lay: 'Capas', layTip: 'Lo que pusiste encima del video, de arriba hacia abajo. 👁 lo esconde, ▲▼ lo sube o baja, 🗑 lo borra.', layMain: 'Video principal', layNone: 'Todavía no hay nada encima. Usa el botón 🔼 en Archivos.', layUp: 'Subir capa', layDn: 'Bajar capa', layHide: 'Mostrar u ocultar', bgTip: 'Quitar el fondo de esta foto', bgTitle: '✂️ Quitar fondo', bgCk: '🎨 Por color', bgAi: '🤖 Con IA 👑', bgPick: 'Toca la foto para elegir el color del fondo.', bgTol: 'Cuánto color quitar', bgSoft: 'Borde suave', bgAiHint: 'La IA separa a la persona o el objeto del fondo. Se baja un modelo pequeño (unos 19 MB) solo la primera vez y después funciona sin internet.', bgGo: 'Quitar fondo con IA', bgSave: 'Guardar como foto nueva', bgCancel: 'Cancelar', bgDl: 'Descargando el modelo (solo la primera vez)…', bgRun: 'Quitando el fondo…', bgErr: 'No pude quitar el fondo con IA. Revisa tu internet e inténtalo otra vez.', bgDone: '✂️ Foto sin fondo guardada en «Archivos»', bgNeed: 'Primero toca «Quitar fondo con IA».', bgBg: 'Fondo de vista previa', flow: 'Flujo', flowT: 'Flujo hasta el siguiente ◆', flowLast: 'Este es el último ◆: no lleva flujo.', fl_lin: 'Lineal', fl_ease: 'Suave (cúbica entra y sale)', fl_in: 'Arranca lento', fl_out: 'Frena al final', fl_expo: 'Arranque brusco', fl_expi: 'Explosión final', fl_bounce: 'Retroceso (se pasa y vuelve)', fl_back: 'Anticipación (se echa atrás)', fl_ball: 'Rebote (pelota)', fl_elas: 'Elástico (resorte)', fl_sine: 'Seno (muy suave)', fl_flow2: 'Flow 2', fl_adv: 'ADV Flow 2', fl_bnc1: 'Bounce 1', mask: 'Máscara', mkNone: 'Ninguna', mkInv: 'Invertir', mkTxt: 'Texto de la máscara', mS: 'Tamaño máscara', mF: 'Borde suave', mX: 'Máscara X', mY: 'Máscara Y', circ: '⚪ Círculo', rect: '⬜ Rectángulo', star: '⭐ Estrella', heart: '❤️ Corazón', hor: '➖ Horizontal', two: '🟰 Dos líneas', vert: '❙ Vertical', diag: '◢ Diagonal', text: '🔤 Texto', cmpBtn: '📦 Compuesto', cmpTip: 'Junta las escenas elegidas, con los efectos y sonidos que tengan encima, en un solo clip. Elige varias con Shift o con ☑ Varias.', multiBtn: '☑ Varias', multiTip: 'Actívalo para elegir varias escenas tocándolas (sirve en tablet).', cmpOpen: '📂 Abrir', cmpOpenTip: 'Entra al clip compuesto para editarlo por dentro', cmpUn: '↩ Separar', cmpUnTip: 'Deshace el clip compuesto y devuelve las escenas a la línea de tiempo', cmpBack: '← Salir del compuesto', cmpIn: 'Dentro de «{n}»', cmpName: 'Compuesto', cmpMade: '📦 Clip compuesto listo. Doble clic para entrar y editarlo.', cmpNeed: 'Elige una o más escenas primero (Shift + clic, o ☑ Varias).', cmpDeep: 'Un compuesto no puede tener más de 3 niveles.', cmpTrim: 'Quita el recorte y la velocidad antes de separarlo.', medTab: 'Archivos', medTip: 'Tus fotos y videos. Arrástralos a la pista de escenas o tócalos para ponerlos al final. También puedes soltarlos encima del editor.', imp: 'Importar fotos o videos…', impSub: 'JPG, PNG, GIF, MP4, WEBM, MOV', impBtn: '📁 Importar', photo: 'Foto', video: 'Video', scene: 'Escena', placed: '«{n}» en la línea de tiempo.', badFile: '«{n}» no es una foto, video ni sonido.', noFit: 'No cupo «{n}» en la memoria del navegador.', badVid: 'No pude abrir «{n}». Prueba con MP4 o JPG.', inUse: 'Ese archivo está en la línea de tiempo. Quítalo de ahí primero.', delMed: 'Quitar de Archivos', insp: 'Propiedades', none: 'Elige un clip o un sonido en la línea de tiempo para editarlo.', noneSub: 'Aquí cambias zoom, posición, giro, opacidad y volumen. Con ◆ los animas: pon un ◆, mueve la línea roja, cambia el valor y la app hace el movimiento sola.', tf: 'Transformar', z: 'Escala', x: 'Posición X', y: 'Posición Y', r: 'Giro', o: 'Opacidad', vol: 'Volumen', fi: 'Aparece', fo: 'Desaparece', dur: 'Duración', fades: 'Entrada y salida', outHint: 'Pon la línea roja encima de este clip para usar ◆.', kfAdd: 'Poner ◆ aquí', kfDel: 'Quitar este ◆', prev: 'Ir al ◆ anterior', next: 'Ir al ◆ siguiente', curve: 'Curva desde este ◆', reset: '↺ Restablecer', cutHere: '✂️ Cortar en la línea roja', cutOut: 'Pon la línea roja encima del sonido para cortarlo.', cutAu: '✂️ Sonido cortado en {t}.', clipAudio: 'Sonido del video', spdMute: 'El video suena solo a velocidad normal.', noAnim: 'Este clip es una foto o un video: no se dibuja en el animador.', drop: 'Suelta aquí tus fotos, videos o sonidos', stretch: 'Estíralo o muévelo en la línea de tiempo.', fx: 'Efecto', cam: 'Cámara', snd: 'Sonido' },
       en: { medTab: 'Files', medTip: 'Your photos and videos. Drag them to the scenes track or tap to add them at the end. You can also drop them on the editor.', imp: 'Import photos or videos…', impSub: 'JPG, PNG, GIF, MP4, WEBM, MOV', impBtn: '📁 Import', photo: 'Photo', video: 'Video', scene: 'Scene', placed: '“{n}” is on the timeline.', badFile: '“{n}” isn’t a photo, video or sound.', noFit: '“{n}” didn’t fit in the browser storage.', badVid: 'I couldn’t open “{n}”. Try MP4 or JPG.', inUse: 'That file is on the timeline. Remove it from there first.', delMed: 'Remove from Files', insp: 'Properties', none: 'Pick a clip or a sound on the timeline to edit it.', noneSub: 'Change zoom, position, rotation, opacity and volume here. Use ◆ to animate: set a ◆, move the red line, change the value and the app makes the motion.', tf: 'Transform', z: 'Zoom', x: 'Position X', y: 'Position Y', r: 'Rotation', o: 'Opacity', vol: 'Volume', fi: 'Fade in', fo: 'Fade out', dur: 'Duration', fades: 'Fades', outHint: 'Put the red line over this clip to use ◆.', kfAdd: 'Add ◆ here', kfDel: 'Remove this ◆', prev: 'Previous ◆', next: 'Next ◆', curve: 'Curve from this ◆', reset: '↺ Reset', cutHere: '✂️ Cut at the red line', cutOut: 'Put the red line over the sound to cut it.', cutAu: '✂️ Sound cut at {t}.', clipAudio: 'Video sound', spdMute: 'Video sound plays only at normal speed.', noAnim: 'This clip is a photo or a video: it isn’t drawn in the animator.', drop: 'Drop your photos, videos or sounds here', stretch: 'Stretch or move it on the timeline.', fx: 'Effect', cam: 'Camera', snd: 'Sound' },
       fr: { medTab: 'Fichiers', medTip: 'Tes photos et vidéos. Glisse-les sur la piste des scènes ou touche-les pour les mettre à la fin. Tu peux aussi les déposer sur l’éditeur.', imp: 'Importer photos ou vidéos…', impSub: 'JPG, PNG, GIF, MP4, WEBM, MOV', impBtn: '📁 Importer', photo: 'Photo', video: 'Vidéo', scene: 'Scène', placed: '« {n} » est sur la timeline.', badFile: '« {n} » n’est ni une photo, ni une vidéo, ni un son.', noFit: '« {n} » ne tient pas dans la mémoire du navigateur.', badVid: 'Impossible d’ouvrir « {n} ». Essaie MP4 ou JPG.', inUse: 'Ce fichier est sur la timeline. Retire-le d’abord.', delMed: 'Retirer des Fichiers', insp: 'Propriétés', none: 'Choisis un clip ou un son sur la timeline pour le modifier.', noneSub: 'Ici tu changes zoom, position, rotation, opacité et volume. Avec ◆ tu les animes : pose un ◆, déplace la ligne rouge, change la valeur et l’appli fait le mouvement.', tf: 'Transformer', z: 'Zoom', x: 'Position X', y: 'Position Y', r: 'Rotation', o: 'Opacité', vol: 'Volume', fi: 'Apparition', fo: 'Disparition', dur: 'Durée', fades: 'Entrée et sortie', outHint: 'Mets la ligne rouge sur ce clip pour utiliser ◆.', kfAdd: 'Poser un ◆ ici', kfDel: 'Retirer ce ◆', prev: '◆ précédent', next: '◆ suivant', curve: 'Courbe depuis ce ◆', reset: '↺ Réinitialiser', cutHere: '✂️ Couper à la ligne rouge', cutOut: 'Mets la ligne rouge sur le son pour le couper.', cutAu: '✂️ Son coupé à {t}.', clipAudio: 'Son de la vidéo', spdMute: 'Le son de la vidéo ne joue qu’à vitesse normale.', noAnim: 'Ce clip est une photo ou une vidéo : il ne se dessine pas dans l’animateur.', drop: 'Dépose ici tes photos, vidéos ou sons', stretch: 'Étire-le ou déplace-le sur la timeline.', fx: 'Effet', cam: 'Caméra', snd: 'Son' },
       ja: { medTab: 'ファイル', medTip: '写真と動画。シーンのトラックにドラッグするか、タップして最後に追加。エディターに直接ドロップもできます。', imp: '写真・動画を読み込む…', impSub: 'JPG, PNG, GIF, MP4, WEBM, MOV', impBtn: '📁 読み込む', photo: '写真', video: '動画', scene: 'シーン', placed: '「{n}」をタイムラインに追加しました。', badFile: '「{n}」は写真・動画・音ではありません。', noFit: '「{n}」はブラウザーの保存領域に入りませんでした。', badVid: '「{n}」を開けません。MP4 か JPG を試してください。', inUse: 'このファイルはタイムラインで使われています。先にそこから外してください。', delMed: 'ファイルから削除', insp: 'プロパティ', none: 'タイムラインのクリップか音を選ぶと編集できます。', noneSub: 'ズーム・位置・回転・不透明度・音量を変えられます。◆ でアニメーション：◆ を置き、赤い線を動かし、値を変えると自動で動きます。', tf: '変形', z: 'ズーム', x: '位置 X', y: '位置 Y', r: '回転', o: '不透明度', vol: '音量', fi: 'フェードイン', fo: 'フェードアウト', dur: '長さ', fades: 'フェード', outHint: '◆ を使うには赤い線をこのクリップの上に置いてください。', kfAdd: 'ここに ◆', kfDel: 'この ◆ を削除', prev: '前の ◆', next: '次の ◆', curve: 'この ◆ からのカーブ', reset: '↺ リセット', cutHere: '✂️ 赤い線で分割', cutOut: '分割するには赤い線を音の上に置いてください。', cutAu: '✂️ {t} で音を分割しました。', clipAudio: '動画の音', spdMute: '動画の音は通常の速度でのみ鳴ります。', noAnim: 'このクリップは写真か動画なので、アニメーターでは描けません。', drop: '写真・動画・音をここにドロップ', stretch: 'タイムラインで伸ばしたり動かしたりできます。', fx: 'エフェクト', cam: 'カメラ', snd: '音' }
@@ -13144,9 +13242,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       return a.filter((m) => m && typeof m.id === 'string' && (m.kind === 'img' || m.kind === 'vid')).slice(0, 300)
         .map((m) => ({ id: m.id.slice(0, 80), kind: m.kind, name: String(m.name || '').slice(0, 60), dur: isFinite(+m.dur) ? +m.dur : 0, thumb: typeof m.thumb === 'string' && m.thumb.length < 40000 ? m.thumb : '' }));
     }
-    const TF0 = { z: 100, x: 0, y: 0, r: 0, o: 100, mS: 100, mF: 0, mX: 0, mY: 0 };
-    const MKP = ['mS', 'mF', 'mX', 'mY'];
-    const TFR = { z: [10, 400, 1, '%'], x: [-100, 100, 1, '%'], y: [-100, 100, 1, '%'], r: [-180, 180, 1, '°'], o: [0, 100, 1, '%'], mS: [2, 300, 1, '%'], mF: [0, 100, 1, '%'], mX: [-100, 100, 1, '%'], mY: [-100, 100, 1, '%'] };
+    const TF0 = { z: 100, x: 0, y: 0, r: 0, o: 100, mS: 100, mF: 0, mX: 0, mY: 0, mB: 0, sx: 100, sy: 100 };
+    const MKP = ['mS', 'mF', 'mX', 'mY', 'mB'];
+    const TFR = { z: [1, 250, 1, '%'], x: [-100, 100, 1, '%'], y: [-100, 100, 1, '%'], r: [-180, 180, 1, '°'], o: [0, 100, 1, '%'], mS: [2, 300, 1, '%'], mF: [0, 100, 1, '%'], mX: [-100, 100, 1, '%'], mY: [-100, 100, 1, '%'], mB: [0, 100, 1, '%'], sx: [1, 250, 1, '%'], sy: [1, 250, 1, '%'] };
     function e4kf(o) {
       if (!o || typeof o !== 'object') return undefined;
       const r = {}; let n = 0;
@@ -13209,7 +13307,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function medEl(id) { const e = medEls.get(id); if (!e) medLoad(id); return e || null; }
     function drawFit(x, src, sw, sh, w, h) {
       x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1;
-      x.fillStyle = '#000000'; x.fillRect(0, 0, w, h);
+      if (ovT) x.clearRect(0, 0, w, h); else { x.fillStyle = '#000000'; x.fillRect(0, 0, w, h); }
       if (sw && sh) { const k = Math.min(w / sw, h / sh), dw = sw * k, dh = sh * k; try { x.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh); } catch (_) {} }
       x.restore();
     }
@@ -13217,10 +13315,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const e = medEl(c.proj.slice(2));
       if (!medOf(c.proj) || !e) { placeholder(x, w, h, '…'); return false; }
       if (e.kind === 'img') { drawFit(x, e.el, e.el.naturalWidth, e.el.naturalHeight, w, h); return true; }
-      const v = e.el;
+      const v = e.el; vidUsed.add(e);
       if (!edExp) {
         if (playing) {
-          for (const o of medEls.values()) if (o !== e && o.kind === 'vid' && !o.el.paused) o.el.pause();
           try { v.playbackRate = c.spd; } catch (_) {}
           if (v.paused) { try { v.currentTime = local; } catch (_) {} v.play().catch(() => {}); }
           else if (Math.abs(v.currentTime - local) > 0.3) { try { v.currentTime = local; } catch (_) {} }
@@ -13242,14 +13339,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function applyTf0(x, c, local, w, h) {
       if (!c.kf && !c.tf) return;
       const t = tfAt(c, local);
-      if (Math.abs(t.z - 100) < 1e-3 && !t.x && !t.y && !t.r && t.o >= 100) return;
+      if (Math.abs(t.z - 100) < 1e-3 && !t.x && !t.y && !t.r && t.o >= 100 && !(c.fs && (Math.abs(t.sx - 100) > 1e-3 || Math.abs(t.sy - 100) > 1e-3))) return;
       const tx = sized(bufT, w, h); tx.clearRect(0, 0, w, h); tx.drawImage(x.canvas, 0, 0);
       x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1;
-      x.fillStyle = '#000000'; x.fillRect(0, 0, w, h);
+      if (ovT) x.clearRect(0, 0, w, h); else { x.fillStyle = '#000000'; x.fillRect(0, 0, w, h); }
       x.globalAlpha = Math.max(0, Math.min(1, t.o / 100));
       x.translate(w / 2 + (t.x / 100) * w, h / 2 + (t.y / 100) * h);
       x.rotate((t.r * Math.PI) / 180);
-      const s = Math.max(0.01, t.z / 100); x.scale(s, s);
+      const s = Math.max(0.01, t.z / 100); x.scale(s * (c.fs ? Math.max(0.01, t.sx / 100) : 1), s * (c.fs ? Math.max(0.01, t.sy / 100) : 1));
       x.drawImage(bufT, -w / 2, -h / 2);
       x.restore();
     }
@@ -13285,7 +13382,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const tx = sized(bufT, w, h); tx.setTransform(1, 0, 0, 1, 0, 0); tx.globalCompositeOperation = 'source-over'; tx.globalAlpha = 1; tx.clearRect(0, 0, w, h);
       tx.drawImage(x.canvas, 0, 0);
       tx.globalCompositeOperation = 'destination-in'; tx.drawImage(M, 0, 0); tx.globalCompositeOperation = 'source-over';
-      x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.fillStyle = '#000000'; x.fillRect(0, 0, w, h); x.drawImage(bufT, 0, 0); x.restore();
+      x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; if (ovT) x.clearRect(0, 0, w, h); else { x.fillStyle = '#000000'; x.fillRect(0, 0, w, h); } x.drawImage(bufT, 0, 0);
+      const bw = (t.mB / 100) * Math.min(w, h) * 0.08;
+      if (bw > 0.3) {
+        x.globalAlpha = 1; x.strokeStyle = c.mc || '#000000'; x.lineWidth = bw; x.lineJoin = 'round';
+        if (c.mk === 'text') { x.font = '900 ' + Math.round(s * h * 0.6) + 'px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.strokeText(c.mkt || 'Aa', cx, cy); }
+        else { mkPath(x, c.mk, cx, cy, s, w, h); x.stroke(); }
+      }
+      x.restore();
     }
     function applyTf(x, c, local, w, h) { applyTf0(x, c, local, w, h); if (c.mk) applyMask(x, c, local, w, h); }
     // Último cuadro de un video (para la transición), buscado aparte.
@@ -13329,7 +13433,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       if (c.tr && k > 0 && isVid(L[k - 1].c)) { const p = L[k - 1].c; await vidEndAsync(p, w, h, p.id + '|' + p.in + '|' + p.out + '|' + w); }
     }
-    async function edPrep(t, L, w, h) { await prepTL(E, t, w, h, 0); }
+    async function edPrep(t, L, w, h) {
+      await prepTL(E, t, w, h, 0);
+      for (const o of (E.ov || [])) {
+        if (t < o.start || t >= o.start + o.dur) continue;
+        const e = await medReady(o.proj.slice(2));
+        if (e && e.kind === 'vid') await seekV(e.el, Math.min(o.in + (t - o.start), Math.max(0, (e.dur || 1) - 0.05)));
+      }
+    }
     // Sonido de los videos (solo a velocidad normal).
     async function e4VidAudio(out) {
       for (const o of layout()) {
@@ -13372,6 +13483,51 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       E.media.push(m); saveE();
       return m;
     }
+    function renderLayers() {
+      const ul = $('#edLibList'); ul.textContent = '';
+      $('#edLibTip').textContent = e4('layTip');
+      for (const b of document.querySelectorAll('.ed-tabs button')) b.setAttribute('aria-pressed', String(b.dataset.tab === libTab));
+      $('#edFab').hidden = true;
+      const ov = E.ov || [];
+      const ord = ov.map((o, i) => ({ o, i })).sort((a, b) => ((b.o.tk | 0) - (a.o.tk | 0)) || (b.i - a.i)).map((q) => q.o);
+      const over = (a, b) => a.start < b.start + b.dur && b.start < a.start + a.dur;
+      const mkb = (txt, tip, fn, dis) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'pl'; b.textContent = txt; b.title = tip; b.setAttribute('aria-label', tip); b.disabled = !!dis; if (dis) b.style.opacity = '0.3'; b.addEventListener('click', (ev) => { ev.stopPropagation(); fn(); }); return b; };
+      ord.forEach((o, k) => {
+        const m = medOf(o.proj), li = document.createElement('li'); li.className = 'ed-it' + (sel && sel.id === o.id ? ' on' : ''); li.style.cursor = 'pointer';
+        const ic = document.createElement('span'); ic.className = 'ic'; if (m && m.thumb) ic.style.backgroundImage = 'url("' + m.thumb + '")'; else ic.textContent = '🖼️';
+        const tx = document.createElement('span'); tx.className = 'tx'; const b = document.createElement('b'); b.textContent = (m && m.name) || '…'; const sm = document.createElement('small'); sm.textContent = fmtSec(o.dur) + ' · ' + fmtSec(o.start);
+        tx.append(b, sm); li.append(ic, tx);
+        const up = ord.slice(0, k).reverse().find((q) => over(q, o)), dn = ord.slice(k + 1).find((q) => over(q, o));
+        const swap = (q) => { const t0 = o.tk | 0; o.tk = q.tk | 0; q.tk = t0; changed(); };
+        const ex = document.createElement('span'); ex.style.cssText = 'display:flex;gap:3px';
+        ex.append(mkb(o.hid ? '🚫' : '👁', e4('layHide'), () => { if (o.hid) delete o.hid; else o.hid = 1; lastShots.clear(); changed(); }),
+          mkb('▲', e4('layUp'), () => swap(up), !up), mkb('▼', e4('layDn'), () => swap(dn), !dn),
+          mkb('🗑', e4('delMed'), () => { E.ov = E.ov.filter((x) => x !== o); if (sel && sel.id === o.id) sel = null; changed(); }));
+        li.append(ex);
+        li.addEventListener('click', () => { sel = { kind: 'ov', id: o.id }; setT(o.start); render(); });
+        ul.appendChild(li);
+      });
+      if (!ord.length) { const p = document.createElement('li'); p.className = 'ed-lib-tip'; p.textContent = e4('layNone'); ul.appendChild(p); }
+      const bm = document.createElement('li'); bm.className = 'ed-it'; bm.style.opacity = '0.75';
+      const ic2 = document.createElement('span'); ic2.className = 'ic'; ic2.textContent = '🎞️'; const tx2 = document.createElement('span'); tx2.className = 'tx'; const b2 = document.createElement('b'); b2.textContent = e4('layMain'); tx2.append(b2); bm.append(ic2, tx2); ul.appendChild(bm);
+    }
+    {
+      const lb = document.createElement('button');
+      lb.type = 'button'; lb.dataset.tab = 'lay'; lb.setAttribute('aria-pressed', 'false'); lb.title = e4('lay');
+      lb.innerHTML = '🧩<span></span>'; lb.querySelector('span').textContent = e4('lay');
+      const tabs = $('.ed-tabs'); tabs.insertBefore(lb, tabs.children[2] || null);
+      lb.addEventListener('click', () => { libTab = 'lay'; stopLibPrev(); stopFab(); renderLib(); });
+      TIPS.lay = e4('layTip');
+    }
+    function placeOv(m, t) {
+      const dur = m.kind === 'img' ? 3 : Math.max(0.5, m.dur || 1);
+      const o = { id: newId(), proj: 'm:' + m.id, start: Math.max(0, t == null ? T : t), dur, in: 0, out: dur, spd: 1, tk: 0 };
+      if (!E.ov) E.ov = [];
+      E.ov.push(o); sel = { kind: 'ov', id: o.id }; changed();
+      toast((m.kind === 'img' ? '🖼️ ' : '🎬 ') + e4('placed').replace('{n}', m.name));
+    }
+    let lastUp = null;
+    const dropOnOv = () => { const el = lastUp && document.elementFromPoint(lastUp.clientX, lastUp.clientY); return !!(el && el.closest && el.closest('#edRowO')); };
     function placeMedia(m, t) {
       const c = { id: newId(), proj: 'm:' + m.id, in: 0, out: m.kind === 'img' ? 3 : Math.max(MIN, m.dur || 1), spd: 1, tr: null, full: m.kind === 'vid' };
       const L = layout();
@@ -13395,7 +13551,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (libTab === 'med') renderLib();
     }
     function delMedia(m) {
-      if (E.clips.some((c) => c.proj === 'm:' + m.id) || Object.values(E.comp || {}).some((sb) => sb.clips.some((c) => c.proj === 'm:' + m.id))) { toast(e4('inUse')); return; }
+      if ((E.ov || []).some((c) => c.proj === 'm:' + m.id) || E.clips.some((c) => c.proj === 'm:' + m.id) || Object.values(E.comp || {}).some((sb) => sb.clips.some((c) => c.proj === 'm:' + m.id))) { toast(e4('inUse')); return; }
       E.media = E.media.filter((x) => x !== m);
       const e = medEls.get(m.id);
       if (e) { try { e.el.pause && e.el.pause(); URL.revokeObjectURL(e.url); } catch (_) {} medEls.delete(m.id); }
@@ -13458,7 +13614,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       return c;
     }
-    async function bgOpen(m) {
+    async function bgOpen(m, target) {
       const en = await medReady(m.id);
       if (!en || !en.el) return;
       const src = bgFit(en.el, 1600), pv = bgFit(src, 480);
@@ -13477,7 +13633,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       pAi.append(e4h('p', 'ei-hint', e4('bgAiHint')), go);
       card.append(pCk, pAi);
       const msg = e4h('p', 'ei-hint', ''); card.append(msg);
-      const foot = e4h('div', 'e4bg-row'), sv = e4h('button', 'btn small', e4('bgSave')), cn = e4h('button', 'btn small', e4('bgCancel'));
+      const foot = e4h('div', 'e4bg-row'), sv = e4h('button', 'btn small', e4(target ? 'bgHere' : 'bgSave')), cn = e4h('button', 'btn small', e4('bgCancel'));
       sv.type = cn.type = 'button'; foot.append(sv, cn); card.append(foot);
       let mode = 'ck', mask = null;
       {
@@ -13519,7 +13675,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         if (blob) {
           const nm = (m.name || 'foto').replace(/\.[^.]+$/, '') + '-sin-fondo.png';
           const f = new File([blob], nm, { type: 'image/png' });
-          await importOne(f, 'img'); if (libTab === 'med') renderLib();
+          const nm2 = await importOne(f, 'img');
+          if (nm2 && target) { target.proj = 'm:' + nm2.id; lastShots.clear(); changed(); }
+          if (libTab === 'med') renderLib();
           toast(e4('bgDone'));
         }
         busy = false; close();
@@ -13527,11 +13685,16 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       document.body.append(wrap); draw();
     }
     function bgExtra(m, x) {
-      if (m.kind !== 'img') return x;
       const w = document.createElement('span'); w.style.cssText = 'display:flex;gap:4px';
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'pl'; b.textContent = '✂️'; b.title = e4('bgTip'); b.setAttribute('aria-label', e4('bgTip') + ': ' + m.name);
-      b.addEventListener('click', (ev) => { ev.stopPropagation(); bgOpen(m); });
-      w.append(b, x); return w;
+      const ob = document.createElement('button'); ob.type = 'button'; ob.className = 'pl'; ob.textContent = '🔼'; ob.title = 'Poner encima del video'; ob.setAttribute('aria-label', ob.title + ': ' + m.name);
+      ob.addEventListener('click', (ev) => { ev.stopPropagation(); placeOv(m, null); });
+      w.append(ob);
+      if (m.kind === 'img') {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'pl'; b.textContent = '✂️'; b.title = e4('bgTip'); b.setAttribute('aria-label', e4('bgTip') + ': ' + m.name);
+        b.addEventListener('click', (ev) => { ev.stopPropagation(); bgOpen(m); });
+        w.append(b);
+      }
+      w.append(x); return w;
     }
     function renderMedia() {
       const ul = $('#edLibList'); ul.textContent = '';
@@ -13542,7 +13705,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const x = document.createElement('button'); x.type = 'button'; x.className = 'pl'; x.textContent = '✕';
         x.title = e4('delMed'); x.setAttribute('aria-label', e4('delMed') + ': ' + m.name);
         x.addEventListener('click', (ev) => { ev.stopPropagation(); delMedia(m); });
-        ul.appendChild(libItem(m.kind === 'img' ? '🖼️' : '🎬', m.name, m.kind === 'img' ? e4('photo') : e4('video') + ' · ' + fmtSec(m.dur || 0), (t) => placeMedia(m, t), { img: m.thumb, extra: bgExtra(m, x) }));
+        ul.appendChild(libItem(m.kind === 'img' ? '🖼️' : '🎬', m.name, m.kind === 'img' ? e4('photo') : e4('video') + ' · ' + fmtSec(m.dur || 0), (t) => (t != null && dropOnOv() ? placeOv(m, t) : placeMedia(m, t)), { img: m.thumb, extra: bgExtra(m, x) }));
       }
     }
     {
@@ -13610,6 +13773,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     $('#edStage').after(insp);
     function selObj() {
       if (!sel) return null;
+      if (sel.kind === 'ov') { const c = (E.ov || []).find((x) => x.id === sel.id); return c ? { kind: 'clip', o: c } : null; }
       if (sel.kind === 'clip') { const c = E.clips.find((x) => x.id === sel.id); return c ? { kind: 'clip', o: c } : null; }
       if (sel.kind === 'au') { const a = E.audio.find((x) => x.id === sel.id); return a ? { kind: 'au', o: a } : null; }
       const L = sel.kind === 'fx' ? E.fx : E.cam, f = L.find((x) => x.id === sel.id);
@@ -13617,6 +13781,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     // Segundo del clip (o del sonido) donde está la línea roja; null si está afuera.
     function localOf(s) {
+      if (s.kind === 'clip' && s.o.start != null) { const c = s.o; if (T < c.start - 1e-6 || T > c.start + c.dur + 1e-6) return null; return c.in + Math.min(c.dur, T - c.start); }
       if (s.kind === 'clip') {
         const o = layout().find((q) => q.c === s.o);
         if (!o || T < o.s - 1e-6 || T > o.e + 1e-6) return null;
@@ -13703,10 +13868,13 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const c = s.o, m = isM(c.proj) ? medOf(c.proj) : null;
       insp.append(e4h('h4', '', (m ? (m.kind === 'img' ? '🖼️ ' : '🎬 ') : '🎞️ ') + nameOf(c.proj)), e4h('small', 'ei-sub', (m ? e4(m.kind === 'img' ? 'photo' : 'video') : e4('scene')) + ' · ' + fmtSec(lenOf(c))));
       if (local == null) insp.append(e4h('p', 'ei-hint', e4('outHint')));
-      if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m)); insp.append(bgb); }
+      if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m, c)); insp.append(bgb); }
       insp.append(e4h('div', 'ei-sec', e4('tf')));
+      { const fb = e4h('button', 'btn small' + (c.fs ? ' on' : ''), e4('fs')); fb.type = 'button'; fb.style.cssText = 'width:100%;margin-bottom:4px';
+        fb.addEventListener('click', () => { if (c.fs) delete c.fs; else c.fs = 1; lastShots.clear(); done(false); }); insp.append(fb); }
       for (const p of Object.keys(TF0)) {
         if (MKP.includes(p)) continue;
+        if ((p === 'sx' || p === 'sy') && !c.fs) continue;
         const R = TFR[p];
         insp.append(kRow(e4(p), R[0], R[1], R[2], R[3], {
           base: () => (c.tf && c.tf[p] != null ? c.tf[p] : TF0[p]),
@@ -13718,7 +13886,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       insp.append(e4h('div', 'ei-sec', e4('mask')));
       const mkRow = e4h('div', 'ei-nav'); mkRow.style.flexWrap = 'wrap';
-      const mkSet = (k) => { if (k) c.mk = k; else { delete c.mk; delete c.mki; delete c.mkt; if (c.kf) for (const p of MKP) delete c.kf[p]; if (c.tf) for (const p of MKP) delete c.tf[p]; if (c.kf && !Object.keys(c.kf).length) delete c.kf; if (c.tf && !Object.keys(c.tf).length) delete c.tf; } lastShots.clear(); done(false); };
+      const mkSet = (k) => { if (k) c.mk = k; else { delete c.mk; delete c.mki; delete c.mkt; delete c.mc; if (c.kf) for (const p of MKP) delete c.kf[p]; if (c.tf) for (const p of MKP) delete c.tf[p]; if (c.kf && !Object.keys(c.kf).length) delete c.kf; if (c.tf && !Object.keys(c.tf).length) delete c.tf; } lastShots.clear(); done(false); };
       for (const k of [''].concat(MKS)) { const b = e4h('button', 'btn small' + ((c.mk || '') === k ? ' on' : ''), k ? e4(k) : e4('mkNone')); b.type = 'button'; b.addEventListener('click', () => mkSet(k)); mkRow.append(b); }
       insp.append(mkRow);
       if (c.mk) {
@@ -13732,6 +13900,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
             tidy: () => { if (c.kf && c.kf[p] && !c.kf[p].length) delete c.kf[p]; if (c.kf && !Object.keys(c.kf).length) delete c.kf; }
           }, local));
         }
+        { const cr = e4h('div', 'ei-row'), cl = e4h('input', ''); cl.type = 'color'; cl.value = c.mc || '#000000'; cl.title = e4('mBc'); cl.style.cssText = 'width:42px;height:26px;padding:0;border:0;background:none';
+          cl.addEventListener('input', () => { c.mc = cl.value; quick(); }); cl.addEventListener('change', () => done(false));
+          cr.append(e4h('span', 'ei-lab', e4('mBc')), cl); insp.append(cr); }
         const iv = e4h('button', 'btn small' + (c.mki ? ' on' : ''), e4('mkInv')); iv.type = 'button';
         iv.addEventListener('click', () => { if (c.mki) delete c.mki; else c.mki = 1; lastShots.clear(); done(false); });
         insp.append(iv);
@@ -13743,12 +13914,12 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       const all = [];
       if (c.kf) for (const p of Object.keys(c.kf)) all.push(...c.kf[p]);
-      e4nav(keyTimes(c.kf), (t) => { const o = layout().find((q) => q.c === c); return o ? o.s + (t - c.in) / c.spd : T; }, local, all, false, Object.values(c.kf || {}));
+      e4nav(keyTimes(c.kf), (t) => { if (c.start != null) return c.start + (t - c.in); const o = layout().find((q) => q.c === c); return o ? o.s + (t - c.in) / c.spd : T; }, local, all, false, Object.values(c.kf || {}));
       if (m && m.kind === 'img') {
         insp.append(e4h('div', 'ei-sec', e4('dur')));
-        insp.append(kRow(e4('dur'), 0.5, 30, 0.1, ' s', { base: () => Math.round((c.out - c.in) * 10) / 10, set: (v) => { c.out = c.in + v; render(); } }, local));
+        insp.append(kRow(e4('dur'), 0.5, 30, 0.1, ' s', { base: () => (c.start != null ? Math.round(c.dur * 10) / 10 : Math.round((c.out - c.in) * 10) / 10), set: (v) => { if (c.start != null) c.dur = v; c.out = c.in + v; render(); } }, local));
       }
-      if (m && m.kind === 'vid') {
+      if (m && m.kind === 'vid' && c.start == null) {
         insp.append(e4h('div', 'ei-sec', e4('clipAudio')));
         insp.append(kRow(e4('vol'), 0, 150, 1, '%', { audio: true, base: () => (c.vol == null ? 100 : c.vol), set: (v) => { c.vol = v; } }, local));
         if (c.spd !== 1) insp.append(e4h('p', 'ei-hint', e4('spdMute')));
