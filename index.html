@@ -8335,6 +8335,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
   const trxBounce = (t) => { const n1 = 7.5625, d1 = 2.75; if (t < 1 / d1) return n1 * t * t; if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75; if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375; return n1 * (t -= 2.625 / d1) * t + 0.984375; };
   // Transiciones nuevas: las usan el animador y el editor. e va de 0 a 1; out = lo que se va, inc = lo que llega.
   function trxDraw(x, k, e, out, inc, w, h, put) {
+    const put0 = put; put = (img, dx, dy, al) => put0(img, dx || 0, dy || 0, al);
     const clipPut = (img, pathFn, dx, dy) => { x.save(); x.beginPath(); pathFn(); x.clip(); put(img, dx || 0, dy || 0); x.restore(); };
     const scaled = (img, sc, al, ang) => { if (!img) return; x.save(); x.globalAlpha = Math.max(0, Math.min(1, al)); x.translate(w / 2, h / 2); if (ang) x.rotate(ang); x.scale(sc, sc); x.drawImage(img, -w / 2, -h / 2, w, h); x.restore(); };
     const wash = (col, a) => { x.save(); x.globalAlpha = Math.max(0, Math.min(1, a)); x.fillStyle = col; x.fillRect(0, 0, w, h); x.restore(); };
@@ -13616,6 +13617,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (m && m.kind === 'img') {
         insp.append(e4h('div', 'ei-sec', e4('dur')));
         insp.append(kRow(e4('dur'), 0.5, 30, 0.1, ' s', { base: () => Math.round((c.out - c.in) * 10) / 10, set: (v) => { c.out = c.in + v; render(); } }, local));
+        const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.addEventListener('click', () => bgOpen(m)); insp.append(bgb);
       }
       if (m && m.kind === 'vid') {
         insp.append(e4h('div', 'ei-sec', e4('clipAudio')));
