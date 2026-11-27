@@ -1635,9 +1635,12 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     <button class="btn" id="edPlay" type="button" aria-label="Play or pause">▶</button>
     <span class="ed-time" id="edTime">0:00.0 / 0:00.0</span>
     <span class="ed-sep"></span>
+    <button class="btn small" id="edUndo" type="button" title="Undo (Ctrl+Z)" aria-label="Undo (Ctrl+Z)" disabled>↶</button>
+    <button class="btn small" id="edRedo" type="button" title="Redo (Ctrl+Y)" aria-label="Redo (Ctrl+Y)" disabled>↷</button>
     <button class="btn small" id="edAdd" type="button" title="Add one of your animations at the end">➕ Scene</button>
     <button class="btn small" id="edSplit" type="button" title="Cuts the chosen scene where the red line is (S)">✂️ Split</button>
     <button class="btn small" id="edSpeed" type="button" title="Slow or fast motion for the chosen scene">⏱ Speed</button>
+    <button class="btn small" id="edBg" type="button" title="Remove the background of the picked photo" disabled>🪄 Remove background</button>
     <button class="btn small" id="edFx" type="button" title="Puts an effect where the red line is">⚡ Effect</button>
     <button class="btn small" id="edSnd" type="button" title="Puts a sound or song where the red line is">🔊 Sound</button>
     <button class="btn small" id="edVoice" type="button" title="Record your voice from the red line while the video plays">🎙️ Record voice</button>
@@ -11567,10 +11570,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const FX = ['rayo', 'aura', 'glitch', 'lava', 'cristal', 'velocidad', 'brillo'];
     const L = (document.documentElement.lang || 'es').slice(0, 2);
     const D = {
-      es: { title: '👑 Stickman Workshop Pro', sub: 'Un solo pago y es tuyo para siempre. Ayudas a que la app siga creciendo.', b1: 'Exportar en 2K y 4K', b2: 'Transiciones entre clips en el editor', b3: 'Exportar sin el muñequito de la esquina', b4: '≈ Modo fluido', b5: '7 efectos extra: Rayo, Aura, Glitch, Lava, Cristal, Velocidad y Brillo', buy: 'Comprar Pro', restore: 'Ya lo compré', later: 'Ahora no', have: '✅ Ya tienes Pro. ¡Gracias por apoyar la app!', noStore: 'Las compras funcionan en la app de la Microsoft Store (en Windows). Desde el navegador no se puede comprar.', open: 'Abrir en la Microsoft Store', thanks: '👑 ¡Gracias! Ya tienes Pro.', cancel: 'Compra cancelada.', restored: '✅ Pro recuperado.', notFound: 'No encontré una compra de Pro en esta cuenta de Microsoft.', why_res: '2K y 4K son de Pro.', ownBtn: 'Código de creador', ownAsk: 'Escribe tu código', ownOk: '👑 Pro activado en este dispositivo', ownBad: 'Ese código no es correcto.', why_bg: 'Quitar fondos con IA es parte de Pro. La opción por color es gratis.', why_tr: 'Las transiciones son de Pro.', why_fl: 'El modo fluido es de Pro.', why_fx: 'Este efecto es de Pro.', btn: 'Pro', wait: 'Un momento…' },
-      en: { title: '👑 Stickman Workshop Pro', sub: 'Pay once and it’s yours forever. You help the app keep growing.', b1: 'Export in 2K and 4K', b2: 'Transitions between clips in the editor', b3: 'Export without the little stickman in the corner', b4: '≈ Smooth mode', b5: '7 extra effects: Lightning, Aura, Glitch, Lava, Crystal, Speed and Shine', buy: 'Buy Pro', restore: 'I already bought it', later: 'Not now', have: '✅ You have Pro. Thanks for supporting the app!', noStore: 'Purchases work in the Microsoft Store app (on Windows). You can’t buy from the browser.', open: 'Open in the Microsoft Store', thanks: '👑 Thank you! You have Pro now.', cancel: 'Purchase canceled.', restored: '✅ Pro restored.', notFound: 'I couldn’t find a Pro purchase on this Microsoft account.', why_res: '2K and 4K are Pro.', ownBtn: 'Creator code', ownAsk: 'Type your code', ownOk: '👑 Pro unlocked on this device', ownBad: 'That code isn’t correct.', why_bg: 'Removing backgrounds with AI is part of Pro. The by-color option is free.', why_tr: 'Transitions are Pro.', why_fl: 'Smooth mode is Pro.', why_fx: 'This effect is Pro.', btn: 'Pro', wait: 'One moment…' },
-      fr: { title: '👑 Stickman Workshop Pro', sub: 'Un seul paiement, à toi pour toujours. Tu aides l’appli à grandir.', b1: 'Exporter en 2K et 4K', b2: 'Transitions entre les clips dans l’éditeur', b3: 'Exporter sans le petit bonhomme dans le coin', b4: '≈ Mode fluide', b5: '7 effets en plus : Éclair, Aura, Glitch, Lave, Cristal, Vitesse et Éclat', buy: 'Acheter Pro', restore: 'Je l’ai déjà acheté', later: 'Plus tard', have: '✅ Tu as Pro. Merci de soutenir l’appli !', noStore: 'Les achats fonctionnent dans l’appli du Microsoft Store (sur Windows). Pas depuis le navigateur.', open: 'Ouvrir dans le Microsoft Store', thanks: '👑 Merci ! Tu as Pro.', cancel: 'Achat annulé.', restored: '✅ Pro récupéré.', notFound: 'Aucun achat Pro trouvé sur ce compte Microsoft.', why_res: '2K et 4K sont dans Pro.', ownBtn: 'Code créateur', ownAsk: 'Écris ton code', ownOk: '👑 Pro activé sur cet appareil', ownBad: 'Ce code n’est pas correct.', why_bg: 'Retirer l’arrière-plan avec l’IA fait partie de Pro. L’option par couleur est gratuite.', why_tr: 'Les transitions sont dans Pro.', why_fl: 'Le mode fluide est dans Pro.', why_fx: 'Cet effet est dans Pro.', btn: 'Pro', wait: 'Un instant…' },
-      ja: { title: '👑 Stickman Workshop Pro', sub: '一度の支払いでずっと使えます。アプリの成長を応援できます。', b1: '2K・4K で書き出し', b2: 'エディターでクリップ間のトランジション', b3: '隅の棒人間マークなしで書き出し', b4: '≈ スムーズモード', b5: '追加エフェクト7種：雷・オーラ・グリッチ・溶岩・クリスタル・スピード・きらめき', buy: 'Pro を購入', restore: '購入済みです', later: 'あとで', have: '✅ Pro を利用中です。応援ありがとう！', noStore: '購入は Microsoft Store のアプリ（Windows）でできます。ブラウザーからは購入できません。', open: 'Microsoft Store で開く', thanks: '👑 ありがとう！Pro になりました。', cancel: '購入をキャンセルしました。', restored: '✅ Pro を復元しました。', notFound: 'この Microsoft アカウントに Pro の購入が見つかりません。', why_res: '2K と 4K は Pro の機能です。', ownBtn: 'クリエイターコード', ownAsk: 'コードを入力', ownOk: '👑 この端末でProを有効にしました', ownBad: 'コードが正しくありません。', why_bg: 'AIで背景を消す機能はProです。色で消す方法は無料です。', why_tr: 'トランジションは Pro の機能です。', why_fl: 'スムーズモードは Pro の機能です。', why_fx: 'このエフェクトは Pro の機能です。', btn: 'Pro', wait: 'お待ちください…' }
+      es: { title: '👑 Stickman Workshop Pro', sub: 'Un solo pago y es tuyo para siempre. Ayudas a que la app siga creciendo.', b1: 'Exportar en 2K y 4K', b2: 'Transiciones entre clips en el editor', b3: 'Exportar sin el muñequito de la esquina', b4: '≈ Modo fluido', b5: '7 efectos extra: Rayo, Aura, Glitch, Lava, Cristal, Velocidad y Brillo', buy: 'Comprar Pro', restore: 'Ya lo compré', later: 'Ahora no', have: '✅ Ya tienes Pro. ¡Gracias por apoyar la app!', noStore: 'Las compras funcionan en la app de la Microsoft Store (en Windows). Desde el navegador no se puede comprar.', open: 'Abrir en la Microsoft Store', thanks: '👑 ¡Gracias! Ya tienes Pro.', cancel: 'Compra cancelada.', restored: '✅ Pro recuperado.', notFound: 'No encontré una compra de Pro en esta cuenta de Microsoft.', why_res: '2K y 4K son de Pro.', ownBtn: 'Código de creador', ownGo: 'Activar', ownAsk: 'Escribe tu código', ownOk: '👑 Pro activado en este dispositivo', ownBad: 'Ese código no es correcto.', why_fx: 'Este efecto es parte de Pro. Hay 10 efectos gratis para probar.', why_bg: 'Quitar fondos con IA es parte de Pro. La opción por color es gratis.', why_tr: 'Las transiciones son de Pro.', why_fl: 'El modo fluido es de Pro.', why_fx: 'Este efecto es de Pro.', btn: 'Pro', wait: 'Un momento…' },
+      en: { title: '👑 Stickman Workshop Pro', sub: 'Pay once and it’s yours forever. You help the app keep growing.', b1: 'Export in 2K and 4K', b2: 'Transitions between clips in the editor', b3: 'Export without the little stickman in the corner', b4: '≈ Smooth mode', b5: '7 extra effects: Lightning, Aura, Glitch, Lava, Crystal, Speed and Shine', buy: 'Buy Pro', restore: 'I already bought it', later: 'Not now', have: '✅ You have Pro. Thanks for supporting the app!', noStore: 'Purchases work in the Microsoft Store app (on Windows). You can’t buy from the browser.', open: 'Open in the Microsoft Store', thanks: '👑 Thank you! You have Pro now.', cancel: 'Purchase canceled.', restored: '✅ Pro restored.', notFound: 'I couldn’t find a Pro purchase on this Microsoft account.', why_res: '2K and 4K are Pro.', ownBtn: 'Creator code', ownGo: 'Activate', ownAsk: 'Type your code', ownOk: '👑 Pro unlocked on this device', ownBad: 'That code isn’t correct.', why_fx: 'This effect is part of Pro. There are 10 free effects to try.', why_bg: 'Removing backgrounds with AI is part of Pro. The by-color option is free.', why_tr: 'Transitions are Pro.', why_fl: 'Smooth mode is Pro.', why_fx: 'This effect is Pro.', btn: 'Pro', wait: 'One moment…' },
+      fr: { title: '👑 Stickman Workshop Pro', sub: 'Un seul paiement, à toi pour toujours. Tu aides l’appli à grandir.', b1: 'Exporter en 2K et 4K', b2: 'Transitions entre les clips dans l’éditeur', b3: 'Exporter sans le petit bonhomme dans le coin', b4: '≈ Mode fluide', b5: '7 effets en plus : Éclair, Aura, Glitch, Lave, Cristal, Vitesse et Éclat', buy: 'Acheter Pro', restore: 'Je l’ai déjà acheté', later: 'Plus tard', have: '✅ Tu as Pro. Merci de soutenir l’appli !', noStore: 'Les achats fonctionnent dans l’appli du Microsoft Store (sur Windows). Pas depuis le navigateur.', open: 'Ouvrir dans le Microsoft Store', thanks: '👑 Merci ! Tu as Pro.', cancel: 'Achat annulé.', restored: '✅ Pro récupéré.', notFound: 'Aucun achat Pro trouvé sur ce compte Microsoft.', why_res: '2K et 4K sont dans Pro.', ownBtn: 'Code créateur', ownGo: 'Activer', ownAsk: 'Écris ton code', ownOk: '👑 Pro activé sur cet appareil', ownBad: 'Ce code n’est pas correct.', why_fx: 'Cet effet fait partie de Pro. Il y a 10 effets gratuits à essayer.', why_bg: 'Retirer l’arrière-plan avec l’IA fait partie de Pro. L’option par couleur est gratuite.', why_tr: 'Les transitions sont dans Pro.', why_fl: 'Le mode fluide est dans Pro.', why_fx: 'Cet effet est dans Pro.', btn: 'Pro', wait: 'Un instant…' },
+      ja: { title: '👑 Stickman Workshop Pro', sub: '一度の支払いでずっと使えます。アプリの成長を応援できます。', b1: '2K・4K で書き出し', b2: 'エディターでクリップ間のトランジション', b3: '隅の棒人間マークなしで書き出し', b4: '≈ スムーズモード', b5: '追加エフェクト7種：雷・オーラ・グリッチ・溶岩・クリスタル・スピード・きらめき', buy: 'Pro を購入', restore: '購入済みです', later: 'あとで', have: '✅ Pro を利用中です。応援ありがとう！', noStore: '購入は Microsoft Store のアプリ（Windows）でできます。ブラウザーからは購入できません。', open: 'Microsoft Store で開く', thanks: '👑 ありがとう！Pro になりました。', cancel: '購入をキャンセルしました。', restored: '✅ Pro を復元しました。', notFound: 'この Microsoft アカウントに Pro の購入が見つかりません。', why_res: '2K と 4K は Pro の機能です。', ownBtn: 'クリエイターコード', ownGo: '有効にする', ownAsk: 'コードを入力', ownOk: '👑 この端末でProを有効にしました', ownBad: 'コードが正しくありません。', why_fx: 'このエフェクトはProです。無料のエフェクトが10個あります。', why_bg: 'AIで背景を消す機能はProです。色で消す方法は無料です。', why_tr: 'トランジションは Pro の機能です。', why_fl: 'スムーズモードは Pro の機能です。', why_fx: 'このエフェクトは Pro の機能です。', btn: 'Pro', wait: 'お待ちください…' }
     };
     const t = (k) => ((D[L] || D.es)[k] || D.es[k] || k);
     let on = false, svc = null, item = null;
@@ -11660,12 +11663,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           if (card.querySelector('.pro-own')) return;
           const inp = document.createElement('input'); inp.type = 'password'; inp.className = 'pro-own'; inp.placeholder = t('ownAsk'); inp.autocomplete = 'off'; inp.style.cssText = 'width:100%;margin:8px 0;padding:8px;border-radius:8px';
           card.insertBefore(inp, msg); inp.focus();
-          inp.addEventListener('keydown', async (ev) => {
-            if (ev.key !== 'Enter') return;
+          const verify = async () => {
             let ok = false;
             try { const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('tp-own-v1:' + inp.value.trim())))].map((x) => x.toString(16).padStart(2, '0')).join(''); ok = h === OWN_HASH; } catch (_) {}
             if (ok) { own = true; try { localStorage.setItem('tp-own', '1'); } catch (_) {} setOn(true); close(); toast(t('ownOk')); } else msg.textContent = t('ownBad');
-          });
+          };
+          inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') verify(); });
+          const go = document.createElement('button'); go.type = 'button'; go.className = 'btn'; go.textContent = t('ownGo'); go.style.cssText = 'width:100%;margin:0 0 8px'; go.addEventListener('click', verify);
+          card.insertBefore(go, msg);
         });
         kb.title = t('ownBtn'); kb.setAttribute('aria-label', t('ownBtn'));
       }
@@ -11744,7 +11749,97 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const ed = $('#ed'), view = $('#edView'), vx = view.getContext('2d');
     const scroll = $('#edScroll'), inner = $('#edInner'), ruler = $('#edRuler');
     const rowV = $('#edRowV'), rowF = $('#edRowF'), rowC = $('#edRowC'), rowA = $('#edRowA'), head = $('#edHead');
-    const FX_NAME = { shk1: '📳 Light shake', shk2: '📳 Strong shake', flash: '💥 White flash', imp: '⚡ Anime impact' };
+    const FX_NAME = { shk1: '📳 Light shake', shk2: '📳 Strong shake', flash: '💥 White flash', imp: '⚡ Anime impact', vign: '🕶️ Vignette', bw: '⚫ Black & white', sepia: '🟤 Sepia', blur: '🌫️ Blur', bri: '🔆 Brighter', dark: '🌑 Darken', blink: '💡 Blink', invert: '🔄 Negative', sat: '🌈 Vivid colors', bars: '🎞️ Cinema bars', glitch: '👾 Glitch', rgb: '🔴 RGB split', vhs: '📼 VHS', pixel: '🟦 Pixelate', mirror: '🪞 Mirror', wave: '🌊 Waves', zblur: '💨 Zoom blur', duo: '💜 Neon duotone', grain: '🎥 Film grain', scan: '📺 Old screen', cinema: '🎬 Cinema color' };
+    const EFX_LIST = [['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]].concat(['vign','bw','sepia','blur','bri','dark','blink','invert','sat','bars','glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema'].map((k) => [k, 1]));
+    const EFXP = new Set(['glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema']);
+    const efB1 = document.createElement('canvas'), efB2 = document.createElement('canvas');
+    let efNoise = null;
+    const efxRamp = (u) => Math.max(0, Math.min(1, u * 6, (1 - u) * 6));
+    function efxCopy(ax, w, h, buf) { const c = sized(buf, w, h); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.filter = 'none'; c.clearRect(0, 0, w, h); c.drawImage(ax.canvas, 0, 0); return c; }
+    function efxFilter(ax, w, h, flt) { if (!('filter' in ax)) return; efxCopy(ax, w, h, efB1); ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = 1; ax.filter = flt; ax.drawImage(efB1, 0, 0); ax.restore(); }
+    function efxRgb(ax, w, h, d) {
+      efxCopy(ax, w, h, efB1);
+      ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = 1; ax.fillStyle = '#000000'; ax.fillRect(0, 0, w, h); ax.globalCompositeOperation = 'lighter';
+      for (const [col, off] of [['#ff0000', -d], ['#00ff00', 0], ['#0000ff', d]]) {
+        const c2 = sized(efB2, w, h); c2.setTransform(1, 0, 0, 1, 0, 0); c2.globalCompositeOperation = 'source-over'; c2.globalAlpha = 1; c2.clearRect(0, 0, w, h); c2.drawImage(efB1, 0, 0);
+        c2.globalCompositeOperation = 'multiply'; c2.fillStyle = col; c2.fillRect(0, 0, w, h); c2.globalCompositeOperation = 'source-over';
+        ax.drawImage(efB2, off, 0);
+      }
+      ax.restore();
+    }
+    function efxLines(ax, w, h, a) { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = 'rgba(0,0,0,' + a + ')'; for (let y = 0; y < h; y += 4) ax.fillRect(0, y, w, 2); ax.restore(); }
+    function efxPost(ax, w, h, act) {
+      for (const { k, u, t } of act) {
+        const r = efxRamp(u), q = Math.floor(t * 24);
+        if (k === 'bw') efxFilter(ax, w, h, 'grayscale(1)');
+        else if (k === 'sepia') efxFilter(ax, w, h, 'sepia(1)');
+        else if (k === 'blur') efxFilter(ax, w, h, 'blur(' + (w * 0.012 * r).toFixed(1) + 'px)');
+        else if (k === 'bri') efxFilter(ax, w, h, 'brightness(' + (1 + 0.55 * r).toFixed(2) + ')');
+        else if (k === 'dark') efxFilter(ax, w, h, 'brightness(' + (1 - 0.55 * r).toFixed(2) + ')');
+        else if (k === 'invert') efxFilter(ax, w, h, 'invert(1)');
+        else if (k === 'sat') efxFilter(ax, w, h, 'saturate(' + (1 + 1.1 * r).toFixed(2) + ') contrast(1.08)');
+        else if (k === 'vign') {
+          const g = ax.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) / 2);
+          g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,' + (0.9 * r).toFixed(2) + ')');
+          ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = g; ax.fillRect(0, 0, w, h); ax.restore();
+        }
+        else if (k === 'blink') { if (Math.floor(t * 8) % 2) { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = 'rgba(0,0,0,0.88)'; ax.fillRect(0, 0, w, h); ax.restore(); } }
+        else if (k === 'bars') { const bh = h * 0.13 * r; ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = '#000'; ax.fillRect(0, 0, w, bh); ax.fillRect(0, h - bh, w, bh); ax.restore(); }
+        else if (k === 'rgb') efxRgb(ax, w, h, w * 0.016 * (0.4 + 0.6 * r));
+        else if (k === 'glitch') {
+          efxRgb(ax, w, h, w * 0.012);
+          efxCopy(ax, w, h, efB1); ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0);
+          for (let i = 0; i < 8; i++) {
+            if (hash01(q * 3 + i) < 0.45) continue;
+            const y = Math.floor(hash01(q * 13 + i) * h * 0.9), sh = Math.max(2, h * (0.03 + hash01(q * 7 + i) * 0.08)), off = (hash01(q * 5 + i) - 0.5) * w * 0.14;
+            ax.drawImage(efB1, 0, y, w, sh, off, y, w, sh);
+          }
+          ax.restore();
+        }
+        else if (k === 'vhs') {
+          efxRgb(ax, w, h, w * 0.006); efxFilter(ax, w, h, 'saturate(1.25) contrast(1.05)'); efxLines(ax, w, h, 0.22);
+          const y = ((t * 0.35) % 1) * h; ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = 'rgba(255,255,255,0.10)'; ax.fillRect(0, y, w, h * 0.03); ax.restore();
+        }
+        else if (k === 'pixel') {
+          const bs = Math.max(3, Math.round(w * 0.012 + r * w * 0.02)), tw = Math.max(1, Math.ceil(w / bs)), th = Math.max(1, Math.ceil(h / bs));
+          const c2 = sized(efB2, w, h); c2.setTransform(1, 0, 0, 1, 0, 0); c2.globalCompositeOperation = 'source-over'; c2.globalAlpha = 1; c2.filter = 'none'; c2.clearRect(0, 0, w, h); c2.drawImage(ax.canvas, 0, 0, tw, th);
+          ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.imageSmoothingEnabled = false; ax.drawImage(efB2, 0, 0, tw, th, 0, 0, tw * bs, th * bs); ax.restore();
+        }
+        else if (k === 'mirror') { efxCopy(ax, w, h, efB1); ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.translate(w, 0); ax.scale(-1, 1); ax.drawImage(efB1, 0, 0, w / 2, h, 0, 0, w / 2, h); ax.restore(); }
+        else if (k === 'wave') {
+          efxCopy(ax, w, h, efB1); ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); const n = 30, sh = h / n;
+          for (let i = 0; i < n; i++) ax.drawImage(efB1, 0, i * sh, w, sh + 1, Math.sin(i * 0.6 + t * 8) * w * 0.022 * (0.4 + 0.6 * r), i * sh, w, sh + 1);
+          ax.restore();
+        }
+        else if (k === 'zblur') {
+          efxCopy(ax, w, h, efB1); ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0);
+          for (let j = 1; j <= 6; j++) { const s = 1 + r * 0.03 * j; ax.globalAlpha = 1 / (j + 1); ax.drawImage(efB1, (w - w * s) / 2, (h - h * s) / 2, w * s, h * s); }
+          ax.restore();
+        }
+        else if (k === 'duo') {
+          efxFilter(ax, w, h, 'grayscale(1) contrast(1.15)');
+          const g = ax.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#00e5ff'); g.addColorStop(1, '#ff2bd6');
+          ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalCompositeOperation = 'color'; ax.globalAlpha = 0.85; ax.fillStyle = g; ax.fillRect(0, 0, w, h); ax.restore();
+        }
+        else if (k === 'grain') {
+          if (!efNoise) { efNoise = document.createElement('canvas'); efNoise.width = efNoise.height = 192; const nx = efNoise.getContext('2d'), im = nx.createImageData(192, 192); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } nx.putImageData(im, 0, 0); }
+          ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalCompositeOperation = 'overlay'; ax.globalAlpha = 0.32;
+          const ox = -Math.floor(hash01(q * 2 + 1) * 192), oy = -Math.floor(hash01(q * 2 + 2) * 192);
+          for (let x = ox; x < w; x += 192) for (let y = oy; y < h; y += 192) ax.drawImage(efNoise, x, y);
+          ax.restore();
+        }
+        else if (k === 'scan') {
+          efxFilter(ax, w, h, 'contrast(1.1) saturate(1.1)'); efxLines(ax, w, h, 0.3);
+          const g = ax.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.hypot(w, h) / 2); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.55)');
+          ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = g; ax.fillRect(0, 0, w, h); ax.restore();
+        }
+        else if (k === 'cinema') {
+          efxFilter(ax, w, h, 'contrast(1.12) saturate(1.15)');
+          const g = ax.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#0a8f9e'); g.addColorStop(1, '#ff8a3d');
+          ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalCompositeOperation = 'soft-light'; ax.globalAlpha = 0.55; ax.fillStyle = g; ax.fillRect(0, 0, w, h); ax.restore();
+        }
+      }
+    }
     const CAM_NAME = { zin: '🔍 Slow zoom in', zout: '🔭 Slow zoom out', punch: '💢 Zoom punch', panl: '⬅ Pan left', panr: '➡ Pan right', up: '⬆ Camera up', down: '⬇ Camera down' };
     const CAM_DUR = { zin: 2, zout: 2, punch: 0.6, panl: 2, panr: 2, up: 1.5, down: 1.5 };
     const MIN = 1 / 24;
@@ -11764,7 +11859,23 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const storeKey = () => 'tp-edit-' + PROF.dbName();
 
     /* --- guardar la edición (solo datos; los sonidos van en la base de audio) --- */
-    function saveE() { try { syncBack(); gcComps(); localStorage.setItem(storeKey(), JSON.stringify(ROOT || E)); } catch (_) {} }
+    const HX = { u: [], r: [], cur: null, t: 0, lock: 0 };
+    function hBtns() { const u = $('#edUndo'), r = $('#edRedo'); if (u) u.disabled = !HX.u.length; if (r) r.disabled = !HX.r.length; }
+    function hSnap(s) {
+      if (HX.lock || HX.cur === null) { HX.cur = s; return; }
+      if (s === HX.cur) return;
+      const now = Date.now();
+      if (now - HX.t > 400 || !HX.u.length) { HX.u.push(HX.cur); if (HX.u.length > 40) HX.u.shift(); }
+      HX.t = now; HX.r = []; HX.cur = s; hBtns();
+    }
+    function saveE() { try { syncBack(); gcComps(); const s = JSON.stringify(ROOT || E); hSnap(s); localStorage.setItem(storeKey(), s); } catch (_) {} }
+    function hApply(s) {
+      HX.lock = 1;
+      try { stop(); localStorage.setItem(storeKey(), s); loadE1(); sel = null; changed(); } finally { HX.lock = 0; }
+      hBtns();
+    }
+    function undo() { if (!HX.u.length) return; HX.r.push(HX.cur); hApply(HX.u.pop()); }
+    function redo() { if (!HX.r.length) return; HX.u.push(HX.cur); hApply(HX.r.pop()); }
     function parseTL(o, T0) {
       const num = (v, d) => (isFinite(+v) ? +v : d);
       for (const f of Array.isArray(o.cam) ? o.cam.slice(0, 200) : []) {
@@ -11786,7 +11897,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         T0.audio.push({ id: a.id, name: String(a.name || 'Sonido').slice(0, 60), start: Math.max(0, num(a.start, 0)), in: inn, out: Math.max(inn + 0.05, num(a.out, inn + 1)), gain: clampV(num(a.gain, 1), 0, 1.5), fadeIn: clampV(num(a.fadeIn, 0.05), 0, 10), fadeOut: clampV(num(a.fadeOut, 0.1), 0, 10), kv: kfClean(a.kv, 0, 150), src: typeof a.src === 'string' ? a.src.slice(0, 80) : undefined, tk: clampV(num(a.tk, 0) | 0, 0, 7) });
       }
     }
-    function loadE() {
+    function loadE() { loadE1(); HX.u = []; HX.r = []; HX.cur = null; try { HX.cur = JSON.stringify(ROOT || E); } catch (_) {} hBtns(); }
+    function loadE1() {
       let o = null;
       try { o = JSON.parse(localStorage.getItem(storeKey()) || 'null'); } catch (_) { o = null; }
       E = { clips: [], fx: [], cam: [], audio: [], ratio: 'auto', media: [], comp: {} };
@@ -11917,6 +12029,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       x.restore();
     }
+    // La transición queda centrada en el corte: mitad sobre el final de la escena que sale y mitad sobre el inicio de la que entra.
+    const trHalf = (b, a) => Math.min(b.c.tr.d / 2, (a.e - a.s) / 2, (b.e - b.s) / 2);
     // Devuelve false si alguna escena todavía está cargando.
     function drawE(ctx, Tg, w, h, getSc, TL, depth) {
       TL = TL || E; depth = depth | 0;
@@ -11929,15 +12043,23 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         if (k < 0) k = L.length - 1;
         const o = L[k], c = o.c, local = Math.min(c.out - 1e-4, c.in + Math.max(0, Tg - o.s) * c.spd);
         ok = clipShot(ax, c, local, w, h, getSc);
-        if (ok && c.tr && k > 0 && Tg - o.s < c.tr.d) {
+        const hd1 = c.tr && k > 0 ? trHalf(o, L[k - 1]) : 0;
+        if (ok && hd1 > 0 && Tg - o.s < hd1) {
           const out = lastShot(L[k - 1].c, w, h, getSc);
           const bx = sized(depth ? dbuf(depth, 'B') : bufB, w, h);
           bx.drawImage(ax.canvas, 0, 0);
-          blend(ax, c.tr.k, easeIO(Math.max(0, (Tg - o.s) / c.tr.d)), out, bx.canvas, w, h);
+          blend(ax, c.tr.k, easeIO(Math.max(0, Math.min(1, (Tg - (o.s - hd1)) / (2 * hd1)))), out, bx.canvas, w, h);
+        }
+        const nx = L[k + 1], hd2 = nx && nx.c.tr ? trHalf(nx, o) : 0;
+        if (ok && hd2 > 0 && Tg >= nx.s - hd2) {
+          const bx = sized(depth ? dbuf(depth, 'B') : bufB, w, h), cx = sized(depth ? dbuf(depth, 'C') : bufC, w, h);
+          bx.drawImage(ax.canvas, 0, 0);
+          if (clipShot(cx, nx.c, nx.c.in, w, h, getSc)) blend(ax, nx.c.tr.k, easeIO(Math.max(0, Math.min(1, (Tg - (nx.s - hd2)) / (2 * hd2)))), bx.canvas, cx.canvas, w, h);
+          else ok = false;
         }
       }
       // efectos de la pista roja
-      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0;
+      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0; const act = [];
       for (const f of TL.fx) {
         if (Tg < f.start || Tg >= f.start + f.dur) continue;
         const u = (Tg - f.start) / f.dur;
@@ -11946,6 +12068,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           sx += (hash01(q * 2 + 1) - 0.5) * 2 * a; sy += (hash01(q * 2 + 2) - 0.5) * 2 * a; sc = Math.max(sc, 1 + (2.4 * a) / w);
         } else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
         else if (f.k === 'imp') imp = (Math.floor((Tg - f.start) * 12) % 2) ? 2 : 1;
+        else act.push({ k: f.k, u, t: Tg - f.start });
       }
       if (imp) {
         const im = ax.getImageData(0, 0, w, h), d = im.data;
@@ -11956,6 +12079,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         }
         ax.putImageData(im, 0, 0);
       }
+      if (act.length) efxPost(ax, w, h, act);
       // pista de cámara: acercar, alejar, golpe de zoom y paneos
       let cz = 1, cx = 0, cy = 0;
       for (const f of TL.cam) {
@@ -12110,6 +12234,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       $('#edSpeed').disabled = !c;
       $('#edEdit').disabled = !c || isM(c.proj) || isC(c.proj);
       $('#edDel').disabled = !sel;
+      { const bg = $('#edBg'), mm = c && isM(c.proj) ? medOf(c.proj) : null; if (bg) bg.disabled = !(mm && mm.kind === 'img'); }
       const isCmp = !!(c && isC(c.proj)) && !multi.size;
       const bc = $('#edComp'), bu = $('#edUncomp'), bb = $('#edBack'), bm = $('#edMulti');
       if (bc) { bc.textContent = isCmp ? e4('cmpOpen') : e4('cmpBtn'); bc.title = isCmp ? e4('cmpOpenTip') : e4('cmpTip'); }
@@ -12279,7 +12404,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       let k = L.findIndex((o) => t < o.e - 1e-9); if (k < 0) k = L.length - 1;
       const o = L[k], c = o.c, local = Math.min(c.out - 1e-4, c.in + Math.max(0, t - o.s) * c.spd);
       leafAdd(c, local, set, d);
-      if (c.tr && k > 0 && t - o.s < c.tr.d) { const p = L[k - 1].c; leafAdd(p, Math.max(p.in, p.out - 1e-4), set, d); }
+      if (c.tr && k > 0 && t - o.s < trHalf(o, L[k - 1])) { const p = L[k - 1].c; leafAdd(p, Math.max(p.in, p.out - 1e-4), set, d); }
+      if (L[k + 1] && L[k + 1].c.tr && t >= L[k + 1].s - trHalf(L[k + 1], o)) leafAdd(L[k + 1].c, L[k + 1].c.in, set, d);
     }
     /* --- pistas: varias líneas por tipo, con imán --- */
     function trh(kind) { return kind === 'au' ? 44 : 28; }
@@ -12363,7 +12489,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           j.addEventListener('pointerdown', (e) => e.stopPropagation());
           j.addEventListener('click', (e) => { e.stopPropagation(); joinMenu(c, j); });
           rowV.appendChild(j);
-          if (c.tr) { const z = document.createElement('div'); z.className = 'ed-trz'; z.style.left = (o.s * pps) + 'px'; z.style.width = Math.min(c.tr.d, o.e - o.s) * pps + 'px'; rowV.appendChild(z); }
+          if (c.tr) { const z = document.createElement('div'); z.className = 'ed-trz'; const hz = trHalf(o, L[k - 1]); z.style.left = ((o.s - hz) * pps) + 'px'; z.style.width = (2 * hz) * pps + 'px'; rowV.appendChild(z); }
         }
       });
       // efectos
@@ -12543,8 +12669,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     });
     $('#edFx').addEventListener('click', (e) => popup(e.currentTarget, 'edf', () => {
       menu.append(askLine('Effect from ' + fmt(T) + ' (then stretch it on the red track)'));
-      for (const [k, d] of [['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]]) {
-        menu.append(menuBtn(FX_NAME[k], () => { closeMenu(); const f = { id: newId(), k, start: T, dur: d }; E.fx.push(f); sel = { kind: 'fx', id: f.id }; changed(); }));
+      for (const [k, d] of EFX_LIST) {
+        menu.append(menuBtn(FX_NAME[k] + (EFXP.has(k) ? ' 👑' : ''), () => { closeMenu(); if (EFXP.has(k) && !PRO.has()) { PRO.ask('fx'); return; } const f = { id: newId(), k, start: T, dur: d }; E.fx.push(f); sel = { kind: 'fx', id: f.id }; changed(); }));
       }
     }));
     $('#edAdd').addEventListener('click', async (e) => {
@@ -12594,6 +12720,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       sel = null; changed();
     }
     $('#edDel').addEventListener('click', del);
+    $('#edUndo').addEventListener('click', undo);
+    $('#edRedo').addEventListener('click', redo);
+    $('#edBg').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); const m = c && isM(c.proj) ? medOf(c.proj) : null; if (m && m.kind === 'img') bgOpen(m); });
     $('#edEdit').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); if (c) goAnim(c.proj); });
     $('#edAnim').addEventListener('click', () => { const c = sel && E.clips.find((x) => x.id === sel.id); let p = c ? c.proj : lastProj; if (!p || isM(p) || isC(p) || (p !== state.id && !recOf(p))) p = state.id; goAnim(p); });
 
@@ -12938,9 +13067,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       } else if (libTab === 'tr') {
         for (const k of TR_KINDS) ul.appendChild(libItem(TR_ICON[k], k === 'cortina' ? 'Curtain (the scene drops)' : TR_NAME[k], 'Between two scenes', (t) => placeTrans(k, t)));
       } else if (libTab === 'fx') {
-        for (const [k, d] of [['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]]) {
+        for (const [k, d] of EFX_LIST) {
           const nm = FX_NAME[k];
-          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, ''), 'Lasts ' + fmtSec(d) + ' (you can stretch it)', (t) => placeBar(E.fx, 'fx', k, d, t)));
+          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, '') + (EFXP.has(k) ? ' 👑' : ''), 'Lasts ' + fmtSec(d) + ' (you can stretch it)', (t) => { if (EFXP.has(k) && !PRO.has()) { PRO.ask('fx'); return; } placeBar(E.fx, 'fx', k, d, t); }));
         }
       } else if (libTab === 'cam') {
         for (const k of Object.keys(CAM_NAME)) {
@@ -13574,6 +13703,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const c = s.o, m = isM(c.proj) ? medOf(c.proj) : null;
       insp.append(e4h('h4', '', (m ? (m.kind === 'img' ? '🖼️ ' : '🎬 ') : '🎞️ ') + nameOf(c.proj)), e4h('small', 'ei-sub', (m ? e4(m.kind === 'img' ? 'photo' : 'video') : e4('scene')) + ' · ' + fmtSec(lenOf(c))));
       if (local == null) insp.append(e4h('p', 'ei-hint', e4('outHint')));
+      if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m)); insp.append(bgb); }
       insp.append(e4h('div', 'ei-sec', e4('tf')));
       for (const p of Object.keys(TF0)) {
         if (MKP.includes(p)) continue;
@@ -13617,7 +13747,6 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (m && m.kind === 'img') {
         insp.append(e4h('div', 'ei-sec', e4('dur')));
         insp.append(kRow(e4('dur'), 0.5, 30, 0.1, ' s', { base: () => Math.round((c.out - c.in) * 10) / 10, set: (v) => { c.out = c.in + v; render(); } }, local));
-        const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.addEventListener('click', () => bgOpen(m)); insp.append(bgb);
       }
       if (m && m.kind === 'vid') {
         insp.append(e4h('div', 'ei-sec', e4('clipAudio')));
@@ -13732,6 +13861,11 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     window.addEventListener('keydown', (e) => {
       if (!isOpen || !$('#edExpBox').hidden) return;
       if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[zy]$/i.test(e.key)) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (e.key.toLowerCase() === 'y' || e.shiftKey) redo(); else undo();
+        return;
+      }
       if (e.key === ' ') { e.preventDefault(); playing ? stop() : play(); }
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
       else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); stop(); setT(T + (e.key === 'ArrowRight' ? 1 : -1) / 12); placeHead(true); }
