@@ -6831,7 +6831,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
 
   /* ---------- Datos extra de cada frame: velocidad, transición y efecto ---------- */
   const SPDS = [0.25, 0.5, 1, 2, 3];
-  const TR_KINDS = ['fundido', 'izq', 'der', 'arriba', 'abajo', 'negro', 'blanco', 'iris', 'diag', 'persianas', 'zoom', 'pixelar', 'desenfoque', 'girar', 'rebote', 'reloj', 'cuadros', 'puertas', 'zoomout', 'lineas', 'rombo', 'cortina', 'cruz', 'abanico', 'zigzag', 'voltear', 'glitchtr', 'remolino', 'ondas', 'pagina', 'cristal', 'destello', 'latigazo', 'barrasneon', 'tunel'];
+  const TR_KINDS = ['fundido', 'izq', 'der', 'arriba', 'abajo', 'negro', 'blanco', 'iris', 'diag', 'persianas', 'zoom', 'pixelar', 'desenfoque', 'girar', 'rebote', 'reloj', 'cuadros', 'puertas', 'zoomout', 'lineas', 'rombo', 'cortina', 'cruz', 'abanico', 'zigzag', 'voltear', 'glitchtr', 'remolino', 'ondas', 'pagina', 'cristal', 'destello', 'latigazo', 'barrasneon', 'tunel', 'aspas4', 'aspas5', 'flecha'];
   function cleanMeta(src) {
     const o = src || {};
     const spd = +o.spd > 0.05 && +o.spd <= 10 ? +o.spd : 1;
@@ -8340,10 +8340,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     $('#btnTracks').setAttribute('aria-pressed', String(tracksOn));
     try { localStorage.setItem('tp-tracks', tracksOn ? '1' : '0'); } catch (_) {}
   });
-  const TR_ICON = { izq: '⬅', der: '➡', arriba: '⬆', abajo: '⬇', fundido: '◐', cortina: '🎭' , negro: '⚫', blanco: '⚪', iris: '🔵', diag: '◢', persianas: '☰', zoom: '🔍', pixelar: '▦', desenfoque: '🌫️', girar: '🔄', rebote: '🏀', reloj: '🕐', cuadros: '🏁', puertas: '🚪', zoomout: '🔭', lineas: '〰️', rombo: '🔶', cruz: '➕', abanico: '🪭', zigzag: '⚡', voltear: '🔃', glitchtr: '👾', remolino: '🌀', ondas: '🌊', pagina: '📖', cristal: '💎', destello: '✨', latigazo: '💨', barrasneon: '🌈', tunel: '🕳️' };
-  const TR_NAME = { izq: 'Slide left', der: 'Slide right', arriba: 'Slide up', abajo: 'Slide down', fundido: 'Fade', cortina: 'Curtain (the stickman pulls it)', negro: 'Fade to black', blanco: 'Fade to white', iris: 'Iris (circle opens)', diag: 'Diagonal wipe', persianas: 'Blinds', zoom: 'Zoom in', pixelar: 'Pixelate', desenfoque: 'Blur', girar: 'Spin', rebote: 'Bounce', reloj: 'Clock wipe', cuadros: 'Checkerboard', puertas: 'Open doors', zoomout: 'Zoom out', lineas: 'Line wipe', rombo: 'Diamond iris', cruz: 'Cross', abanico: 'Fan', zigzag: 'Zigzag', voltear: 'Flip', glitchtr: 'Glitch', remolino: 'Swirl', ondas: 'Waves', pagina: 'Book close', cristal: 'Shatter', destello: 'Flash burst', latigazo: 'Whip pan', barrasneon: 'Neon bars', tunel: 'Tunnel' };
-  const TR_NEW = new Set(['negro','blanco','iris','diag','persianas','zoom','pixelar','desenfoque','girar','rebote','reloj','cuadros','puertas','zoomout','lineas','rombo','cruz','abanico','zigzag','voltear','glitchtr','remolino','ondas','pagina','cristal','destello','latigazo','barrasneon','tunel']);
-  const TR_PRO = new Set(['cortina','glitchtr','remolino','ondas','pagina','cristal','destello','latigazo','barrasneon','tunel']);
+  const TR_ICON = { izq: '⬅', der: '➡', arriba: '⬆', abajo: '⬇', fundido: '◐', cortina: '🎭' , negro: '⚫', blanco: '⚪', iris: '🔵', diag: '◢', persianas: '☰', zoom: '🔍', pixelar: '▦', desenfoque: '🌫️', girar: '🔄', rebote: '🏀', reloj: '🕐', cuadros: '🏁', puertas: '🚪', zoomout: '🔭', lineas: '〰️', rombo: '🔶', cruz: '➕', abanico: '🪭', zigzag: '⚡', voltear: '🔃', glitchtr: '👾', remolino: '🌀', ondas: '🌊', pagina: '📖', cristal: '💎', destello: '✨', latigazo: '💨', barrasneon: '🌈', tunel: '🕳️', aspas4: '✴️', aspas5: '🌟', flecha: '⏩' };
+  const TR_NAME = { izq: 'Slide left', der: 'Slide right', arriba: 'Slide up', abajo: 'Slide down', fundido: 'Fade', cortina: 'Curtain (the stickman pulls it)', negro: 'Fade to black', blanco: 'Fade to white', iris: 'Iris (circle opens)', diag: 'Diagonal wipe', persianas: 'Blinds', zoom: 'Zoom in', pixelar: 'Pixelate', desenfoque: 'Blur', girar: 'Spin', rebote: 'Bounce', reloj: 'Clock wipe', cuadros: 'Checkerboard', puertas: 'Open doors', zoomout: 'Zoom out', lineas: 'Line wipe', rombo: 'Diamond iris', cruz: 'Cross', abanico: 'Fan', zigzag: 'Zigzag', voltear: 'Flip', glitchtr: 'Glitch', remolino: 'Swirl', ondas: 'Waves', pagina: 'Book close', cristal: 'Shatter', destello: 'Flash burst', latigazo: 'Whip pan', barrasneon: 'Neon bars', tunel: 'Tunnel', aspas4: 'Pinwheel 4', aspas5: 'Pinwheel 5', flecha: 'Arrow wipe' };
+  const TR_NEW = new Set(['negro','blanco','iris','diag','persianas','zoom','pixelar','desenfoque','girar','rebote','reloj','cuadros','puertas','zoomout','lineas','rombo','cruz','abanico','zigzag','voltear','glitchtr','remolino','ondas','pagina','cristal','destello','latigazo','barrasneon','tunel','aspas4','aspas5','flecha']);
+  const TR_PRO = new Set(['cortina','glitchtr','remolino','ondas','pagina','cristal','destello','latigazo','barrasneon','tunel','flecha']);
   const trxTmp = document.createElement('canvas');
   const trxBounce = (t) => { const n1 = 7.5625, d1 = 2.75; if (t < 1 / d1) return n1 * t * t; if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75; if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375; return n1 * (t -= 2.625 / d1) * t + 0.984375; };
   // Transiciones nuevas: las usan el animador y el editor. e va de 0 a 1; out = lo que se va, inc = lo que llega.
@@ -8478,6 +8478,18 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       case 'tunel': {
         scaled(out, 1 + e * 2.4, 1, 0); scaled(inc, 0.4 + 0.6 * e, Math.max(0, e * 1.5 - 0.3), 0); wash('#ffffff', 0.22 * Math.sin(e * Math.PI));
+        break;
+      }
+      case 'aspas4': case 'aspas5': {
+        const n = k === 'aspas5' ? 5 : 4; put(out);
+        const R = Math.hypot(w, h), half = Math.min(1, e) * Math.PI / n * 1.04, r0 = (n === 5 ? Math.PI / 2 : 0) + e * e * 0.3;
+        clipPut(inc, () => { for (let i = 0; i < n; i++) { const a = r0 + i * 2 * Math.PI / n; x.moveTo(w / 2, h / 2); x.lineTo(w / 2 + Math.cos(a - half) * R, h / 2 + Math.sin(a - half) * R); x.lineTo(w / 2 + Math.cos(a + half) * R, h / 2 + Math.sin(a + half) * R); x.closePath(); } });
+        break;
+      }
+      case 'flecha': {
+        put(out);
+        const Bx = e * w * 1.01, A = w * 0.5 * Math.min(1, e * 7) * Math.pow(1 - e, 2) - w * 0.07 * Math.sin(Math.PI * Math.max(0, Math.min(1, (e - 0.78) / 0.22)));
+        clipPut(inc, () => { x.moveTo(0, 0); x.lineTo(Bx, 0); x.lineTo(Bx + A, h / 2); x.lineTo(Bx, h); x.lineTo(0, h); x.closePath(); });
         break;
       }
       case 'rombo': put(out); clipPut(inc, () => { x.moveTo(w / 2 - e * w, h / 2); x.lineTo(w / 2, h / 2 - e * h); x.lineTo(w / 2 + e * w, h / 2); x.lineTo(w / 2, h / 2 + e * h); x.closePath(); }); break;
@@ -11930,8 +11942,15 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const FXO = { shk: ['fz', 'hz'], ghost: ['gz', 'gw', 'gh', 'n', 'op', 'rp', 'c1', 'c2', 'tn', 'gl'] };
     const FXU = {fx: 'Strength X', fy: 'Strength Y', sp: 'Speed', zm: 'Zoom pulse', rt: 'Tilt', fl: 'Flash', sd: 'Seed', sm: 'Smoothness', cv: 'Curve', hz: 'Speed', orb: 'Orbit (round motion)', jl: 'Hard hits', fz: 'Strength', cv0: 'Constant', cv1: 'Rises', cv2: 'Falls', cv3: 'Hit that calms down', gz: 'Growth', gw: 'Stretch width', gh: 'Stretch height', n: 'Ghosts', op: 'Opacity', rp: 'Repeats', c1: 'Color 1', c2: 'Color 2', tn: 'Tint with color', gl: 'Neon glow', reset: 'Reset values'};
     function fxp(f) { const d = FXD[f.k]; if (!d) return null; if (!f.p) f.p = {}; for (const k of Object.keys(d)) if (f.p[k] == null) f.p[k] = d[k]; return f.p; }
-    const FXK = new Set(['fz','fx','fy','zm','rt','fl','orb','jl','gz','gw','gh','op','gl']);
+    const FXK = new Set(['fz','fx','fy','hz','zm','rt','fl','orb','jl','gz','gw','gh','op','gl']);
     function fxv(f, loc) { const P = fxp(f); if (!f.kf) return P; const o = Object.assign({}, P); for (const k of Object.keys(f.kf)) if (FXK.has(k) && f.kf[k] && f.kf[k].length) o[k] = kfAt(f.kf[k], loc, P[k]); return o; }
+    function fxPh(f, loc) {
+      const P = fxp(f), k = f.kf && f.kf.hz;
+      if (!k || !k.length) return Math.PI * 2 * P.hz * loc;
+      const n = Math.max(1, Math.min(900, Math.ceil(loc * 120))), dt = loc / n; let s = 0;
+      for (let i = 0; i < n; i++) s += kfAt(k, (i + 0.5) * dt, P.hz) * dt;
+      return Math.PI * 2 * s;
+    }
     const fxCurve = (cv, u) => cv === 1 ? u : cv === 2 ? 1 - u : cv === 3 ? Math.pow(1 - u, 2.2) : 1;
     const fxSm = (x) => x * x * (3 - 2 * x);
     function fxNoise(sd, tau, sm, ax) {
@@ -12124,7 +12143,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (Array.isArray(o.ov) && T0.ov) for (const c of o.ov.slice(0, 100)) {
         if (!c || typeof c.proj !== 'string' || c.proj.slice(0, 2) !== 'm:') continue;
         const dur = clampV(num(c.dur, 3), 0.1, 3600), i0 = Math.max(0, num(c.in, 0));
-        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
+        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), tx: c.tx ? e4tx(c.tx) : undefined, tkf: c.tx ? e4tkf(c.tkf) : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
       }
       for (const f of Array.isArray(o.cam) ? o.cam.slice(0, 200) : []) {
         if (!f || !CAM_NAME[f.k]) continue;
@@ -12138,7 +12157,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const f of Array.isArray(o.fx) ? o.fx.slice(0, 200) : []) {
         if (!f || !FX_NAME[f.k]) continue;
         {
-          const nf = { id: String(f.id || newId()), k: f.k, start: Math.max(0, num(f.start, 0)), dur: clampV(num(f.dur, 0.5), 0.05, 600), tk: clampV(num(f.tk, 0) | 0, 0, 7) };
+          const nf = { id: String(f.id || newId()), k: f.k, start: Math.max(0, num(f.start, 0)), dur: clampV(num(f.dur, 0.5), 0.05, 600), tk: clampV(num(f.tk, 0) | 0, 0, 7), tg: typeof f.tg === 'string' ? f.tg.slice(0, 60) : undefined };
           if (FXD[f.k]) {
             if (f.p && typeof f.p === 'object') { nf.p = {}; for (const k of Object.keys(FXD[f.k])) { const v = f.p[k], d = FXD[f.k][k]; if (typeof d === 'string') nf.p[k] = /^#[0-9a-f]{6}$/i.test(v || '') ? v : d; else if (isFinite(+v) && v !== null) { const R = FXR[k]; nf.p[k] = R ? clampV(+v, R[0], R[1]) : +v; } } }
             if (f.kf && typeof f.kf === 'object') { const kk = {}; let n = 0; for (const k of Object.keys(f.kf)) { if (!FXK.has(k) || !FXR[k]) continue; const c = kfClean(f.kf[k], FXR[k][0], FXR[k][1]); if (c) { kk[k] = c; n++; } } if (n) nf.kf = kk; }
@@ -12293,14 +12312,16 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function ovDraw(ax, Tg, w, h, TL) {
       const list = TL.ov.filter((o) => !o.hid && Tg >= o.start && Tg < o.start + o.dur).sort((a, b) => (a.tk | 0) - (b.tk | 0));
       for (const o of list) {
-        const e = medEl(o.proj.slice(2)); if (!e) continue;
+        const e = o.tx ? { kind: 'img' } : medEl(o.proj.slice(2)); if (!e) continue;
         let local = o.in + (Tg - o.start);
         if (e.kind === 'vid') local = Math.min(local, Math.max(0, (e.dur || local) - 0.05));
         const ox = sized(bufO, w, h); ox.setTransform(1, 0, 0, 1, 0, 0); ox.globalAlpha = 1; ox.clearRect(0, 0, w, h);
         ovT = true;
         try { if (mediaShot(ox, o, local, w, h)) applyTf(ox, o, local, w, h); } finally { ovT = false; }
+        let FR = null; { const tfx = TL.fx.filter((q) => q.tg === o.id && Tg >= q.start && Tg < q.start + q.dur); if (tfx.length) FR = fxApply(tfx, ox, Tg, w, h); }
+        if (FR && FR.flash > 0) { ox.save(); ox.globalCompositeOperation = 'source-atop'; ox.fillStyle = 'rgba(255,255,255,' + FR.flash.toFixed(3) + ')'; ox.fillRect(0, 0, w, h); ox.restore(); }
         if (o.gh) ovGhost(ax, o, Tg - o.start, local, w, h);
-        ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = 1; ax.drawImage(bufO, 0, 0); ax.restore();
+        ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = 1; ax.drawImage(bufO, FR ? FR.sx : 0, FR ? FR.sy : 0); ax.restore();
       }
     }
     // Devuelve false si alguna escena todavía está cargando.
@@ -12333,42 +12354,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       if (!depth && TL.ov && TL.ov.length) ovDraw(ax, Tg, w, h, TL);
       // efectos de la pista roja
-      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0, rot = 0; const act = [];
-      for (const f of TL.fx) {
-        if (Tg < f.start || Tg >= f.start + f.dur) continue;
-        const u = (Tg - f.start) / f.dur;
-        if (f.k === 'shk1' || f.k === 'shk2') {
-          const a = (f.k === 'shk2' ? 0.022 : 0.009) * w, q = Math.floor(Tg * 30);
-          sx += (hash01(q * 2 + 1) - 0.5) * 2 * a; sy += (hash01(q * 2 + 2) - 0.5) * 2 * a; sc = Math.max(sc, 1 + (2.4 * a) / w);
-        } else if (f.k === 'shk') {
-          const P = Object.assign({}, fxv(f, Tg - f.start), { zm: 0, rt: 0, fl: 0, cv: 0 }), cu = 1, t_ = Tg - f.start, W1 = Math.PI * 2 * P.hz, ph = P.sd * 1.713, orb = P.orb / 100;
-          const org = (o) => { let v = 0; [[1, 1], [1.63, 0.55], [2.71, 0.3]].forEach((m, i) => { v += m[1] * Math.sin(W1 * m[0] * t_ + ph * (i + 1) * 1.37 + o * 2.1); }); return v / 1.85; };
-          let nx = org(0) * (1 - orb) + Math.cos(W1 * t_ + ph) * orb, ny = org(1) * (1 - orb) + Math.sin(W1 * t_ + ph) * orb;
-          const slot = Math.floor(t_ / 0.3), jf = t_ / 0.3 - slot, jl = P.jl / 100;
-          for (const sl of [slot - 1, slot]) {
-            const rr = hash01(P.sd * 17 + sl * 5 + 3), fp = sl === slot ? jf : jf + 1;
-            if (rr > 0.55) { const mag = (rr - 0.55) * 2.2 * jl * 2.4 * Math.exp(-fp * 5), th = hash01(P.sd * 31 + sl * 7) * Math.PI * 2; nx += Math.cos(th) * mag; ny += Math.sin(th) * mag; }
-          }
-          const nr = Math.sin(W1 * 0.8 * t_ + ph * 2.3) * 0.6 + nx * 0.4, nz = 0.5 + 0.5 * Math.sin(W1 * 1.3 * t_ + ph * 3.1);
-          const A = 0.08;
-          sx += nx * (P.fz / 100) * A * w * cu; sy += ny * (P.fz / 100) * A * h * cu; rot += nr * (P.rt * Math.PI / 180) * cu;
-          sc = Math.max(sc, 1 + 2 * Math.max(P.fz / 100 * A, P.fz / 100 * A) * (1 + jl * 1.2) + Math.abs(P.rt) * Math.PI / 180 * 1.1) * (1 + (P.zm / 100) * nz * cu);
-          if (P.fl > 0) flash = Math.max(flash, 0.9 * (P.fl / 100) * cu * Math.max(0, nz - 0.25));
-        } else if (f.k === 'ghost') act.push({ k: 'ghost', u, t: Tg - f.start, g: { p: fxv(f, Tg - f.start) } });
-        else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
-        else if (f.k === 'imp') imp = (Math.floor((Tg - f.start) * 12) % 2) ? 2 : 1;
-        else act.push({ k: f.k, u, t: Tg - f.start });
-      }
-      if (imp) {
-        const im = ax.getImageData(0, 0, w, h), d = im.data;
-        for (let i = 0; i < d.length; i += 4) {
-          let v = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11 < 165 ? 0 : 255;
-          if (imp === 2) v = 255 - v;
-          d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255;
-        }
-        ax.putImageData(im, 0, 0);
-      }
-      if (act.length) efxPost(ax, w, h, act);
+      let { sx, sy, sc, flash, rot } = fxApply(TL.fx.filter((f) => !f.tg), ax, Tg, w, h);
       // pista de cámara: acercar, alejar, golpe de zoom y paneos
       let cz = 1, cx = 0, cy = 0;
       for (const f of TL.cam) {
@@ -12633,44 +12619,31 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (!beatCache.has(a.id)) { try { beatCache.set(a.id, detectBeats(b)); } catch (_) { beatCache.set(a.id, { times: [], bpm: 0 }); } }
       return beatCache.get(a.id);
     }
-    const BTS = {add: 'Beat', tip: 'Drop a beat marker at the red line (key B)', del_: 'Remove this beat', made: 'Beat at {t}', gone: 'Beat removed'};
+    const BTS = {add: 'Beat', tip: 'Drop a beat marker at the red line (key B)', del_: 'Remove this beat', made: 'Beat at {t}', noau: 'Put the red line over an audio clip to mark a beat', gone: 'Beat removed'};
     const bKey = () => 'tp-edbeat-' + PROF.dbName();
     function bRead() { let a = []; try { a = JSON.parse(localStorage.getItem(bKey()) || '[]'); } catch (_) {} return Array.isArray(a) ? a.filter((v) => isFinite(+v) && +v >= 0).map(Number).sort((x, y) => x - y).slice(0, 600) : []; }
     function bWrite(a) { try { localStorage.setItem(bKey(), JSON.stringify(a)); } catch (_) {} }
+    const auAt = (t) => E.audio.find((a) => t >= a.start - 1e-6 && t <= a.start + (a.out - a.in) + 1e-6);
     function beatToggle() {
+      if (!auAt(T)) { toast('🥁 ' + BTS.noau); return; }
       const a = bRead(), k = a.findIndex((v) => Math.abs(v - T) < Math.max(0.05, 6 / pps));
       if (k >= 0) { a.splice(k, 1); bWrite(a); toast('🥁 ' + BTS.gone); }
       else { a.push(Math.round(T * 1000) / 1000); a.sort((x, y) => x - y); bWrite(a); toast('🥁 ' + BTS.made.replace('{t}', fmt(T))); }
       beatMarks();
     }
-    function userBeats() {
-      let lay = inner.querySelector('.ed-bl'); if (!lay) { lay = document.createElement('div'); lay.className = 'ed-bl'; lay.style.cssText = 'position:absolute;left:0;top:0;bottom:0;right:0;pointer-events:none;z-index:3'; inner.appendChild(lay); }
-      lay.textContent = '';
+    function beatMarks() {
+      for (const q of rowA.querySelectorAll('.e4bt')) q.remove();
+      for (const q of ruler.querySelectorAll('[title^="🥁"]')) q.remove();
+      const old = inner.querySelector('.ed-bl'); if (old) old.remove();
       for (const bt of bRead()) {
-        const x = bt * pps;
-        const ln = document.createElement('span'); ln.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;background:rgba(0,229,255,.55);left:' + x + 'px'; lay.appendChild(ln);
-        const m = document.createElement('span'); m.title = '🥁 ' + BTS.del_; m.textContent = '▼';
-        m.style.cssText = 'position:absolute;top:0;margin-left:-7px;width:14px;text-align:center;font-size:12px;line-height:12px;color:#00e5ff;cursor:pointer;pointer-events:auto;z-index:4;left:' + x + 'px';
+        if (!auAt(bt)) continue;
+        const x = bt * pps, m = document.createElement('span'); m.className = 'e4bt'; m.title = '🥁 ' + BTS.del_;
+        m.style.cssText = 'position:absolute;top:0;bottom:0;width:11px;margin-left:-5px;cursor:pointer;z-index:6;left:' + x + 'px';
+        const ln = document.createElement('i'); ln.style.cssText = 'position:absolute;left:5px;top:0;bottom:0;width:2px;background:#00e5ff;pointer-events:none'; m.appendChild(ln);
+        const tr = document.createElement('i'); tr.textContent = '▼'; tr.style.cssText = 'position:absolute;left:0;top:-2px;width:11px;text-align:center;font:normal 10px/10px sans-serif;color:#00e5ff;pointer-events:none'; m.appendChild(tr);
         m.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
         m.addEventListener('click', (e) => { e.stopPropagation(); bWrite(bRead().filter((v) => Math.abs(v - bt) > 1e-4)); beatMarks(); });
-        ruler.appendChild(m);
-      }
-    }
-    function beatMarks() {
-      for (const q of ruler.querySelectorAll('[title^="🥁 ' + BTS.del_.slice(0, 4) + '"]')) q.remove();
-      userBeats();
-      for (const a of E.audio) {
-        const r = beatsOf(a);
-        if (!r) continue;
-        r.times.forEach((bt, k) => {
-          if (bt < a.in || bt > a.out) return;
-          const x = (a.start + bt - a.in) * pps;
-          const m = document.createElement('span');
-          const strong = k % 4 === 0;
-          m.style.cssText = 'position:absolute;top:0;bottom:0;width:' + (strong ? 3 : 2) + 'px;margin-left:-1px;pointer-events:none;border-radius:2px;background:' + (strong ? 'rgba(255,201,60,.95)' : 'rgba(255,201,60,.45)') + ';left:' + x + 'px';
-          m.title = '🥁 beat';
-          ruler.appendChild(m);
-        });
+        rowA.appendChild(m);
       }
     }
     /* --- clips compuestos: varias escenas juntas en un solo clip --- */
@@ -12839,7 +12812,6 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         ruler.appendChild(sp);
         const mk = document.createElement('span'); mk.className = 'm'; mk.style.left = ((t + step / 2) * pps) + 'px'; ruler.appendChild(mk);
       }
-      beatMarks();
       // escenas
       rowV.textContent = '';
       L.forEach((o, k) => {
@@ -12872,10 +12844,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         }
       });
       rowO.textContent = '';
-      for (const f of (E.ov || [])) { const m0 = medOf(f.proj); const b = barEl(f, 'ov', (m0 && m0.kind === 'vid' ? '🎬 ' : '🖼️ ') + ((m0 && m0.name) || ''), f.start, f.dur); if (f.hid) b.style.opacity = '0.35'; rowO.appendChild(b); }
+      for (const f of (E.ov || [])) { const m0 = medOf(f.proj); const b = barEl(f, 'ov', (f.tx ? '🔤 ' + f.tx.t.replace(/\s+/g, ' ').slice(0, 30) : (m0 && m0.kind === 'vid' ? '🎬 ' : '🖼️ ') + ((m0 && m0.name) || '')), f.start, f.dur); if (f.hid) b.style.opacity = '0.35'; { const kk = Object.assign({}, f.kf); if (f.tkf) for (const q of Object.keys(f.tkf)) kk['t_' + q] = f.tkf[q]; e4diamonds(b, keyTimes(kk), (t) => t * pps, 0, f.dur, (t) => { sel = { kind: 'ov', id: f.id }; render(); setT(f.start + t); placeHead(true); }); } rowO.appendChild(b); }
       // efectos
       rowF.textContent = '';
-      for (const f of E.fx) rowF.appendChild(barEl(f, 'fx', FX_NAME[f.k], f.start, f.dur));
+      for (const f of E.fx) { const be = barEl(f, 'fx', (f.tg ? '🎯 ' : '') + FX_NAME[f.k], f.start, f.dur); e4diamonds(be, keyTimes(f.kf), (t) => t * pps, 0, f.dur, (t) => { sel = { kind: 'fx', id: f.id }; render(); setT(f.start + t); placeHead(true); }); rowF.appendChild(be); }
       rowC.textContent = '';
       for (const f of E.cam) rowC.appendChild(barEl(f, 'cam', CAM_NAME[f.k], f.start, f.dur));
       // sonidos
@@ -12887,6 +12859,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         edDecoAu(el, a);
         rowA.appendChild(el);
       }
+      beatMarks();
       sizeRows();
       placeHead(false);
       syncBtns();
@@ -12896,7 +12869,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     function barEl(o, kind, label, start, dur) {
       const el = document.createElement('div');
-      el.className = 'ed-bar2 ' + kind + (sel && sel.id === o.id ? ' sel' : '');
+      el.className = 'ed-bar2 ' + kind + (sel && sel.id === o.id ? ' sel' : ''); el.dataset.id = o.id;
       el.style.left = (start * pps) + 'px'; el.style.width = Math.max(8, dur * pps) + 'px';
       el.style.top = ((o.tk | 0) * trh(kind) + 3) + 'px'; el.style.bottom = 'auto'; el.style.height = (trh(kind) - 6) + 'px';
       const t = document.createElement('span'); t.textContent = label; el.appendChild(t);
@@ -13096,7 +13069,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     });
     function del() {
       if (!sel) return;
-      if (sel.kind === 'ov') E.ov = (E.ov || []).filter((x) => x.id !== sel.id);
+      if (sel.kind === 'ov') { E.ov = (E.ov || []).filter((x) => x.id !== sel.id); E.fx = E.fx.filter((q) => q.tg !== sel.id); }
       else if (sel.kind === 'clip') E.clips = E.clips.filter((x) => x.id !== sel.id);
       else if (sel.kind === 'fx') E.fx = E.fx.filter((x) => x.id !== sel.id);
       else if (sel.kind === 'cam') E.cam = E.cam.filter((x) => x.id !== sel.id);
@@ -13458,7 +13431,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       } else if (libTab === 'fx') {
         for (const [k, d] of EFX_LIST) {
           const nm = FX_NAME[k];
-          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, '') + (EFXP.has(k) ? ' 👑' : ''), 'Lasts ' + fmtSec(d) + ' (you can stretch it)', (t) => { if (EFXP.has(k) && !PRO.has()) { PRO.ask('fx'); return; } placeBar(E.fx, 'fx', k, d, t); }));
+          ul.appendChild(libItem(nm.split(' ')[0], nm.replace(/^\S+\s/, '') + (EFXP.has(k) ? ' 👑' : ''), 'Lasts ' + fmtSec(d) + ' (you can stretch it)', (t) => { if (EFXP.has(k) && !PRO.has()) { PRO.ask('fx'); return; } placeFxT(k, d, t); }));
         }
       } else if (libTab === 'cam') {
         for (const k of Object.keys(CAM_NAME)) {
@@ -13535,7 +13508,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     const TF0 = { z: 100, x: 0, y: 0, r: 0, o: 100, mS: 100, mF: 0, mX: 0, mY: 0, mB: 0, sx: 100, sy: 100 };
     const MKP = ['mS', 'mF', 'mX', 'mY', 'mB'];
-    const TFR = { z: [1, 250, 1, '%'], x: [-100, 100, 1, '%'], y: [-100, 100, 1, '%'], r: [-180, 180, 1, '°'], o: [0, 100, 1, '%'], mS: [2, 300, 1, '%'], mF: [0, 100, 1, '%'], mX: [-100, 100, 1, '%'], mY: [-100, 100, 1, '%'], mB: [0, 100, 1, '%'], sx: [1, 250, 1, '%'], sy: [1, 250, 1, '%'] };
+    const TFR = { z: [1, 500, 1, '%'], x: [-100, 100, 1, '%'], y: [-100, 100, 1, '%'], r: [-180, 180, 1, '°'], o: [0, 100, 1, '%'], mS: [2, 300, 1, '%'], mF: [0, 100, 1, '%'], mX: [-100, 100, 1, '%'], mY: [-100, 100, 1, '%'], mB: [0, 100, 1, '%'], sx: [1, 500, 1, '%'], sy: [1, 500, 1, '%'] };
     function e4kf(o) {
       if (!o || typeof o !== 'object') return undefined;
       const r = {}; let n = 0;
@@ -13603,6 +13576,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       x.restore();
     }
     function mediaShot(x, c, local, w, h) {
+      if (c.tx) { txPaintClip(x, c, local, w, h); return true; }
       const e = medEl(c.proj.slice(2));
       if (!medOf(c.proj) || !e) { placeholder(x, w, h, '…'); return false; }
       if (e.kind === 'img') { drawFit(x, e.el, e.el.naturalWidth, e.el.naturalHeight, w, h); return true; }
@@ -13924,6 +13898,77 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       return c;
     }
+    const BGE = {btn: '🧽 Eraser', hint: 'Paint over the photo to erase parts (for example, keep only the eye). “Restore” brings back what you erased.', size: 'Size', soft: 'Softness', er: 'Erase', rs: 'Restore', un: 'Undo', key: 'Also remove the background color'};
+    function erApply(srcCv, strokes) {
+      const o = document.createElement('canvas'); o.width = srcCv.width; o.height = srcCv.height;
+      const x = o.getContext('2d'); x.drawImage(srcCv, 0, 0);
+      if (!strokes.length) return o;
+      const m = document.createElement('canvas'); m.width = o.width; m.height = o.height; const mx = m.getContext('2d');
+      for (const s of strokes) {
+        const r = Math.max(1, s.r * o.width); mx.globalCompositeOperation = s.er ? 'source-over' : 'destination-out';
+        for (const q of s.p) {
+          const px = q[0] * o.width, py = q[1] * o.height, g = mx.createRadialGradient(px, py, r * (1 - s.h), px, py, r);
+          g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)'); mx.fillStyle = g; mx.beginPath(); mx.arc(px, py, r, 0, Math.PI * 2); mx.fill();
+        }
+      }
+      x.globalCompositeOperation = 'destination-out'; x.drawImage(m, 0, 0);
+      return o;
+    }
+    function fxApply(list, ax, Tg, w, h) {
+      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0, rot = 0; const act = [];
+      for (const f of list) {
+        if (Tg < f.start || Tg >= f.start + f.dur) continue;
+        const u = (Tg - f.start) / f.dur;
+        if (f.k === 'shk1' || f.k === 'shk2') {
+          const a = (f.k === 'shk2' ? 0.022 : 0.009) * w, q = Math.floor(Tg * 30);
+          sx += (hash01(q * 2 + 1) - 0.5) * 2 * a; sy += (hash01(q * 2 + 2) - 0.5) * 2 * a; sc = Math.max(sc, 1 + (2.4 * a) / w);
+        } else if (f.k === 'shk') {
+          const P = Object.assign({}, fxv(f, Tg - f.start), { zm: 0, rt: 0, fl: 0, cv: 0 }), cu = 1, t_ = Tg - f.start, W1 = 1, PH = fxPh(f, t_), ph = P.sd * 1.713, orb = P.orb / 100;
+          const org = (o) => { let v = 0; [[1, 1], [1.63, 0.55], [2.71, 0.3]].forEach((m, i) => { v += m[1] * Math.sin(PH * m[0] + ph * (i + 1) * 1.37 + o * 2.1); }); return v / 1.85; };
+          let nx = org(0) * (1 - orb) + Math.cos(PH + ph) * orb, ny = org(1) * (1 - orb) + Math.sin(PH + ph) * orb;
+          const slot = Math.floor(t_ / 0.3), jf = t_ / 0.3 - slot, jl = P.jl / 100;
+          for (const sl of [slot - 1, slot]) {
+            const rr = hash01(P.sd * 17 + sl * 5 + 3), fp = sl === slot ? jf : jf + 1;
+            if (rr > 0.55) { const mag = (rr - 0.55) * 2.2 * jl * 2.4 * Math.exp(-fp * 5), th = hash01(P.sd * 31 + sl * 7) * Math.PI * 2; nx += Math.cos(th) * mag; ny += Math.sin(th) * mag; }
+          }
+          const nr = Math.sin(PH * 0.8 + ph * 2.3) * 0.6 + nx * 0.4, nz = 0.5 + 0.5 * Math.sin(PH * 1.3 + ph * 3.1);
+          const A = 0.08;
+          sx += nx * (P.fz / 100) * A * w * cu; sy += ny * (P.fz / 100) * A * h * cu;
+          if (P.fl > 0) flash = Math.max(flash, 0.9 * (P.fl / 100) * cu * Math.max(0, nz - 0.25));
+        } else if (f.k === 'ghost') act.push({ k: 'ghost', u, t: Tg - f.start, g: { p: fxv(f, Tg - f.start) } });
+        else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
+        else if (f.k === 'imp') imp = (Math.floor((Tg - f.start) * 12) % 2) ? 2 : 1;
+        else act.push({ k: f.k, u, t: Tg - f.start });
+      }
+      if (imp) {
+        const im = ax.getImageData(0, 0, w, h), d = im.data;
+        for (let i = 0; i < d.length; i += 4) {
+          let v = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11 < 165 ? 0 : 255;
+          if (imp === 2) v = 255 - v;
+          d[i] = d[i + 1] = d[i + 2] = v;
+        }
+        ax.putImageData(im, 0, 0);
+      }
+      if (act.length) efxPost(ax, w, h, act);
+      return { sx, sy, sc, flash, rot };
+    }
+    function placeFxT(k, d, t) {
+      const f = { id: newId(), k, start: t == null ? T : t, dur: d };
+      const el = lastUp && t != null ? document.elementFromPoint(lastUp.clientX, lastUp.clientY) : null, bar = el && el.closest ? el.closest('#edRowO .ed-bar2') : null;
+      const ov = bar ? (E.ov || []).find((o) => o.id === bar.dataset.id) : null;
+      if (ov) { f.tg = ov.id; f.start = Math.max(ov.start, Math.min(f.start, ov.start + ov.dur - 0.2)); f.dur = Math.max(0.1, Math.min(d, ov.start + ov.dur - f.start)); }
+      E.fx.push(f); sel = { kind: 'fx', id: f.id }; changed();
+    }
+    const FXT = {lab: 'Apply to', all: 'Whole video'};
+    function fxTarget(f) {
+      const l = e4h('label', ''), sl = document.createElement('select'); l.style.cssText = 'display:flex;gap:8px;align-items:center;margin:8px 0;font-size:0.8rem';
+      const o0 = document.createElement('option'); o0.value = ''; o0.textContent = FXT.all; sl.appendChild(o0);
+      for (const o of (E.ov || [])) { const op = document.createElement('option'), m = medOf(o.proj); op.value = o.id; op.textContent = '🎯 ' + (o.tx ? o.tx.t.replace(/\s+/g, ' ').slice(0, 20) : (m && m.name) || '…'); sl.appendChild(op); }
+      sl.style.cssText = 'flex:1;min-width:0;padding:5px;border-radius:6px;background:#14162a;color:inherit;border:1px solid #3a3f5c'; sl.value = f.tg || ''; if (sl.value !== (f.tg || '')) sl.value = '';
+      sl.addEventListener('keydown', (e) => e.stopPropagation());
+      sl.addEventListener('change', () => { if (sl.value) f.tg = sl.value; else delete f.tg; lastShots.clear(); done(false); });
+      l.append(e4h('span', 'ei-lab', FXT.lab), sl); insp.append(l);
+    }
     async function bgOpen(m, target) {
       const en = await medReady(m.id);
       if (!en || !en.el) return;
@@ -13931,7 +13976,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const wrap = e4h('div', 'e4bg'), card = e4h('div', 'e4bg-card'); wrap.append(card);
       card.append(e4h('h3', '', e4('bgTitle')));
       const modes = e4h('div', 'e4bg-row'), bCk = e4h('button', 'btn small on', e4('bgCk')), bAi = e4h('button', 'btn small', e4('bgAi'));
-      bCk.type = bAi.type = 'button'; modes.append(bCk, bAi); card.append(modes);
+      const bEr = e4h('button', 'btn small', BGE.btn); bCk.type = bAi.type = bEr.type = 'button'; modes.append(bCk, bAi, bEr); card.append(modes);
       const view = document.createElement('canvas'); view.className = 'e4bg-pv'; view.width = pv.width; view.height = pv.height; card.append(view);
       const pCk = e4h('div', 'e4bg-pane'), pAi = e4h('div', 'e4bg-pane'); pAi.hidden = true;
       const col = document.createElement('input'); col.type = 'color'; col.value = '#ffffff';
@@ -13941,22 +13986,45 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       pCk.append(e4h('p', 'ei-hint', e4('bgPick')), row('🎨', col), row(e4('bgTol'), tol), row(e4('bgSoft'), soft));
       const go = e4h('button', 'btn small', e4('bgGo')); go.type = 'button';
       pAi.append(e4h('p', 'ei-hint', e4('bgAiHint')), go);
-      card.append(pCk, pAi);
+      const pEr = e4h('div', 'e4bg-pane'); pEr.hidden = true;
+      const erSize = document.createElement('input'); erSize.type = 'range'; erSize.min = 1; erSize.max = 40; erSize.value = 6;
+      const erSoft = document.createElement('input'); erSoft.type = 'range'; erSoft.min = 0; erSoft.max = 100; erSoft.value = 30;
+      const erKey = document.createElement('input'); erKey.type = 'checkbox';
+      const erB1 = e4h('button', 'btn small on', BGE.er), erB2 = e4h('button', 'btn small', BGE.rs), erB3 = e4h('button', 'btn small', BGE.un); erB1.type = erB2.type = erB3.type = 'button';
+      let erMode = 'er'; const erBt = e4h('div', 'e4bg-row'); erBt.append(erB1, erB2, erB3);
+      pEr.append(e4h('p', 'ei-hint', BGE.hint), erBt, row(BGE.size, erSize), row(BGE.soft, erSoft), row(BGE.key, erKey));
+      card.append(pCk, pAi, pEr);
       const msg = e4h('p', 'ei-hint', ''); card.append(msg);
       const foot = e4h('div', 'e4bg-row'), sv = e4h('button', 'btn small', e4(target ? 'bgHere' : 'bgSave')), cn = e4h('button', 'btn small', e4('bgCancel'));
       sv.type = cn.type = 'button'; foot.append(sv, cn); card.append(foot);
-      let mode = 'ck', mask = null;
+      let mode = 'ck', mask = null; const strokes = [];
       {
         const g = pv.getContext('2d').getImageData(1, 1, 1, 1).data; col.value = '#' + [g[0], g[1], g[2]].map((v) => v.toString(16).padStart(2, '0')).join('');
       }
       const hex = () => [1, 3, 5].map((i) => parseInt(col.value.slice(i, i + 2), 16));
       const draw = () => {
         const x = view.getContext('2d'); x.clearRect(0, 0, view.width, view.height);
-        const r = mode === 'ai' ? (mask ? bgApplyMask(pv, mask) : pv) : bgKey(pv, hex(), +tol.value, +soft.value);
+        let r = mode === 'ai' ? (mask ? bgApplyMask(pv, mask) : pv) : mode === 'er' ? (erKey.checked ? bgKey(pv, hex(), +tol.value, +soft.value) : pv) : bgKey(pv, hex(), +tol.value, +soft.value);
+        r = erApply(r, strokes);
         x.drawImage(r, 0, 0);
       };
-      const setMode = (k) => { mode = k; bCk.classList.toggle('on', k === 'ck'); bAi.classList.toggle('on', k === 'ai'); pCk.hidden = k !== 'ck'; pAi.hidden = k !== 'ai'; msg.textContent = ''; draw(); };
-      bCk.addEventListener('click', () => setMode('ck')); bAi.addEventListener('click', () => setMode('ai'));
+      const setMode = (k) => { mode = k; bCk.classList.toggle('on', k === 'ck'); bAi.classList.toggle('on', k === 'ai'); bEr.classList.toggle('on', k === 'er'); pCk.hidden = k !== 'ck'; pAi.hidden = k !== 'ai'; pEr.hidden = k !== 'er'; view.style.cursor = k === 'er' ? 'crosshair' : ''; msg.textContent = ''; draw(); };
+      bCk.addEventListener('click', () => setMode('ck')); bAi.addEventListener('click', () => setMode('ai')); bEr.addEventListener('click', () => setMode('er'));
+      erKey.addEventListener('change', draw);
+      erB1.addEventListener('click', () => { erMode = 'er'; erB1.classList.add('on'); erB2.classList.remove('on'); }); erB2.addEventListener('click', () => { erMode = 'rs'; erB2.classList.add('on'); erB1.classList.remove('on'); });
+      erB3.addEventListener('click', () => { strokes.pop(); draw(); });
+      view.style.touchAction = 'none';
+      const ring = document.createElement('div'); ring.style.cssText = 'position:fixed;pointer-events:none;border:2px solid #fff;box-shadow:0 0 0 1px #000;border-radius:50%;display:none;z-index:99999;transform:translate(-50%,-50%)'; wrap.append(ring);
+      const vpos = (ev) => { const b = view.getBoundingClientRect(); return [(ev.clientX - b.left) / b.width, (ev.clientY - b.top) / b.height]; };
+      let cur = null;
+      view.addEventListener('pointerdown', (ev) => { if (mode !== 'er') return; ev.preventDefault(); try { view.setPointerCapture(ev.pointerId); } catch (_) {} cur = { er: erMode === 'er', r: +erSize.value / 100, h: +erSoft.value / 100, p: [vpos(ev)] }; strokes.push(cur); draw(); });
+      view.addEventListener('pointermove', (ev) => {
+        if (mode === 'er') { const b = view.getBoundingClientRect(), d = +erSize.value / 100 * b.width * 2; ring.style.display = 'block'; ring.style.width = ring.style.height = d + 'px'; ring.style.left = ev.clientX + 'px'; ring.style.top = ev.clientY + 'px'; } else ring.style.display = 'none';
+        if (!cur) return; const q = vpos(ev), l = cur.p[cur.p.length - 1], b = view.getBoundingClientRect();
+        if (Math.hypot(q[0] - l[0], (q[1] - l[1]) * b.height / b.width) < cur.r * 0.25) return; cur.p.push(q); draw();
+      });
+      view.addEventListener('pointerleave', () => { ring.style.display = 'none'; });
+      for (const nm of ['pointerup', 'pointercancel']) view.addEventListener(nm, () => { cur = null; });
       for (const el of [col, tol, soft]) el.addEventListener('input', () => { if (mode === 'ck') draw(); });
       view.addEventListener('click', (ev) => {
         if (mode !== 'ck') return;
@@ -13980,7 +14048,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         if (busy) return;
         if (mode === 'ai' && !mask) { msg.textContent = e4('bgNeed'); return; }
         busy = true;
-        const res = mode === 'ai' ? bgApplyMask(src, mask) : bgKey(src, hex(), +tol.value, +soft.value);
+        let res = mode === 'ai' ? bgApplyMask(src, mask) : mode === 'er' ? (erKey.checked ? bgKey(src, hex(), +tol.value, +soft.value) : src) : bgKey(src, hex(), +tol.value, +soft.value);
+        res = erApply(res, strokes);
         const blob = await new Promise((ok) => res.toBlob(ok, 'image/png'));
         if (blob) {
           const nm = (m.name || 'foto').replace(/\.[^.]+$/, '') + '-sin-fondo.png';
@@ -14011,8 +14080,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const n = (v, d, a, b) => (isFinite(+v) ? clampV(+v, a, b) : d), c = (v, d) => (/^#[0-9a-f]{6}$/i.test(v || '') ? v : d);
       return { t: String(o.t || '').slice(0, 200), f: String(o.f || 'impact').slice(0, 40), z: n(o.z, 18, 4, 80), c: c(o.c, '#ffffff'), o: c(o.o, '#000000'), ow: n(o.ow, 4, 0, 30), sc: c(o.sc, '#555555'), sd: n(o.sd, 0, 0, 40), ls: n(o.ls, 0, -10, 40), b: o.b ? 1 : 0, i: o.i ? 1 : 0 };
     }
-    function txRender(tx, w, h) {
-      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d');
+    function txRender(tx, w, h) { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; txPaint(cv.getContext('2d'), tx, w, h); return cv; }
+    function txPaint(x, tx, w, h) {
+      x.save();
       const px = Math.max(8, Math.round(tx.z / 100 * h));
       x.font = (tx.i ? 'italic ' : '') + (tx.b ? 'bold ' : '') + px + 'px ' + txCss(tx.f);
       x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.miterLimit = 2;
@@ -14024,7 +14094,68 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         if (lw > 0) { x.strokeStyle = tx.o; x.lineWidth = lw; x.strokeText(ln, w / 2, y); }
         x.fillStyle = tx.c; x.fillText(ln, w / 2, y);
       });
-      return cv;
+      x.restore();
+    }
+    const TKR = { sz: [4, 80, 1, '%'], ls: [-10, 40, 1, '%'], ow: [0, 30, 1, '%'], sd: [0, 40, 1, '%'] }, TKM = { sz: 'z', ls: 'ls', ow: 'ow', sd: 'sd' };
+    function e4tkf(o) {
+      if (!o || typeof o !== 'object') return undefined;
+      const r = {}; let n = 0;
+      for (const p of Object.keys(TKR)) { const k = kfClean(o[p], TKR[p][0], TKR[p][1]); if (k) { r[p] = k; n++; } }
+      return n ? r : undefined;
+    }
+    function txAt(c, loc) {
+      const r = Object.assign({}, c.tx);
+      if (c.tkf) for (const p of Object.keys(TKR)) if (c.tkf[p] && c.tkf[p].length) r[TKM[p]] = kfAt(c.tkf[p], loc, c.tx[TKM[p]]);
+      return r;
+    }
+    let txBoot = false;
+    function txPaintClip(x, c, local, w, h) {
+      if (!txBoot) { txBoot = true; fnLoadAll().then(() => { lastShots.clear(); try { paint(); } catch (_) {} }); }
+      txPaint(x, txAt(c, local), w, h);
+    }
+    async function fnImport(file) {
+      const nm = file.name.replace(/\.[^.]+$/, '').replace(/[^\w \-]/g, '').slice(0, 30) || 'Mi letra', id = 'font' + newId();
+      const face = new FontFace(nm, await file.arrayBuffer()); await face.load(); document.fonts.add(face);
+      await audPut({ id, name: nm, blob: file, kind: 'font' });
+      const a = fnList(); a.push({ id, name: nm }); localStorage.setItem(fnKey(), JSON.stringify(a)); fnLoaded.add(id);
+      return id;
+    }
+    function txAdd() {
+      const d = 3, o = { id: newId(), proj: 'm:txt', start: Math.max(0, T), dur: d, in: 0, out: d, spd: 1, tk: 0, tx: e4tx({ t: TXS.btn, f: 'impact', z: 14, c: '#ffffff', o: '#000000', ow: 4, sc: '#555555', sd: 0, ls: 0, b: 1, i: 0 }) };
+      if (!E.ov) E.ov = [];
+      E.ov.push(o); sel = { kind: 'ov', id: o.id }; changed();
+      setTimeout(() => { const t = insp.querySelector('textarea.e4txa'); if (t) { t.focus(); t.select(); } }, 60);
+    }
+    function txInsp(c, local) {
+      const tx = c.tx;
+      insp.append(e4h('div', 'ei-sec', '🔤 ' + TXS.title));
+      const ta = document.createElement('textarea'); ta.className = 'e4txa'; ta.rows = 2; ta.placeholder = TXS.ph; ta.value = tx.t;
+      ta.style.cssText = 'width:100%;padding:8px;border-radius:8px;border:1px solid #3a3f5c;background:#14162a;color:inherit;font:inherit;margin:4px 0;box-sizing:border-box';
+      ta.addEventListener('keydown', (e) => e.stopPropagation()); ta.addEventListener('input', () => { tx.t = ta.value.slice(0, 200); quick(); }); ta.addEventListener('change', () => done(false));
+      insp.append(ta);
+      const fl = e4h('label', 'ei-row'), fs = document.createElement('select');
+      for (const f of TXF.map((q) => [q[0], q[1]]).concat(fnList().map((q) => [q.id, '★ ' + q.name]))) { const o = document.createElement('option'); o.value = f[0]; o.textContent = f[1]; fs.appendChild(o); }
+      fs.value = tx.f; fs.addEventListener('keydown', (e) => e.stopPropagation()); fs.addEventListener('change', () => { tx.f = fs.value; done(false); });
+      fl.append(e4h('span', 'ei-lab', TXS.font), fs); insp.append(fl);
+      const fb = e4h('button', 'btn small', TXS.myf); fb.type = 'button'; fb.style.cssText = 'width:100%;margin:2px 0'; const ff = document.createElement('input'); ff.type = 'file'; ff.accept = '.ttf,.otf,.woff,.woff2'; ff.hidden = true;
+      fb.addEventListener('click', () => ff.click());
+      ff.addEventListener('change', async () => { const f = (ff.files || [])[0]; ff.value = ''; if (!f) return; try { tx.f = await fnImport(f); toast(TXS.fok); lastShots.clear(); done(false); } catch (_) { toast(TXS.ferr); } });
+      insp.append(fb, ff);
+      const chk = (lbl, key) => { const l = e4h('label', 'ei-row'), i = document.createElement('input'); i.type = 'checkbox'; i.checked = !!tx[key]; i.addEventListener('change', () => { tx[key] = i.checked ? 1 : 0; done(false); }); l.append(e4h('span', 'ei-lab', lbl), i); insp.append(l); };
+      chk(TXS.bold, 'b'); chk(TXS.ital, 'i');
+      const colr = (lbl, key) => { const l = e4h('label', 'ei-row'), i = document.createElement('input'); i.type = 'color'; i.value = tx[key]; i.addEventListener('keydown', (e) => e.stopPropagation()); i.addEventListener('input', () => { tx[key] = i.value; quick(); }); i.addEventListener('change', () => done(false)); l.append(e4h('span', 'ei-lab', lbl), i); insp.append(l); };
+      colr(TXS.col, 'c'); colr(TXS.ocol, 'o'); colr(TXS.scol, 'sc');
+      const lbs = { sz: TXS.size, ls: TXS.ls, ow: TXS.ow, sd: TXS.sd };
+      for (const k of ['sz', 'ow', 'sd', 'ls']) {
+        const R = TKR[k], f = TKM[k];
+        insp.append(kRow(lbs[k], R[0], R[1], R[2], R[3], {
+          keys: () => (c.tkf && c.tkf[k]) || null,
+          keysW: () => { if (!c.tkf) c.tkf = {}; return c.tkf[k] || (c.tkf[k] = []); },
+          base: () => tx[f], set: (v) => { tx[f] = v; },
+          tidy: () => { if (c.tkf && c.tkf[k] && !c.tkf[k].length) delete c.tkf[k]; if (c.tkf && !Object.keys(c.tkf).length) delete c.tkf; }
+        }, local));
+      }
+      insp.append(e4h('p', 'ei-hint', TXS.fhint));
     }
     async function txCard(m) {
       await fnLoadAll();
@@ -14215,7 +14346,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       ib.type = 'button'; ib.className = 'btn small'; ib.id = 'edImport'; ib.textContent = e4('impBtn'); ib.title = e4('imp');
       ib.addEventListener('click', () => medFile.click());
       $('#edAdd').before(ib);
-      { const bb = document.createElement('button'); bb.type = 'button'; bb.className = 'btn small'; bb.id = 'edBeat'; bb.textContent = '🥁 ' + BTS.add; bb.title = BTS.tip; bb.addEventListener('click', () => beatToggle()); $('#edAdd').before(bb); const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'btn small'; tb.id = 'edTxt'; tb.textContent = '🔤 ' + TXS.btn; tb.addEventListener('click', () => txCard(null)); bb.before(tb); }
+      { const bb = document.createElement('button'); bb.type = 'button'; bb.className = 'btn small'; bb.id = 'edBeat'; bb.textContent = '🥁 ' + BTS.add; bb.title = BTS.tip; bb.addEventListener('click', () => beatToggle()); $('#edAdd').before(bb); const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'btn small'; tb.id = 'edTxt'; tb.textContent = '🔤 ' + TXS.btn; tb.addEventListener('click', () => txAdd()); bb.before(tb); }
       ed.dataset.drop = e4('drop');
       const hasFiles = (e) => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
       ed.addEventListener('dragover', (e) => { if (!hasFiles(e)) return; e.preventDefault(); e.stopPropagation(); ed.classList.add('e4drop'); });
@@ -14343,6 +14474,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const local = localOf(s);
       if (s.kind === 'fx' || s.kind === 'cam') {
         insp.append(e4h('h4', '', (s.kind === 'fx' ? FX_NAME : CAM_NAME)[s.o.k] || ''), e4h('small', 'ei-sub', e4(s.kind) + ' · ' + fmtSec(s.o.dur)), e4h('p', 'ei-hint', e4('stretch')));
+        if (s.kind === 'fx') fxTarget(s.o);
         if (s.kind === 'fx' && FXD[s.o.k]) {
           const fo = s.o, P = fxp(fo);
           insp.appendChild(e4h('p', 'ei-hint', 'Move the red line inside the effect and tap ◆ to set a point on any setting. That way the effect can ramp up, calm down or stop smoothly instead of just shaking evenly.'));
@@ -14406,6 +14538,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const c = s.o, m = isM(c.proj) ? medOf(c.proj) : null;
       insp.append(e4h('h4', '', (m ? (m.kind === 'img' ? '🖼️ ' : '🎬 ') : '🎞️ ') + nameOf(c.proj)), e4h('small', 'ei-sub', (m ? e4(m.kind === 'img' ? 'photo' : 'video') : e4('scene')) + ' · ' + fmtSec(lenOf(c))));
       if (local == null) insp.append(e4h('p', 'ei-hint', e4('outHint')));
+      if (c.tx) txInsp(c, local);
       if (m && m.tx) { const eb = e4h('button', 'btn small', TXS.edit); eb.type = 'button'; eb.style.cssText = 'width:100%;margin-top:6px'; eb.addEventListener('click', () => txCard(m)); insp.append(eb); }
       if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m, c)); insp.append(bgb); }
       insp.append(e4h('div', 'ei-sec', e4('tf')));
@@ -14581,7 +14714,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
       else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); stop(); setT(T + (e.key === 'ArrowRight' ? 1 : -1) / 12); placeHead(true); }
       else if (e.key.toLowerCase() === 's' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); $('#edSplit').click(); }
-      else if (e.key.toLowerCase() === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); beatToggle(); }
+      else if (e.key.toLowerCase() === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); if (!e.repeat) beatToggle(); }
       else if (e.key === 'Escape') { closeMenu(); return; }
       else if (e.ctrlKey || e.metaKey) return;
       e.stopImmediatePropagation();
