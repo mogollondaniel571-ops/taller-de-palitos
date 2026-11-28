@@ -1219,6 +1219,20 @@ body:not(.is-pro) #ed .ed-join:not(.on)::after { content: '👑'; position: abso
 .ed-row.o.ov-hint { outline: 2px dashed #ffd24a; outline-offset: -2px; background: rgba(255, 210, 74, 0.14); position: relative; }
 .ed-row.o.ov-hint::after { content: attr(data-hint); position: sticky; left: 8px; top: 0; display: inline-block; padding: 0.15rem 0.5rem; margin: 3px 0 0 8px; border-radius: 6px; background: #ffd24a; color: #1a1a1a; font: 800 0.72rem/1.4 var(--font-body); pointer-events: none; white-space: nowrap; }
 .ed-row.o.ov-hot { background: rgba(255, 210, 74, 0.34); outline-width: 3px; }
+/* tbi-compact */
+html body #ed .ed-bar { gap: 2px; }
+html body #ed .ed-bar .ed-time { min-width: 6.6rem; }
+html body #ed .ed-bar .btn.tbi { width: 36px; height: 36px; padding: 0; display: inline-grid; place-items: center; background: transparent; border-color: transparent; color: #e9e9f3; border-radius: 10px; flex: none; }
+html body #ed .ed-bar .btn.tbi:hover:not(:disabled) { background: #2b2b3c; border-color: #33344a; }
+html body #ed .ed-bar .btn.tbi.on { background: #2b2b3c; color: #fff; }
+html body #ed .ed-bar .btn.tbi:disabled { opacity: 0.38; }
+html body #ed .ed-bar .btn.tbi svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+html body #ed .ed-bar .btn.tbi svg .fl { fill: currentColor; stroke: none; }
+html body #ed .ed-bar #edSnap.on { color: #43d6a0; }
+html body #ed .ed-bar #edBeatAuto.on, html body #ed .ed-bar #edMulti.on { color: #a894ff; }
+html body #ed .ed-bar .ed-sep { height: 24px; margin: 0 4px; }
+.ed-tbtip { position: fixed; z-index: 600; pointer-events: none; background: #0b0b11; border: 1px solid #33344a; color: #fff; border-radius: 8px; padding: 6px 10px; font: 600 13px/1.2 var(--font-body); white-space: nowrap; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); transform: translate(-50%, -100%); }
+.ed-tbtip small { color: #9a9bb5; font-weight: 500; margin-left: 8px; }
 
 /* =====================================================================
    v41 · Diseño de tablet (iPad, tabletas 2K y pantallas táctiles)
@@ -12584,7 +12598,84 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       $('#edTime').textContent = fmt(T) + ' / ' + fmt(videoEnd());
       try { capSync(); } catch (_) {}
     }
-    function syncBtns() {
+    function syncBtns() { try { syncBtns0(); } finally { try { tbIcons(); } catch (_) {} } }
+    /* --- barra de la línea de tiempo: iconos simples + nombre al pasar el mouse --- */
+    const TBI = {
+      undo: '<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 010 12" transform="translate(0 -6)"/>',
+      redo: '<path d="M15 7l5 5-5 5"/><path d="M20 12H10a6 6 0 000 12" transform="translate(0 -6)"/>',
+      split: '<path d="M12 3v18"/><path d="M8.5 3h7"/><path d="M8.5 21h7"/><path d="M4 9.5l4 2.5-4 2.5"/><path d="M20 9.5L16 12l4 2.5"/>',
+      frz: '<path d="M12 2v20M3.3 7l17.4 10M20.7 7L3.3 17"/><path d="M9.5 3.8L12 6l2.5-2.2M9.5 20.2L12 18l2.5 2.2"/>',
+      mir: '<path d="M12 3v18" stroke-dasharray="2 3"/><path d="M9 7L3 18h6z"/><path d="M15 7l6 11h-6z"/>',
+      lay: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/>',
+      speed: '<path d="M3.5 18a8.5 8.5 0 0117 0"/><path d="M12 18l4.2-5"/><circle cx="12" cy="18" r="1.2"/><path d="M12 8.5v1.6M6 11l1.1 1.1M18 11l-1.1 1.1"/>',
+      imp: '<path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/>',
+      txt: '<path d="M5 6V4h14v2"/><path d="M12 4v16"/><path d="M9 20h6"/>',
+      add: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M12 8v8M8 12h8"/>',
+      beat: '<path d="M12 21V11"/><path class="fl" d="M6 3.5h12L12 11z"/>',
+      beatauto: '<path d="M9 21V11"/><path class="fl" d="M3.5 4h11L9 11z"/><path d="M19 2.5v5M16.5 5h5"/><path d="M19 14v5M16.5 16.5h5"/>',
+      multi: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 12.5l3 3 5-6"/>',
+      comp: '<rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/>',
+      uncomp: '<rect x="3" y="3" width="10" height="10" rx="2" stroke-dasharray="2 2"/><rect x="11" y="11" width="10" height="10" rx="2"/>',
+      bg: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/><path d="M3 3l3 3M21 3l-3 3"/>',
+      fx: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+      snd: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/>',
+      voice: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v3"/>',
+      edit: '<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/>',
+      del: '<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>',
+      snap: '<path d="M5 3v8a7 7 0 0014 0V3"/><path d="M5 7h4M15 7h4"/>'
+    };
+    const TBN = {
+      es: { undo: 'Deshacer', redo: 'Rehacer', split: 'Dividir', frz: 'Congelar', mir: 'Espejo', lay: 'Capas', speed: 'Velocidad', imp: 'Importar', txt: 'Texto', add: 'Escena', beat: 'Beat', beatauto: 'Beats automáticos', multi: 'Elegir varias', comp: 'Juntar en un clip', compOpen: 'Abrir clip compuesto', uncomp: 'Separar clip', bg: 'Quitar fondo', fx: 'Efecto', snd: 'Sonido', voice: 'Grabar voz', edit: 'Animar esta escena', del: 'Borrar', snapOn: 'Imán: activado', snapOff: 'Imán: desactivado' },
+      en: { undo: 'Undo', redo: 'Redo', split: 'Split', frz: 'Freeze', mir: 'Mirror', lay: 'Layers', speed: 'Speed', imp: 'Import', txt: 'Text', add: 'Scene', beat: 'Beat', beatauto: 'Auto beats', multi: 'Select several', comp: 'Group into one clip', compOpen: 'Open compound clip', uncomp: 'Ungroup clip', bg: 'Remove background', fx: 'Effect', snd: 'Sound', voice: 'Record voice', edit: 'Animate this scene', del: 'Delete', snapOn: 'Magnet: on', snapOff: 'Magnet: off' },
+      fr: { undo: 'Annuler', redo: 'Rétablir', split: 'Diviser', frz: 'Figer', mir: 'Miroir', lay: 'Calques', speed: 'Vitesse', imp: 'Importer', txt: 'Texte', add: 'Scène', beat: 'Beat', beatauto: 'Beats auto', multi: 'Choisir plusieurs', comp: 'Grouper en un clip', compOpen: 'Ouvrir le clip groupé', uncomp: 'Dégrouper', bg: 'Retirer le fond', fx: 'Effet', snd: 'Son', voice: 'Enregistrer la voix', edit: 'Animer cette scène', del: 'Supprimer', snapOn: 'Aimant : activé', snapOff: 'Aimant : désactivé' },
+      ja: { undo: '元に戻す', redo: 'やり直す', split: '分割', frz: 'フリーズ', mir: 'ミラー', lay: 'レイヤー', speed: '速度', imp: '読み込み', txt: 'テキスト', add: 'シーン', beat: 'ビート', beatauto: '自動ビート', multi: '複数選択', comp: 'まとめる', compOpen: 'まとめたクリップを開く', uncomp: 'まとめを解除', bg: '背景を消す', fx: 'エフェクト', snd: 'サウンド', voice: '録音', edit: 'このシーンをアニメ化', del: '削除', snapOn: '磁石：オン', snapOff: '磁石：オフ' }
+    };
+    const TBK = { edUndo: 'undo', edRedo: 'redo', edSplit: 'split', edFrz: 'frz', edMir: 'mir', edLay: 'lay', edSpeed: 'speed', edImport: 'imp', edTxt: 'txt', edAdd: 'add', edBeat: 'beat', edBeatAuto: 'beatauto', edMulti: 'multi', edComp: 'comp', edUncomp: 'uncomp', edBg: 'bg', edFx: 'fx', edSnd: 'snd', edVoice: 'voice', edEdit: 'edit', edDel: 'del', edSnap: 'snap' };
+    const TBS = { undo: 'Ctrl+Z', redo: 'Ctrl+Y', split: 'S', beat: 'B', del: 'Supr' };
+    const TBGROUPS = [['edUndo', 'edRedo'], ['edSplit', 'edFrz', 'edMir', 'edLay', 'edSpeed'], ['edImport', 'edTxt', 'edAdd'], ['edBeat', 'edBeatAuto'], ['edMulti', 'edComp', 'edUncomp', 'edBg'], ['edFx', 'edSnd', 'edVoice'], ['edEdit', 'edDel']];
+    let snapOn = true; try { snapOn = localStorage.getItem('tp-snap') !== '0'; } catch (_) {}
+    let tbDone = false, tbTip = null;
+    function tbIcons() {
+      const bar = $('#edSplit') && $('#edSplit').parentNode; if (!bar) return;
+      const N = TBN[E4L] || TBN.es;
+      if (!$('#edSnap')) {
+        const sb = document.createElement('button'); sb.type = 'button'; sb.className = 'btn small'; sb.id = 'edSnap';
+        sb.addEventListener('click', () => { snapOn = !snapOn; try { localStorage.setItem('tp-snap', snapOn ? '1' : '0'); } catch (_) {} tbIcons(); });
+        const z = bar.querySelector('.ed-zoom'); bar.insertBefore(sb, z || null);
+      }
+      if (!tbDone) {
+        tbDone = true;
+        const z = bar.querySelector('.ed-zoom');
+        TBGROUPS.forEach((g, gi) => {
+          if (gi > 0) { const sp = document.createElement('span'); sp.className = 'ed-sep'; bar.insertBefore(sp, z || null); }
+          for (const id of g) { const el = document.getElementById(id); if (el) bar.insertBefore(el, z || null); }
+        });
+        const sp2 = document.createElement('span'); sp2.className = 'ed-sep'; bar.insertBefore(sp2, z || null); bar.insertBefore($('#edSnap'), z || null);
+        bar.addEventListener('mouseover', (e) => {
+          const b = e.target.closest ? e.target.closest('[data-tip]') : null; tbHide();
+          if (!b || b.disabled && false) return;
+          const t = document.createElement('div'); t.className = 'ed-tbtip'; t.textContent = b.dataset.tip;
+          if (b.dataset.key) { const s = document.createElement('small'); s.textContent = b.dataset.key; t.appendChild(s); }
+          document.body.appendChild(t); tbTip = t; const r = b.getBoundingClientRect();
+          t.style.left = Math.max(60, Math.min(window.innerWidth - 60, r.left + r.width / 2)) + 'px'; t.style.top = (r.top - 8) + 'px';
+        });
+        bar.addEventListener('mouseout', () => tbHide()); bar.addEventListener('pointerdown', () => tbHide());
+      }
+      for (const [id, k] of Object.entries(TBK)) {
+        const b = document.getElementById(id); if (!b) continue;
+        let key = k, nm = N[k] || k;
+        if (id === 'edComp') nm = (b.title === e4('cmpOpenTip') || b.dataset.open === '1') ? N.compOpen : N.comp;
+        if (id === 'edSnap') { nm = snapOn ? N.snapOn : N.snapOff; b.classList.toggle('on', snapOn); }
+        if (!b.classList.contains('tbi')) b.classList.add('tbi');
+        if (b.title && id !== 'edSnap') b.setAttribute('aria-label', nm + ' — ' + b.title);
+        else b.setAttribute('aria-label', nm);
+        b.removeAttribute('title'); b.dataset.tip = nm; if (TBS[k]) b.dataset.key = TBS[k]; else delete b.dataset.key;
+        if (id === 'edComp') b.dataset.open = (nm === N.compOpen) ? '1' : '0';
+        if (!b.querySelector('svg') || b.textContent.trim()) b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + TBI[k] + '</svg>';
+      }
+    }
+    function tbHide() { if (tbTip) { tbTip.remove(); tbTip = null; } }
+    function syncBtns0() {
       try { extraSync(); } catch (_) {}
       const c = sel && sel.kind === 'clip' ? E.clips.find((x) => x.id === sel.id) : null;
       $('#edSplit').disabled = !c && !E.clips.length;
@@ -12874,7 +12965,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const b of bRead()) if (auAt(b)) p.push(b);
       return p;
     }
-    function snapNear(v, pts) { let best = null, bd = 8 / pps; for (const p of pts) { const d = Math.abs(p - v); if (d < bd) { bd = d; best = p; } } return best; }
+    function snapNear(v, pts) { if (!snapOn) return null; let best = null, bd = 8 / pps; for (const p of pts) { const d = Math.abs(p - v); if (d < bd) { bd = d; best = p; } } return best; }
     function sizeRows() {
       for (const [kind, row, lab] of [['ov', rowO, '.l-o'], ['fx', rowF, '.l-f'], ['cam', rowC, '.l-c'], ['au', rowA, '.l-a']]) {
         const n = laneCount(kind), th = trh(kind), h = n * th;
