@@ -1383,6 +1383,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         <div class="tool-row tiles">
           <button class="btn" id="toolText" type="button" aria-pressed="false" title="Write text on the canvas (T)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>Text</button>
           <button class="btn" id="toolSel" type="button" aria-pressed="false" title="Lasso a piece of the drawing to move it or resize it (V)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/></svg>Select</button>
+          <button class="btn" id="toolQuick" type="button" aria-pressed="false" title="Thickness and opacity at hand"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/></svg>Quick</button>
         </div>
         <div class="tool-row" id="symRow" role="group" aria-label="Symmetry">
           <button class="btn small" type="button" data-sym="" aria-pressed="true" title="No symmetry">No symmetry</button>
@@ -1499,6 +1500,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       <div class="tool-group">
         <label for="size">Thickness <span id="sizeOut">6</span></label>
         <input id="size" type="range" min="1" max="60" value="6">
+        <label for="opa">Opacity <span id="opaOut">100</span>%</label>
+        <input id="opa" type="range" min="5" max="100" value="100" title="How see-through the stroke is (100 = normal)">
         <label for="stab">Steady <span id="stabOut">5</span></label>
         <input id="stab" type="range" min="0" max="10" value="5" title="Raise steady if your hand shakes: the line comes out smoother">
         <label for="press">Pressure <span id="pressOut">6</span></label>
@@ -2015,7 +2018,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
 
   const state = {
     id: null, name: '', frames: [], fi: 0, layerCounter: 0,
-    tool: 'pen', brush: 'pen', shape: 'line', shapeFill: false, dim: true, onion: false, onionPrev: 1, onionNext: 1, onionOp: 0.3, color: '#1d1b1a', size: 6, stab: 5, press: 6,
+    tool: 'pen', brush: 'pen', shape: 'line', shapeFill: false, dim: true, onion: false, onionPrev: 1, onionNext: 1, onionOp: 0.3, color: '#1d1b1a', size: 6, stab: 5, press: 6, opa: 100,
     mode: 'anim', guide: 0, fps: 12, playing: false, tol: 40, fillAll: false, camMode: false, camView: false,
     place: null, selGroup: null, rig: { parts: Object.create(null), groups: [] },
     undo: [], redo: [], dirty: false, ver: 0, renaming: null
@@ -2816,8 +2819,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const isAct = l.id === state.activeId;
         vctx.globalAlpha = state.dim && !isAct && !relWith(l, f) ? 0.5 : 1;
         drawLayer(vctx, l, f);
-        if (isAct && drawing && drawing.kind === 'marker' && drawing.layer === l) {
-          vctx.globalAlpha = 0.5;
+        if (isAct && drawing && drawing.buf && drawing.layer === l) {
+          vctx.globalAlpha = drawing.alpha;
           drawLayer(vctx, l, f, 1, buf);
         }
         if (isAct && (sel || marq || textPend)) {
@@ -2976,7 +2979,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const mult = BRUSH_MULT[kind] || 1;
     return Math.max(1, s * k * mult);
   }
-  const target = (d) => (d.kind === 'marker' ? bctx : d.layer.ctx);
+  const target = (d) => (d.buf ? bctx : d.layer.ctx);
   function prep(ctx, d) {
     ctx.globalCompositeOperation = d.kind === 'eraser' ? 'destination-out' : (d.layer && d.layer.lock && ctx === d.layer.ctx ? 'source-atop' : 'source-over');
     ctx.globalAlpha = 1;
@@ -3713,12 +3716,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const p = mApply(inv, pt(e));
     const w = widthFor(e, kind, 0);
     drawing = { id: e.pointerId, layer, kind, color: state.color, last: p, mid: p, raw: p, lastW: w, t: e.timeStamp || performance.now(), inv };
+    drawing.buf = kind === 'marker' || (state.opa < 100 && kind !== 'eraser' && !isRedraw(kind));
+    drawing.alpha = (kind === 'marker' ? 0.5 : 1) * (state.opa / 100);
     // Shift: línea recta desde donde empezaste (se redibuja sobre la captura de antes del trazo).
     if (e.shiftKey && !stamped(kind) && kind !== 'marker') {
-      drawing.line = true; drawing.start = p;
+      drawing.line = true; drawing.start = p; drawing.buf = false;
       drawing.base = state.undo[state.undo.length - 1].snap;
     }
-    if (kind === 'marker') bctx.clearRect(0, 0, W, H);
+    if (drawing.buf) bctx.clearRect(0, 0, W, H);
     if (isRedraw(kind)) { drawing.base = state.undo[state.undo.length - 1].snap; drawing.seed = (Math.random() * 1e6) | 0; }
     paintDot(drawing, p, w);
     // Simetría: dibujos «espejo» que repiten cada trazo del otro lado del lienzo.
@@ -3776,9 +3781,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     if (!drawing || e.pointerId !== drawing.id) return;
     finishStroke(drawing);
     if (drawing.mirrors) for (const d2 of drawing.mirrors) { d2.raw = symPt(drawing.raw, d2.fx, d2.fy); finishStroke(d2); }
-    if (drawing.kind === 'marker') {
+    if (drawing.buf) {
       const c = drawing.layer.ctx;
-      c.save(); c.globalAlpha = 0.5; if (drawing.layer.lock) c.globalCompositeOperation = 'source-atop'; c.drawImage(buf, 0, 0); c.restore();
+      c.save(); c.globalAlpha = drawing.alpha; if (drawing.layer.lock) c.globalCompositeOperation = 'source-atop'; c.drawImage(buf, 0, 0); c.restore();
       bctx.clearRect(0, 0, W, H);
     }
     drawing = null;
@@ -6825,7 +6830,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
 
   /* ---------- Datos extra de cada frame: velocidad, transición y efecto ---------- */
   const SPDS = [0.25, 0.5, 1, 2, 3];
-  const TR_KINDS = ['fundido', 'izq', 'der', 'arriba', 'abajo', 'negro', 'blanco', 'iris', 'diag', 'persianas', 'zoom', 'pixelar', 'desenfoque', 'girar', 'rebote', 'reloj', 'cuadros', 'puertas', 'zoomout', 'lineas', 'rombo', 'cortina'];
+  const TR_KINDS = ['fundido', 'izq', 'der', 'arriba', 'abajo', 'negro', 'blanco', 'iris', 'diag', 'persianas', 'zoom', 'pixelar', 'desenfoque', 'girar', 'rebote', 'reloj', 'cuadros', 'puertas', 'zoomout', 'lineas', 'rombo', 'cortina', 'cruz', 'abanico', 'zigzag', 'voltear', 'glitchtr', 'remolino', 'ondas', 'pagina', 'cristal', 'destello', 'latigazo', 'barrasneon', 'tunel'];
   function cleanMeta(src) {
     const o = src || {};
     const spd = +o.spd > 0.05 && +o.spd <= 10 ? +o.spd : 1;
@@ -8334,10 +8339,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     $('#btnTracks').setAttribute('aria-pressed', String(tracksOn));
     try { localStorage.setItem('tp-tracks', tracksOn ? '1' : '0'); } catch (_) {}
   });
-  const TR_ICON = { izq: '⬅', der: '➡', arriba: '⬆', abajo: '⬇', fundido: '◐', cortina: '🎭' , negro: '⚫', blanco: '⚪', iris: '🔵', diag: '◢', persianas: '☰', zoom: '🔍', pixelar: '▦', desenfoque: '🌫️', girar: '🔄', rebote: '🏀', reloj: '🕐', cuadros: '🏁', puertas: '🚪', zoomout: '🔭', lineas: '〰️', rombo: '🔶' };
-  const TR_NAME = { izq: 'Slide left', der: 'Slide right', arriba: 'Slide up', abajo: 'Slide down', fundido: 'Fade', cortina: 'Curtain (the stickman pulls it)', negro: 'Fade to black', blanco: 'Fade to white', iris: 'Iris (circle opens)', diag: 'Diagonal wipe', persianas: 'Blinds', zoom: 'Zoom in', pixelar: 'Pixelate', desenfoque: 'Blur', girar: 'Spin', rebote: 'Bounce', reloj: 'Clock wipe', cuadros: 'Checkerboard', puertas: 'Open doors', zoomout: 'Zoom out', lineas: 'Line wipe', rombo: 'Diamond iris' };
-  const TR_NEW = new Set(['negro','blanco','iris','diag','persianas','zoom','pixelar','desenfoque','girar','rebote','reloj','cuadros','puertas','zoomout','lineas','rombo']);
-  const TR_PRO = new Set(['cortina']);
+  const TR_ICON = { izq: '⬅', der: '➡', arriba: '⬆', abajo: '⬇', fundido: '◐', cortina: '🎭' , negro: '⚫', blanco: '⚪', iris: '🔵', diag: '◢', persianas: '☰', zoom: '🔍', pixelar: '▦', desenfoque: '🌫️', girar: '🔄', rebote: '🏀', reloj: '🕐', cuadros: '🏁', puertas: '🚪', zoomout: '🔭', lineas: '〰️', rombo: '🔶', cruz: '➕', abanico: '🪭', zigzag: '⚡', voltear: '🔃', glitchtr: '👾', remolino: '🌀', ondas: '🌊', pagina: '📖', cristal: '💎', destello: '✨', latigazo: '💨', barrasneon: '🌈', tunel: '🕳️' };
+  const TR_NAME = { izq: 'Slide left', der: 'Slide right', arriba: 'Slide up', abajo: 'Slide down', fundido: 'Fade', cortina: 'Curtain (the stickman pulls it)', negro: 'Fade to black', blanco: 'Fade to white', iris: 'Iris (circle opens)', diag: 'Diagonal wipe', persianas: 'Blinds', zoom: 'Zoom in', pixelar: 'Pixelate', desenfoque: 'Blur', girar: 'Spin', rebote: 'Bounce', reloj: 'Clock wipe', cuadros: 'Checkerboard', puertas: 'Open doors', zoomout: 'Zoom out', lineas: 'Line wipe', rombo: 'Diamond iris', cruz: 'Cross', abanico: 'Fan', zigzag: 'Zigzag', voltear: 'Flip', glitchtr: 'Glitch', remolino: 'Swirl', ondas: 'Waves', pagina: 'Book close', cristal: 'Shatter', destello: 'Flash burst', latigazo: 'Whip pan', barrasneon: 'Neon bars', tunel: 'Tunnel' };
+  const TR_NEW = new Set(['negro','blanco','iris','diag','persianas','zoom','pixelar','desenfoque','girar','rebote','reloj','cuadros','puertas','zoomout','lineas','rombo','cruz','abanico','zigzag','voltear','glitchtr','remolino','ondas','pagina','cristal','destello','latigazo','barrasneon','tunel']);
+  const TR_PRO = new Set(['cortina','glitchtr','remolino','ondas','pagina','cristal','destello','latigazo','barrasneon','tunel']);
   const trxTmp = document.createElement('canvas');
   const trxBounce = (t) => { const n1 = 7.5625, d1 = 2.75; if (t < 1 / d1) return n1 * t * t; if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75; if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375; return n1 * (t -= 2.625 / d1) * t + 0.984375; };
   // Transiciones nuevas: las usan el animador y el editor. e va de 0 a 1; out = lo que se va, inc = lo que llega.
@@ -8395,6 +8400,85 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       case 'puertas': { put(inc); const d = e * w / 2; clipPut(out, () => x.rect(-d, 0, w / 2, h), -d, 0); clipPut(out, () => x.rect(w / 2 + d, 0, w / 2, h), d, 0); break; }
       case 'lineas': { put(out); const n = 14, cw = w / n; clipPut(inc, () => { for (let i = 0; i < n; i++) { if (i % 2) x.rect(i * cw, 0, cw + 0.5, h * e); else x.rect(i * cw, h * (1 - e), cw + 0.5, h * e + 0.5); } }); break; }
+      case 'cruz': put(out); clipPut(inc, () => { x.rect(w / 2 - e * w * 0.56, 0, e * w * 1.12, h); x.rect(0, h / 2 - e * h * 0.56, w, e * h * 1.12); }); break;
+      case 'abanico': { put(out); const R = Math.hypot(w / 2, h) + 2; clipPut(inc, () => { x.moveTo(w / 2, h); x.arc(w / 2, h, R, -Math.PI, -Math.PI + e * Math.PI); x.closePath(); }); break; }
+      case 'zigzag': {
+        put(out); const n = 10, tooth = w * 0.07, X = e * (w + tooth * 1.2);
+        clipPut(inc, () => { x.moveTo(0, 0); for (let i = 0; i <= n; i++) x.lineTo(X + (i % 2 ? tooth : 0) - tooth * 0.2, i * h / n); x.lineTo(0, h); x.closePath(); });
+        break;
+      }
+      case 'voltear': {
+        wash('#000000', 1);
+        const img = e < 0.5 ? out : inc; if (!img) break;
+        const s = Math.max(0.02, Math.abs(Math.cos(e * Math.PI)));
+        x.save(); x.translate(w / 2, h / 2); x.scale(s, 1 + (1 - s) * 0.06); x.drawImage(img, -w / 2, -h / 2, w, h); x.restore();
+        break;
+      }
+      case 'glitchtr': {
+        const n = 14, bh = h / n, q = Math.floor(e * 14), amp = Math.sin(e * Math.PI), fr = (a) => { const v = Math.sin(a * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+        for (let i = 0; i < n; i++) {
+          const th = 0.15 + fr(i + 1) * 0.7, img = e > th ? inc : out; if (!img) continue;
+          const off = (fr(i * 7 + q * 13) - 0.5) * w * 0.34 * amp, y = i * bh;
+          x.drawImage(img, 0, y, w, bh + 1, off, y, w, bh + 1);
+        }
+        wash('#00ffe5', 0.14 * amp * (q % 2)); wash('#ff2bd6', 0.12 * amp * ((q + 1) % 2));
+        break;
+      }
+      case 'remolino': {
+        put(inc); const n = 10, R = Math.hypot(w, h) / 2 + 2;
+        for (let i = 0; i < n; i++) {
+          if (!out) break;
+          x.save(); x.beginPath(); x.arc(w / 2, h / 2, R * (i + 1) / n, 0, Math.PI * 2); x.arc(w / 2, h / 2, R * i / n, 0, Math.PI * 2, true); x.clip();
+          x.globalAlpha = Math.max(0, 1 - e * 1.1); x.translate(w / 2, h / 2); x.rotate(e * 2.6 * (1 + i * 0.35)); x.scale(1 + e * 0.5, 1 + e * 0.5); x.drawImage(out, -w / 2, -h / 2, w, h); x.restore();
+        }
+        break;
+      }
+      case 'ondas': {
+        put(out); const n = 36, sh = h / n;
+        clipPut(inc, () => { for (let i = 0; i < n; i++) { const wv = Math.sin(i * 0.55 + e * 7) * w * 0.07 * Math.sin(e * Math.PI), W = e * w * 1.2 + wv; if (W > 0) x.rect(0, i * sh, Math.min(w, W), sh + 0.5); } });
+        break;
+      }
+      case 'pagina': {
+        put(inc); const wp = Math.max(1, w * (1 - e));
+        if (out) { x.drawImage(out, 0, 0, w, h, 0, 0, wp, h); }
+        const g = x.createLinearGradient(wp, 0, wp + w * 0.12, 0); g.addColorStop(0, 'rgba(0,0,0,' + (0.4 * (1 - e)).toFixed(2) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.save(); x.fillStyle = g; x.fillRect(wp, 0, w * 0.12, h); x.restore();
+        break;
+      }
+      case 'cristal': {
+        put(inc); if (!out) break;
+        const cols = 10, rows = Math.max(4, Math.round(cols * h / w)), cw = w / cols, ch = h / rows, fr = (a) => { const v = Math.sin(a * 91.7 + 17.3) * 43758.5453; return v - Math.floor(v); };
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+          const id = r * cols + c, cx = (c + 0.5) * cw, cy = (r + 0.5) * ch, e2 = e * e;
+          const dx = ((cx - w / 2) / w) * e2 * w * 1.1 + (fr(id) - 0.5) * e * w * 0.25, dy = ((cy - h / 2) / h) * e2 * h * 0.9 + e2 * h * 0.45 * fr(id + 50);
+          x.save(); x.globalAlpha = Math.max(0, 1 - Math.pow(e, 1.4)); x.translate(cx + dx, cy + dy); x.rotate((fr(id + 9) - 0.5) * e * 3.2);
+          x.drawImage(out, c * cw, r * ch, cw, ch, -cw / 2 - 0.5, -ch / 2 - 0.5, cw + 1, ch + 1); x.restore();
+        }
+        break;
+      }
+      case 'destello': {
+        if (e < 0.5) { scaled(out, 1 + e * 0.5, 1, 0); wash('#ffffff', Math.pow(e * 2, 2)); }
+        else { scaled(inc, 1 + (1 - e) * 0.5, 1, 0); wash('#ffffff', Math.pow(2 - e * 2, 2)); }
+        break;
+      }
+      case 'latigazo': {
+        wash('#000000', 1);
+        const f = e < 0.5 ? e * 2 : 2 - e * 2, img = e < 0.5 ? out : inc, dir = e < 0.5 ? -1 : 1; if (!img) break;
+        const off = dir * f * f * w * 0.95;
+        for (let j = 0; j < 6; j++) put(img, off * (1 - j * 0.09), 0, 1 / (j + 1));
+        break;
+      }
+      case 'barrasneon': {
+        put(out);
+        const cl = ['#00e5ff', '#ff2bd6', '#ffe600', '#7c4dff', '#00ff9d'], sl = w * 0.12, band = (t) => { const X = t * (w + sl); x.moveTo(0, 0); x.lineTo(X, 0); x.lineTo(X - sl, h); x.lineTo(0, h); x.closePath(); };
+        for (let i = 0; i < cl.length; i++) { const t = Math.max(0, Math.min(1, e * 1.5 - i * 0.1)); if (t <= 0) continue; x.save(); x.fillStyle = cl[i]; x.beginPath(); band(t); x.fill(); x.restore(); }
+        { const t = Math.max(0, Math.min(1, e * 1.5 - 0.5)); if (t > 0) clipPut(inc, () => band(t)); }
+        break;
+      }
+      case 'tunel': {
+        scaled(out, 1 + e * 2.4, 1, 0); scaled(inc, 0.4 + 0.6 * e, Math.max(0, e * 1.5 - 0.3), 0); wash('#ffffff', 0.22 * Math.sin(e * Math.PI));
+        break;
+      }
       case 'rombo': put(out); clipPut(inc, () => { x.moveTo(w / 2 - e * w, h / 2); x.lineTo(w / 2, h / 2 - e * h); x.lineTo(w / 2 + e * w, h / 2); x.lineTo(w / 2, h / 2 + e * h); x.closePath(); }); break;
     }
   }
@@ -9176,6 +9260,65 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
   /* ---------- Menú de 3 puntitos ---------- */
   const menu = $('#menu');
   let menuFor = null;
+  /* ---------- Copiar, pegar y voltear capas; panel rápido de grosor y opacidad ---------- */
+  let layerClip = null;
+  try { const j = JSON.parse(localStorage.getItem('tp-layerclip') || 'null'); if (j && typeof j.png === 'string') layerClip = j; } catch (_) {}
+  function copyLayer(layer) {
+    try {
+      layerClip = { name: layer.name, png: layer.canvas.toDataURL('image/png') };
+      try { localStorage.setItem('tp-layerclip', JSON.stringify(layerClip)); } catch (_) {}
+      toast('Layer copied. In another frame or project tap “Paste layer” in a layer menu.');
+    } catch (_) {}
+  }
+  function pasteLayer() {
+    if (!layerClip) { toast('Copy a layer first.'); return; }
+    if (!COLLAB.structOK()) return;
+    commitSel(); cancelText();
+    const img = new Image();
+    img.onload = () => {
+      const l = makeLayer(String(layerClip.name || '').slice(0, 33));
+      l.ctx.drawImage(img, 0, 0, W, H);
+      const i = Math.max(idxOf(state.activeId), 0);
+      state.layers.splice(i + 1, 0, l); state.activeId = l.id;
+      dropOnion(); renderLayers(); requestRender(); renderFrames(); markDirty();
+      toast('Layer pasted.');
+    };
+    img.src = layerClip.png;
+  }
+  function flipLayer(layer, axis) {
+    commitSel(); cancelText();
+    if (!COLLAB.canEdit(layer)) { COLLAB.deny(layer); return; }
+    const im = layer.ctx.getImageData(0, 0, W, H), d = im.data;
+    let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) { toast('That layer is empty.'); return; }
+    pushUndo(layer);
+    const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; tmp.getContext('2d').putImageData(im, 0, 0);
+    const c = layer.ctx; c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.clearRect(0, 0, W, H);
+    if (axis === 'h') { c.translate(x0 + x1 + 1, 0); c.scale(-1, 1); } else { c.translate(0, y0 + y1 + 1); c.scale(1, -1); }
+    c.drawImage(tmp, 0, 0); c.restore();
+    dropOnion(); renderLayers(); requestRender(); renderFrames(); markDirty();
+  }
+  $('#opa').addEventListener('input', (e) => { state.opa = Math.max(5, Math.min(100, +e.target.value || 100)); $('#opaOut').textContent = String(state.opa); });
+  {
+    const bt = $('#toolQuick');
+    const pn = document.createElement('div'); pn.hidden = true;
+    pn.style.cssText = 'position:fixed;z-index:70;background:var(--panel,#1b1d29);border:1px solid var(--line,#343849);border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:8px;min-width:220px;color:var(--ink,#fff);font-size:0.8rem';
+    const link = (id, label) => {
+      const src = $('#' + id), row = document.createElement('label'); row.style.cssText = 'display:flex;flex-direction:column;gap:3px';
+      const t = document.createElement('span'), out = document.createElement('b'); t.textContent = label + ' '; t.appendChild(out);
+      const r = document.createElement('input'); r.type = 'range'; r.min = src.min; r.max = src.max; r.value = src.value; out.textContent = src.value;
+      r.addEventListener('input', () => { src.value = r.value; out.textContent = r.value; src.dispatchEvent(new Event('input', { bubbles: true })); });
+      src.addEventListener('input', () => { r.value = src.value; out.textContent = src.value; });
+      row.append(t, r); return row;
+    };
+    pn.append(link('size', 'Thickness'), link('opa', 'Opacity'));
+    document.body.appendChild(pn);
+    bt.addEventListener('click', () => {
+      pn.hidden = !pn.hidden; bt.setAttribute('aria-pressed', String(!pn.hidden));
+      if (!pn.hidden) { const rb = document.querySelector('.rail .rb.r-quick'); const r = (rb && rb.offsetParent ? rb : bt).getBoundingClientRect(); pn.style.top = Math.max(8, Math.min(window.innerHeight - pn.offsetHeight - 8, r.top)) + 'px'; pn.style.left = (r.left < 200 ? r.right + 10 : Math.max(8, r.left - pn.offsetWidth - 10)) + 'px'; }
+    });
+  }
   function closeMenu() { menu.hidden = true; menuFor = null; }
   function toggleMenu(layer, anchor) {
     if (!menu.hidden && menuFor === layer.id) { closeMenu(); return; }
@@ -9256,6 +9399,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     menu.append(
       menuBtn('Rename', () => { closeMenu(); state.renaming = layer.id; renderLayers(); }),
       menuBtn('Duplicate', () => { closeMenu(); duplicateLayer(layer.id); }),
+      menuBtn('Copy layer', () => { closeMenu(); copyLayer(layer); }),
+      menuBtn('Paste as new layer', () => { closeMenu(); pasteLayer(); }),
+      menuBtn('↔ Flip horizontally (mirror)', () => { closeMenu(); flipLayer(layer, 'h'); }),
+      menuBtn('↕ Flip vertically', () => { closeMenu(); flipLayer(layer, 'v'); }),
       menuBtn('🔗 ' + tlT('rel'), () => buildRelMenu(layer)),
       menuBtn('🏔️ Depth (parallax): ' + DEPTH_NAME(layer.dp), () => buildDepthMenu(layer)),
       menuBtn('🌑 Floor shadow…', () => buildShadowMenu(layer)),
@@ -11574,10 +11721,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const FX = ['rayo', 'aura', 'glitch', 'lava', 'cristal', 'velocidad', 'brillo'];
     const L = (document.documentElement.lang || 'es').slice(0, 2);
     const D = {
-      es: { title: '👑 Stickman Workshop Pro', sub: 'Un solo pago y es tuyo para siempre. Ayudas a que la app siga creciendo.', b1: 'Exportar en 2K y 4K', b2: 'Transiciones entre clips en el editor', b3: 'Exportar sin el muñequito de la esquina', b4: '≈ Modo fluido', b5: '7 efectos extra: Rayo, Aura, Glitch, Lava, Cristal, Velocidad y Brillo', buy: 'Comprar Pro', restore: 'Ya lo compré', later: 'Ahora no', have: '✅ Ya tienes Pro. ¡Gracias por apoyar la app!', noStore: 'Las compras funcionan en la app de la Microsoft Store (en Windows). Desde el navegador no se puede comprar.', open: 'Abrir en la Microsoft Store', thanks: '👑 ¡Gracias! Ya tienes Pro.', cancel: 'Compra cancelada.', restored: '✅ Pro recuperado.', notFound: 'No encontré una compra de Pro en esta cuenta de Microsoft.', why_res: '2K y 4K son de Pro.', ownBtn: 'Código de creador', ownGo: 'Activar', ownAsk: 'Escribe tu código', ownOk: '👑 Pro activado en este dispositivo', ownBad: 'Ese código no es correcto.', why_fx: 'Este efecto es parte de Pro. Hay 10 efectos gratis para probar.', why_bg: 'Quitar fondos con IA es parte de Pro. La opción por color es gratis.', why_tr: 'Las transiciones son de Pro.', why_fl: 'El modo fluido es de Pro.', why_fx: 'Este efecto es de Pro.', btn: 'Pro', wait: 'Un momento…' },
-      en: { title: '👑 Stickman Workshop Pro', sub: 'Pay once and it’s yours forever. You help the app keep growing.', b1: 'Export in 2K and 4K', b2: 'Transitions between clips in the editor', b3: 'Export without the little stickman in the corner', b4: '≈ Smooth mode', b5: '7 extra effects: Lightning, Aura, Glitch, Lava, Crystal, Speed and Shine', buy: 'Buy Pro', restore: 'I already bought it', later: 'Not now', have: '✅ You have Pro. Thanks for supporting the app!', noStore: 'Purchases work in the Microsoft Store app (on Windows). You can’t buy from the browser.', open: 'Open in the Microsoft Store', thanks: '👑 Thank you! You have Pro now.', cancel: 'Purchase canceled.', restored: '✅ Pro restored.', notFound: 'I couldn’t find a Pro purchase on this Microsoft account.', why_res: '2K and 4K are Pro.', ownBtn: 'Creator code', ownGo: 'Activate', ownAsk: 'Type your code', ownOk: '👑 Pro unlocked on this device', ownBad: 'That code isn’t correct.', why_fx: 'This effect is part of Pro. There are 10 free effects to try.', why_bg: 'Removing backgrounds with AI is part of Pro. The by-color option is free.', why_tr: 'Transitions are Pro.', why_fl: 'Smooth mode is Pro.', why_fx: 'This effect is Pro.', btn: 'Pro', wait: 'One moment…' },
-      fr: { title: '👑 Stickman Workshop Pro', sub: 'Un seul paiement, à toi pour toujours. Tu aides l’appli à grandir.', b1: 'Exporter en 2K et 4K', b2: 'Transitions entre les clips dans l’éditeur', b3: 'Exporter sans le petit bonhomme dans le coin', b4: '≈ Mode fluide', b5: '7 effets en plus : Éclair, Aura, Glitch, Lave, Cristal, Vitesse et Éclat', buy: 'Acheter Pro', restore: 'Je l’ai déjà acheté', later: 'Plus tard', have: '✅ Tu as Pro. Merci de soutenir l’appli !', noStore: 'Les achats fonctionnent dans l’appli du Microsoft Store (sur Windows). Pas depuis le navigateur.', open: 'Ouvrir dans le Microsoft Store', thanks: '👑 Merci ! Tu as Pro.', cancel: 'Achat annulé.', restored: '✅ Pro récupéré.', notFound: 'Aucun achat Pro trouvé sur ce compte Microsoft.', why_res: '2K et 4K sont dans Pro.', ownBtn: 'Code créateur', ownGo: 'Activer', ownAsk: 'Écris ton code', ownOk: '👑 Pro activé sur cet appareil', ownBad: 'Ce code n’est pas correct.', why_fx: 'Cet effet fait partie de Pro. Il y a 10 effets gratuits à essayer.', why_bg: 'Retirer l’arrière-plan avec l’IA fait partie de Pro. L’option par couleur est gratuite.', why_tr: 'Les transitions sont dans Pro.', why_fl: 'Le mode fluide est dans Pro.', why_fx: 'Cet effet est dans Pro.', btn: 'Pro', wait: 'Un instant…' },
-      ja: { title: '👑 Stickman Workshop Pro', sub: '一度の支払いでずっと使えます。アプリの成長を応援できます。', b1: '2K・4K で書き出し', b2: 'エディターでクリップ間のトランジション', b3: '隅の棒人間マークなしで書き出し', b4: '≈ スムーズモード', b5: '追加エフェクト7種：雷・オーラ・グリッチ・溶岩・クリスタル・スピード・きらめき', buy: 'Pro を購入', restore: '購入済みです', later: 'あとで', have: '✅ Pro を利用中です。応援ありがとう！', noStore: '購入は Microsoft Store のアプリ（Windows）でできます。ブラウザーからは購入できません。', open: 'Microsoft Store で開く', thanks: '👑 ありがとう！Pro になりました。', cancel: '購入をキャンセルしました。', restored: '✅ Pro を復元しました。', notFound: 'この Microsoft アカウントに Pro の購入が見つかりません。', why_res: '2K と 4K は Pro の機能です。', ownBtn: 'クリエイターコード', ownGo: '有効にする', ownAsk: 'コードを入力', ownOk: '👑 この端末でProを有効にしました', ownBad: 'コードが正しくありません。', why_fx: 'このエフェクトはProです。無料のエフェクトが10個あります。', why_bg: 'AIで背景を消す機能はProです。色で消す方法は無料です。', why_tr: 'トランジションは Pro の機能です。', why_fl: 'スムーズモードは Pro の機能です。', why_fx: 'このエフェクトは Pro の機能です。', btn: 'Pro', wait: 'お待ちください…' }
+      es: { title: '👑 Stickman Workshop Pro', sub: 'Un solo pago y es tuyo para siempre. Ayudas a que la app siga creciendo.', b1: 'Exportar en 2K y 4K', b2: 'Transiciones Pro entre clips: Glitch, Remolino, Cristal roto, Barras neón y más', b6: 'Efectos Pro del editor: Shake de cámara, Golpe fantasma, Resplandor, Bordes neón, Destello de lente y más', b3: 'Exportar sin el muñequito de la esquina', b4: '≈ Modo fluido', b5: '7 efectos extra: Rayo, Aura, Glitch, Lava, Cristal, Velocidad y Brillo', buy: 'Comprar Pro', restore: 'Ya lo compré', later: 'Ahora no', have: '✅ Ya tienes Pro. ¡Gracias por apoyar la app!', noStore: 'Las compras funcionan en la app de la Microsoft Store (en Windows). Desde el navegador no se puede comprar.', open: 'Abrir en la Microsoft Store', thanks: '👑 ¡Gracias! Ya tienes Pro.', cancel: 'Compra cancelada.', restored: '✅ Pro recuperado.', notFound: 'No encontré una compra de Pro en esta cuenta de Microsoft.', why_res: '2K y 4K son de Pro.', ownBtn: 'Código de creador', ownGo: 'Activar', ownAsk: 'Escribe tu código', ownOk: '👑 Pro activado en este dispositivo', ownBad: 'Ese código no es correcto.', why_fx: 'Este efecto es parte de Pro. Hay 10 efectos gratis para probar.', why_bg: 'Quitar fondos con IA es parte de Pro. La opción por color es gratis.', why_tr: 'Esta transición es de Pro.', why_fl: 'El modo fluido es de Pro.', why_fx: 'Este efecto es de Pro.', btn: 'Pro', wait: 'Un momento…' },
+      en: { title: '👑 Stickman Workshop Pro', sub: 'Pay once and it’s yours forever. You help the app keep growing.', b1: 'Export in 2K and 4K', b2: 'Pro transitions between clips: Glitch, Swirl, Shatter, Neon bars and more', b6: 'Pro editor effects: Camera shake, Ghost hit, Bloom, Neon edges, Lens flare and more', b3: 'Export without the little stickman in the corner', b4: '≈ Smooth mode', b5: '7 extra effects: Lightning, Aura, Glitch, Lava, Crystal, Speed and Shine', buy: 'Buy Pro', restore: 'I already bought it', later: 'Not now', have: '✅ You have Pro. Thanks for supporting the app!', noStore: 'Purchases work in the Microsoft Store app (on Windows). You can’t buy from the browser.', open: 'Open in the Microsoft Store', thanks: '👑 Thank you! You have Pro now.', cancel: 'Purchase canceled.', restored: '✅ Pro restored.', notFound: 'I couldn’t find a Pro purchase on this Microsoft account.', why_res: '2K and 4K are Pro.', ownBtn: 'Creator code', ownGo: 'Activate', ownAsk: 'Type your code', ownOk: '👑 Pro unlocked on this device', ownBad: 'That code isn’t correct.', why_fx: 'This effect is part of Pro. There are 10 free effects to try.', why_bg: 'Removing backgrounds with AI is part of Pro. The by-color option is free.', why_tr: 'This transition is Pro.', why_fl: 'Smooth mode is Pro.', why_fx: 'This effect is Pro.', btn: 'Pro', wait: 'One moment…' },
+      fr: { title: '👑 Stickman Workshop Pro', sub: 'Un seul paiement, à toi pour toujours. Tu aides l’appli à grandir.', b1: 'Exporter en 2K et 4K', b2: 'Transitions Pro entre les clips : Glitch, Tourbillon, Éclats, Barres néon et plus', b6: 'Effets Pro de l’éditeur : Secousse caméra, Coup fantôme, Éclat lumineux, Contours néon, Reflet d’objectif et plus', b3: 'Exporter sans le petit bonhomme dans le coin', b4: '≈ Mode fluide', b5: '7 effets en plus : Éclair, Aura, Glitch, Lave, Cristal, Vitesse et Éclat', buy: 'Acheter Pro', restore: 'Je l’ai déjà acheté', later: 'Plus tard', have: '✅ Tu as Pro. Merci de soutenir l’appli !', noStore: 'Les achats fonctionnent dans l’appli du Microsoft Store (sur Windows). Pas depuis le navigateur.', open: 'Ouvrir dans le Microsoft Store', thanks: '👑 Merci ! Tu as Pro.', cancel: 'Achat annulé.', restored: '✅ Pro récupéré.', notFound: 'Aucun achat Pro trouvé sur ce compte Microsoft.', why_res: '2K et 4K sont dans Pro.', ownBtn: 'Code créateur', ownGo: 'Activer', ownAsk: 'Écris ton code', ownOk: '👑 Pro activé sur cet appareil', ownBad: 'Ce code n’est pas correct.', why_fx: 'Cet effet fait partie de Pro. Il y a 10 effets gratuits à essayer.', why_bg: 'Retirer l’arrière-plan avec l’IA fait partie de Pro. L’option par couleur est gratuite.', why_tr: 'Cette transition est dans Pro.', why_fl: 'Le mode fluide est dans Pro.', why_fx: 'Cet effet est dans Pro.', btn: 'Pro', wait: 'Un instant…' },
+      ja: { title: '👑 Stickman Workshop Pro', sub: '一度の支払いでずっと使えます。アプリの成長を応援できます。', b1: '2K・4K で書き出し', b2: 'クリップ間のProトランジション：グリッチ、渦、砕ける、ネオンバーなど', b6: 'Proエディター効果：カメラシェイク、ゴーストヒット、ブルーム、ネオン輪郭、レンズフレアなど', b3: '隅の棒人間マークなしで書き出し', b4: '≈ スムーズモード', b5: '追加エフェクト7種：雷・オーラ・グリッチ・溶岩・クリスタル・スピード・きらめき', buy: 'Pro を購入', restore: '購入済みです', later: 'あとで', have: '✅ Pro を利用中です。応援ありがとう！', noStore: '購入は Microsoft Store のアプリ（Windows）でできます。ブラウザーからは購入できません。', open: 'Microsoft Store で開く', thanks: '👑 ありがとう！Pro になりました。', cancel: '購入をキャンセルしました。', restored: '✅ Pro を復元しました。', notFound: 'この Microsoft アカウントに Pro の購入が見つかりません。', why_res: '2K と 4K は Pro の機能です。', ownBtn: 'クリエイターコード', ownGo: '有効にする', ownAsk: 'コードを入力', ownOk: '👑 この端末でProを有効にしました', ownBad: 'コードが正しくありません。', why_fx: 'このエフェクトはProです。無料のエフェクトが10個あります。', why_bg: 'AIで背景を消す機能はProです。色で消す方法は無料です。', why_tr: 'このトランジションは Pro の機能です。', why_fl: 'スムーズモードは Pro の機能です。', why_fx: 'このエフェクトは Pro の機能です。', btn: 'Pro', wait: 'お待ちください…' }
     };
     const t = (k) => ((D[L] || D.es)[k] || D.es[k] || k);
     let on = false, svc = null, item = null;
@@ -11633,7 +11780,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       card.append(p);
       const ul = document.createElement('ul');
       const fxNames = FX.map((id) => { const e = document.querySelector('#brushes4 [data-brush="' + id + '"] .lbl'); return e ? e.textContent.trim() : ''; }).filter(Boolean);
-      for (const k of ['b1', 'b2', 'b3', 'b4', 'b5']) {
+      for (const k of ['b1', 'b2', 'b6', 'b3', 'b4', 'b5']) {
         const li = document.createElement('li');
         li.textContent = k === 'b5' && fxNames.length === FX.length ? t('b5').split(/[:：]/)[0] + (L === 'ja' ? '：' : ': ') + fxNames.join(', ') : t(k);
         ul.appendChild(li);
@@ -11753,9 +11900,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const ed = $('#ed'), view = $('#edView'), vx = view.getContext('2d');
     const scroll = $('#edScroll'), inner = $('#edInner'), ruler = $('#edRuler');
     const rowV = $('#edRowV'), rowO = $('#edRowO'), rowF = $('#edRowF'), rowC = $('#edRowC'), rowA = $('#edRowA'), head = $('#edHead');
-    const FX_NAME = { shk1: '📳 Light shake', shk2: '📳 Strong shake', flash: '💥 White flash', imp: '⚡ Anime impact', vign: '🕶️ Vignette', bw: '⚫ Black & white', sepia: '🟤 Sepia', blur: '🌫️ Blur', bri: '🔆 Brighter', dark: '🌑 Darken', blink: '💡 Blink', invert: '🔄 Negative', sat: '🌈 Vivid colors', bars: '🎞️ Cinema bars', glitch: '👾 Glitch', rgb: '🔴 RGB split', vhs: '📼 VHS', pixel: '🟦 Pixelate', mirror: '🪞 Mirror', wave: '🌊 Waves', zblur: '💨 Zoom blur', duo: '💜 Neon duotone', grain: '🎥 Film grain', scan: '📺 Old screen', cinema: '🎬 Cinema color' };
-    const EFX_LIST = [['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]].concat(['vign','bw','sepia','blur','bri','dark','blink','invert','sat','bars','glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema'].map((k) => [k, 1]));
-    const EFXP = new Set(['glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema']);
+    const FX_NAME = { fadein: '🌅 Fade in from black', fadeout: '🌑 Fade out to black', flicker: '🔦 Flickering light', marco: '🖼️ White frame', contraste: '◐ High contrast', boil: '✏️ Wobbly drawing', rayos: '☀️ Light rays', bordesneon: '💠 Neon edges', tvoff: '📺 TV turn-off', bloom: '✨ Bloom', flare: '🌟 Lens flare', pulso: '💓 Zoom pulse', kaleido: '🔷 Kaleidoscope', calido: '🌅 Warm tone', frio: '❄️ Cool tone', dramatico: '🎭 Dramatic', shk: '🎥 Camera shake', ghost: '👻 Ghost hit', shk1: '📳 Light shake', shk2: '📳 Strong shake', flash: '💥 White flash', imp: '⚡ Anime impact', vign: '🕶️ Vignette', bw: '⚫ Black & white', sepia: '🟤 Sepia', blur: '🌫️ Blur', bri: '🔆 Brighter', dark: '🌑 Darken', blink: '💡 Blink', invert: '🔄 Negative', sat: '🌈 Vivid colors', bars: '🎞️ Cinema bars', glitch: '👾 Glitch', rgb: '🔴 RGB split', vhs: '📼 VHS', pixel: '🟦 Pixelate', mirror: '🪞 Mirror', wave: '🌊 Waves', zblur: '💨 Zoom blur', duo: '💜 Neon duotone', grain: '🎥 Film grain', scan: '📺 Old screen', cinema: '🎬 Cinema color' };
+    const EFX_LIST = [['shk', 0.8], ['ghost', 0.9], ['fadein', 1], ['fadeout', 1], ['flicker', 1], ['marco', 1], ['contraste', 1], ['boil', 1], ['rayos', 1], ['bordesneon', 1], ['tvoff', 1], ['bloom', 1], ['flare', 1], ['pulso', 1], ['kaleido', 1], ['calido', 1], ['frio', 1], ['dramatico', 1], ['imp', 0.35], ['shk1', 0.6], ['shk2', 0.5], ['flash', 0.25]].concat(['vign','bw','sepia','blur','bri','dark','blink','invert','sat','bars','glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema'].map((k) => [k, 1]));
+    const EFXP = new Set(['boil','rayos','bordesneon','tvoff','bloom','flare','pulso','kaleido','calido','frio','dramatico','shk','ghost','glitch','rgb','vhs','pixel','mirror','wave','zblur','duo','grain','scan','cinema']);
     const efB1 = document.createElement('canvas'), efB2 = document.createElement('canvas');
     let efNoise = null;
     const efxRamp = (u) => Math.max(0, Math.min(1, u * 6, (1 - u) * 6));
@@ -11772,9 +11919,98 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       ax.restore();
     }
     function efxLines(ax, w, h, a) { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = 'rgba(0,0,0,' + a + ')'; for (let y = 0; y < h; y += 4) ax.fillRect(0, y, w, 2); ax.restore(); }
+
+    const FXD = {
+      shk: { fx: 40, fy: 40, sp: 14, zm: 8, rt: 3, fl: 0, sd: 7, sm: 0, cv: 0 },
+      ghost: { gz: 60, gw: 100, gh: 100, n: 2, op: 70, rp: 1, c1: '#00e5ff', c2: '#ff2bd6', tn: 1, gl: 60 }
+    };
+    const FXR = { fx: [0, 100, 1, '%'], fy: [0, 100, 1, '%'], sp: [2, 40, 1, '/s'], zm: [0, 40, 1, '%'], rt: [0, 15, 0.5, '°'], fl: [0, 100, 1, '%'], sd: [1, 99, 1, ''], sm: [0, 100, 1, '%'],
+      gz: [10, 200, 1, '%'], gw: [20, 300, 1, '%'], gh: [20, 300, 1, '%'], n: [1, 4, 1, ''], op: [10, 100, 1, '%'], rp: [1, 6, 1, 'x'], gl: [0, 100, 1, '%'] };
+    const FXO = { shk: ['fx', 'fy', 'sp', 'zm', 'rt', 'fl', 'sm', 'sd', 'cv'], ghost: ['gz', 'gw', 'gh', 'n', 'op', 'rp', 'c1', 'c2', 'tn', 'gl'] };
+    const FXU = {fx: 'Strength X', fy: 'Strength Y', sp: 'Speed', zm: 'Zoom pulse', rt: 'Tilt', fl: 'Flash', sd: 'Seed', sm: 'Smoothness', cv: 'Curve', cv0: 'Constant', cv1: 'Rises', cv2: 'Falls', cv3: 'Hit that calms down', gz: 'Growth', gw: 'Stretch width', gh: 'Stretch height', n: 'Ghosts', op: 'Opacity', rp: 'Repeats', c1: 'Color 1', c2: 'Color 2', tn: 'Tint with color', gl: 'Neon glow', reset: 'Reset values'};
+    function fxp(f) { const d = FXD[f.k]; if (!d) return null; if (!f.p) f.p = {}; for (const k of Object.keys(d)) if (f.p[k] == null) f.p[k] = d[k]; return f.p; }
+    const fxCurve = (cv, u) => cv === 1 ? u : cv === 2 ? 1 - u : cv === 3 ? Math.pow(1 - u, 2.2) : 1;
+    const fxSm = (x) => x * x * (3 - 2 * x);
+    function fxNoise(sd, tau, sm, ax) {
+      const i = Math.floor(tau), fr = tau - i, a = hash01(sd * 977 + i * 3 + ax) * 2 - 1, b = hash01(sd * 977 + (i + 1) * 3 + ax) * 2 - 1;
+      return a + (b - a) * fxSm(fr) * (sm / 100);
+    }
+    function fxHex(h) { const m = /^#?([0-9a-f]{6})$/i.exec(h || ''); const v = m ? parseInt(m[1], 16) : 0xffffff; return [v >> 16 & 255, v >> 8 & 255, v & 255]; }
+    function fxGhost(ax, w, h, g, u) {
+      const p = g.p, n = Math.max(1, p.n | 0), rp = Math.max(1, p.rp | 0), gz = p.gz / 100, gw = p.gw / 100, gh = p.gh / 100, base = 1 / (n + 0.6);
+      efxCopy(ax, w, h, efB1);
+      const c1 = fxHex(p.c1), c2 = fxHex(p.c2);
+      for (let i = n - 1; i >= 0; i--) {
+        let ph = (u * rp) % 1 - i * 0.12 * (1 / rp + 0.3); if (u * rp >= rp) ph = 1;
+        if (ph < 0 || ph >= 1) continue;
+        const e = 1 - Math.pow(1 - ph, 2.2), a = (p.op / 100) * Math.pow(1 - ph, 1.3);
+        const sx = 1 + gz * e * gw, sy = 1 + gz * e * gh, t = n > 1 ? i / (n - 1) : 0;
+        const col = [0, 1, 2].map((k) => Math.round(c1[k] + (c2[k] - c1[k]) * t));
+        const c2x = sized(efB2, w, h); c2x.setTransform(1, 0, 0, 1, 0, 0); c2x.globalCompositeOperation = 'source-over'; c2x.globalAlpha = 1; c2x.filter = 'none'; c2x.clearRect(0, 0, w, h);
+        c2x.drawImage(efB1, 0, 0);
+        if (p.tn) { c2x.globalCompositeOperation = 'color'; c2x.fillStyle = 'rgb(' + col.join(',') + ')'; c2x.fillRect(0, 0, w, h); c2x.globalCompositeOperation = 'multiply'; c2x.fillStyle = 'rgb(' + col.map((v) => Math.round(v * 0.5 + 127)).join(',') + ')'; c2x.fillRect(0, 0, w, h); c2x.globalCompositeOperation = 'source-over'; }
+        ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalCompositeOperation = 'screen'; ax.globalAlpha = Math.min(1, a);
+        if (p.gl > 0 && 'filter' in ax) ax.filter = 'blur(' + (w * 0.004 * (p.gl / 100) * (1 + e * 2)).toFixed(1) + 'px) saturate(1.6) brightness(' + (1 + p.gl / 120).toFixed(2) + ')';
+        ax.drawImage(efB2, (w - w * sx) / 2, (h - h * sy) / 2, w * sx, h * sy);
+        ax.restore();
+      }
+    }
     function efxPost(ax, w, h, act) {
-      for (const { k, u, t } of act) {
+      for (const { k, u, t, g } of act) {
         const r = efxRamp(u), q = Math.floor(t * 24);
+        if (k === 'ghost') { fxGhost(ax, w, h, g, u); continue; }
+        if (['fadein','fadeout','flicker','marco','contraste','boil','rayos','bordesneon','tvoff'].includes(k)) {
+          const S = (fn) => { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); fn(); ax.restore(); };
+          if (k === 'fadein') S(() => { ax.fillStyle = 'rgba(0,0,0,' + (1 - u).toFixed(3) + ')'; ax.fillRect(0, 0, w, h); });
+          else if (k === 'fadeout') S(() => { ax.fillStyle = 'rgba(0,0,0,' + u.toFixed(3) + ')'; ax.fillRect(0, 0, w, h); });
+          else if (k === 'flicker') S(() => { ax.fillStyle = 'rgba(0,0,0,' + (0.65 * hash01(Math.floor(t * 14) * 3 + 1)).toFixed(3) + ')'; ax.fillRect(0, 0, w, h); });
+          else if (k === 'marco') S(() => { const lw = w * 0.035; ax.strokeStyle = '#ffffff'; ax.lineWidth = lw; ax.strokeRect(lw / 2, lw / 2, w - lw, h - lw); ax.strokeStyle = 'rgba(0,0,0,0.25)'; ax.lineWidth = Math.max(1, w * 0.003); ax.strokeRect(lw, lw, w - lw * 2, h - lw * 2); });
+          else if (k === 'contraste') efxFilter(ax, w, h, 'contrast(1.6) brightness(0.95)');
+          else if (k === 'boil') {
+            efxCopy(ax, w, h, efB1); const qq = Math.floor(t * 8), ox = (hash01(qq * 3 + 1) - 0.5) * w * 0.014, oy = (hash01(qq * 3 + 2) - 0.5) * h * 0.014, rt = (hash01(qq * 3 + 3) - 0.5) * 0.014;
+            S(() => { ax.clearRect(0, 0, w, h); ax.translate(w / 2 + ox, h / 2 + oy); ax.rotate(rt); ax.scale(1.03, 1.03); ax.drawImage(efB1, -w / 2, -h / 2, w, h); });
+          }
+          else if (k === 'rayos') {
+            efxCopy(ax, w, h, efB1);
+            S(() => { ax.globalCompositeOperation = 'lighter'; for (let j = 1; j <= 8; j++) { const s = 1 + 0.06 * j * (0.4 + 0.6 * r); ax.globalAlpha = 0.1 * r; ax.drawImage(efB1, w * 0.5 - w * s * 0.5, h * 0.1 - h * s * 0.1, w * s, h * s); } });
+          }
+          else if (k === 'bordesneon') {
+            efxCopy(ax, w, h, efB1);
+            const c2 = sized(efB2, w, h); c2.setTransform(1, 0, 0, 1, 0, 0); c2.globalCompositeOperation = 'source-over'; c2.globalAlpha = 1; c2.clearRect(0, 0, w, h);
+            if ('filter' in c2) c2.filter = 'blur(1.6px)'; c2.drawImage(efB1, 0, 0); c2.filter = 'none';
+            c2.globalCompositeOperation = 'difference'; c2.drawImage(efB1, 0, 0); c2.globalCompositeOperation = 'source-over';
+            S(() => { ax.fillStyle = '#000'; ax.fillRect(0, 0, w, h); if ('filter' in ax) ax.filter = 'brightness(7) saturate(2.5)'; ax.drawImage(efB2, 0, 0); ax.filter = 'none'; ax.globalCompositeOperation = 'lighter'; ax.globalAlpha = 0.22; ax.drawImage(efB1, 0, 0); });
+          }
+          else {
+            efxCopy(ax, w, h, efB1);
+            const kh = u < 0.6 ? 1 : Math.max(0.01, 1 - (u - 0.6) / 0.3), kw = u < 0.9 ? 1 : Math.max(0.01, 1 - (u - 0.9) / 0.1);
+            S(() => { ax.fillStyle = '#000'; ax.fillRect(0, 0, w, h); ax.drawImage(efB1, w * (1 - kw) / 2, h * (1 - kh) / 2, w * kw, h * kh); if (kh < 0.2) { ax.fillStyle = '#fff'; ax.fillRect(w * (1 - kw) / 2, h / 2 - 1.5, w * kw, 3); } });
+          }
+          continue;
+        }
+        if (['bloom','flare','pulso','kaleido','calido','frio','dramatico'].includes(k)) {
+          const S = (fn) => { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); fn(); ax.restore(); };
+          if (k === 'bloom') { efxCopy(ax, w, h, efB1); S(() => { if ('filter' in ax) ax.filter = 'blur(' + (w * 0.014).toFixed(1) + 'px) brightness(1.25)'; ax.globalCompositeOperation = 'screen'; ax.globalAlpha = 0.6 * (0.5 + 0.5 * r); ax.drawImage(efB1, 0, 0); }); }
+          else if (k === 'flare') {
+            const cx = w * (0.12 + 0.76 * u), cy = h * 0.42;
+            S(() => {
+              ax.globalCompositeOperation = 'screen'; ax.globalAlpha = r;
+              const g = ax.createLinearGradient(0, 0, w, 0); g.addColorStop(0, 'rgba(80,160,255,0)'); g.addColorStop(0.5, 'rgba(140,210,255,0.95)'); g.addColorStop(1, 'rgba(80,160,255,0)');
+              ax.fillStyle = g; ax.fillRect(0, cy - h * 0.008, w, h * 0.016);
+              const rg = ax.createRadialGradient(cx, cy, 0, cx, cy, w * 0.28); rg.addColorStop(0, 'rgba(255,255,255,0.9)'); rg.addColorStop(0.25, 'rgba(255,200,120,0.35)'); rg.addColorStop(1, 'rgba(255,160,60,0)');
+              ax.fillStyle = rg; ax.fillRect(0, 0, w, h);
+            });
+          }
+          else if (k === 'pulso') { efxCopy(ax, w, h, efB1); const s = 1 + 0.07 * Math.pow(Math.abs(Math.sin(t * Math.PI * 2)), 3); S(() => { ax.clearRect(0, 0, w, h); ax.drawImage(efB1, (w - w * s) / 2, (h - h * s) / 2, w * s, h * s); }); }
+          else if (k === 'kaleido') {
+            efxCopy(ax, w, h, efB1);
+            S(() => { for (const [fx, fy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) { ax.save(); ax.translate(w / 2, h / 2); ax.scale(fx, fy); ax.drawImage(efB1, 0, 0, w / 2, h / 2, 0, 0, w / 2, h / 2); ax.restore(); } });
+          }
+          else if (k === 'calido') { efxFilter(ax, w, h, 'sepia(0.35) saturate(1.3) brightness(1.04)'); S(() => { ax.globalCompositeOperation = 'overlay'; ax.globalAlpha = 0.3; ax.fillStyle = '#ff8a2a'; ax.fillRect(0, 0, w, h); }); }
+          else if (k === 'frio') { efxFilter(ax, w, h, 'saturate(1.1) hue-rotate(12deg) brightness(0.98)'); S(() => { ax.globalCompositeOperation = 'overlay'; ax.globalAlpha = 0.32; ax.fillStyle = '#2a7bff'; ax.fillRect(0, 0, w, h); }); }
+          else { efxFilter(ax, w, h, 'contrast(1.35) saturate(0.75) brightness(0.92)'); S(() => { const g = ax.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) / 2); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.6)'); ax.fillStyle = g; ax.fillRect(0, 0, w, h); }); }
+          continue;
+        }
         if (k === 'bw') efxFilter(ax, w, h, 'grayscale(1)');
         else if (k === 'sepia') efxFilter(ax, w, h, 'sepia(1)');
         else if (k === 'blur') efxFilter(ax, w, h, 'blur(' + (w * 0.012 * r).toFixed(1) + 'px)');
@@ -12086,14 +12322,21 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       if (!depth && TL.ov && TL.ov.length) ovDraw(ax, Tg, w, h, TL);
       // efectos de la pista roja
-      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0; const act = [];
+      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0, rot = 0; const act = [];
       for (const f of TL.fx) {
         if (Tg < f.start || Tg >= f.start + f.dur) continue;
         const u = (Tg - f.start) / f.dur;
         if (f.k === 'shk1' || f.k === 'shk2') {
           const a = (f.k === 'shk2' ? 0.022 : 0.009) * w, q = Math.floor(Tg * 30);
           sx += (hash01(q * 2 + 1) - 0.5) * 2 * a; sy += (hash01(q * 2 + 2) - 0.5) * 2 * a; sc = Math.max(sc, 1 + (2.4 * a) / w);
-        } else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
+        } else if (f.k === 'shk') {
+          const P = fxp(f), cu = fxCurve(P.cv, u), tau = (Tg - f.start) * P.sp, ax_ = (P.fx / 100) * 0.05 * w * cu, ay_ = (P.fy / 100) * 0.05 * h * cu;
+          const nx = fxNoise(P.sd, tau, P.sm, 0), ny = fxNoise(P.sd, tau, P.sm, 1), nr = fxNoise(P.sd, tau, P.sm, 2), nz = Math.abs(fxNoise(P.sd, tau, P.sm, 3));
+          sx += nx * ax_; sy += ny * ay_; rot += nr * (P.rt * Math.PI / 180) * cu;
+          sc = Math.max(sc, 1 + 2 * Math.max(P.fx / 100 * 0.05, P.fy / 100 * 0.05) + Math.abs(P.rt) * Math.PI / 180 * 1.1) * (1 + (P.zm / 100) * nz * cu);
+          if (P.fl > 0) flash = Math.max(flash, 0.9 * (P.fl / 100) * cu * nz);
+        } else if (f.k === 'ghost') act.push({ k: 'ghost', u, t: Tg - f.start, g: { p: fxp(f) } });
+        else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
         else if (f.k === 'imp') imp = (Math.floor((Tg - f.start) * 12) % 2) ? 2 : 1;
         else act.push({ k: f.k, u, t: Tg - f.start });
       }
@@ -12121,7 +12364,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       cx = clampV(cx, -((cz - 1) * w) / 2, ((cz - 1) * w) / 2); cy = clampV(cy, -((cz - 1) * h) / 2, ((cz - 1) * h) / 2);
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
       ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(ax.canvas, sx + cx - ((zz - 1) * w) / 2, sy + cy - ((zz - 1) * h) / 2, w * zz, h * zz);
+      if (rot) { ctx.translate(w / 2 + sx + cx, h / 2 + sy + cy); ctx.rotate(rot); ctx.drawImage(ax.canvas, -(w * zz) / 2, -(h * zz) / 2, w * zz, h * zz); ctx.setTransform(1, 0, 0, 1, 0, 0); }
+      else ctx.drawImage(ax.canvas, sx + cx - ((zz - 1) * w) / 2, sy + cy - ((zz - 1) * h) / 2, w * zz, h * zz);
       if (flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + flash.toFixed(3) + ')'; ctx.fillRect(0, 0, w, h); }
       ctx.restore();
       if (!depth && playing && !edExp) for (const o of medEls.values()) if (o.kind === 'vid' && !vidUsed.has(o) && !o.el.paused) o.el.pause();
@@ -13845,6 +14089,35 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const local = localOf(s);
       if (s.kind === 'fx' || s.kind === 'cam') {
         insp.append(e4h('h4', '', (s.kind === 'fx' ? FX_NAME : CAM_NAME)[s.o.k] || ''), e4h('small', 'ei-sub', e4(s.kind) + ' · ' + fmtSec(s.o.dur)), e4h('p', 'ei-hint', e4('stretch')));
+        if (s.kind === 'fx' && FXD[s.o.k]) {
+          const fo = s.o, P = fxp(fo);
+          const upd = () => { try { render(); } catch (_) {} };
+          for (const key of FXO[fo.k]) {
+            const lab = e4h('label', 'e4fx-row'); lab.style.cssText = 'display:flex;flex-direction:column;gap:3px;margin:6px 0;font-size:0.78rem';
+            const t = e4h('span', '', FXU[key] || key), out = e4h('b', '', '');
+            let inp;
+            if (key === 'cv') {
+              inp = document.createElement('select');
+              for (let i = 0; i < 4; i++) { const o = document.createElement('option'); o.value = String(i); o.textContent = FXU['cv' + i]; inp.appendChild(o); }
+              inp.value = String(P.cv);
+              inp.addEventListener('change', () => { P.cv = +inp.value; changed(); });
+            } else if (key === 'c1' || key === 'c2') {
+              inp = document.createElement('input'); inp.type = 'color'; inp.value = P[key];
+              inp.addEventListener('input', () => { P[key] = inp.value; upd(); }); inp.addEventListener('change', () => changed());
+            } else if (key === 'tn') {
+              inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!P.tn; t.textContent = FXU.tn;
+              inp.addEventListener('change', () => { P.tn = inp.checked ? 1 : 0; changed(); });
+            } else {
+              const R = FXR[key]; inp = document.createElement('input'); inp.type = 'range'; inp.min = R[0]; inp.max = R[1]; inp.step = R[2]; inp.value = P[key]; out.textContent = ' ' + P[key] + R[3];
+              inp.addEventListener('input', () => { P[key] = +inp.value; out.textContent = ' ' + P[key] + R[3]; upd(); }); inp.addEventListener('change', () => changed());
+            }
+            inp.addEventListener('keydown', (e) => e.stopPropagation());
+            t.appendChild(out); lab.append(t, inp); insp.appendChild(lab);
+          }
+          const rs = e4h('button', 'btn small', FXU.reset); rs.type = 'button';
+          rs.addEventListener('click', () => { fo.p = null; fxp(fo); changed(); });
+          insp.appendChild(rs);
+        }
         return;
       }
       if (s.kind === 'au') {
@@ -14125,6 +14398,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
     shapes: '<circle cx="8" cy="9" r="5"/><rect x="11" y="12" width="9" height="9" rx="1"/>',
     text: '<path d="M5 7V5h14v2M9 19h6M12 5v14"/>',
     sel: '<rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/>',
+    quick: '<path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/>',
     pick: '<path d="M15 4l5 5-2 2-5-5z"/><path d="M13 8l-8 8v3h3l8-8"/>',
     cam: '<rect x="3" y="7" width="13" height="11" rx="2"/><path d="M16 11l5-3v9l-5-3"/>',
     img: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 8"/>',
@@ -14148,6 +14422,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
     { id: 'shapes', tip: t.shapes, act: () => { const s = $('#shapes [aria-pressed="true"]') || $('#shapes button'); if (s) s.click(); setTab('tool'); }, on: () => anyPressed('#shapes') },
     { id: 'text', tip: t.text, k: 'T', act: () => $('#toolText').click(), on: () => pressed('#toolText') },
     { id: 'sel', tip: t.sel, k: 'V', act: () => $('#toolSel').click(), on: () => pressed('#toolSel') },
+    { id: 'quick', tip: 'Quick brush (size & opacity)', act: () => $('#toolQuick').click(), on: () => pressed('#toolQuick') },
     { id: 'pick', tip: t.pick, k: 'I', act: () => $('#btnPick').click(), on: () => pressed('#btnPick') },
     { id: 'grad', tip: t.grad, act: () => $('#toolGrad').click(), on: () => { const g = document.getElementById('grPanel'); return !!g && !!g.offsetParent; } },
     { id: 'liq', tip: t.liq, act: () => $('#toolLiq').click(), on: () => { const g = document.getElementById('lqPanel'); return !!g && !!g.offsetParent; } },
@@ -14165,7 +14440,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && locat
     if (it.sep) { const s = document.createElement('span'); s.className = 'rsep'; rail.appendChild(s); continue; }
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'rb' + (it.mode ? ' mode ' + it.id : '');
+    b.className = 'rb r-' + it.id + (it.mode ? ' mode ' + it.id : '');
     b.setAttribute('aria-label', it.tip);
     b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ic[it.id] + '</svg>';
     b._it = it;
