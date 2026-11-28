@@ -12213,7 +12213,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const c of Array.isArray(o.clips) ? o.clips.slice(0, 200) : []) {
         if (!c || typeof c.proj !== 'string') continue;
         const tr = c.tr && TR_KINDS.includes(c.tr.k) ? { k: c.tr.k, d: clampV(num(c.tr.d, 0.6), 0.2, 1.3) } : null;
-        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150) });
+        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150), afi: c.afi == null ? undefined : clampV(num(c.afi, 0), 0, 10), afo: c.afo == null ? undefined : clampV(num(c.afo, 0), 0, 10) });
       }
       for (const f of Array.isArray(o.fx) ? o.fx.slice(0, 200) : []) {
         if (!f || !FX_NAME[f.k]) continue;
@@ -13037,6 +13037,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         el.style.left = (o.s * pps) + 'px'; el.style.width = Math.max(6, (o.e - o.s) * pps - 2) + 'px';
         const th = thumbOf(c.proj);
         if (th) el.style.backgroundImage = 'url("' + th + '")';
+        if (isVid(c)) { const scv = stripCv(c.proj, c.in, c.frz, c.spd, (o.e - o.s) * pps - 6); if (scv) el.appendChild(scv); }
         const nm = document.createElement('span'); nm.className = 'nm'; const ln = o.e - o.s; nm.textContent = nameOf(c.proj) + ' · ' + (ln < 60 ? (Math.round(ln * 10) / 10).toString().replace('.', ',') + ' s' : fmt(ln));
         el.appendChild(nm);
         if (c.spd !== 1) { const sp = document.createElement('span'); sp.className = 'sp'; sp.textContent = (c.spd < 1 ? '🐢 ×' : '🐇 ×') + String(c.spd).replace('.', ','); el.appendChild(sp); }
@@ -13084,10 +13085,47 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (libTab === 'lay') renderLayers();
       boxUpdate();
     }
+    /* v81-strip: tira de fotogramas en los clips de video */
+    function stripRefresh() { if (isOpen && !playing && !edExp) render(); }
+    function stripOf(id) {
+      const e = medEls.get(id); if (!e || e.kind !== 'vid') return null;
+      if (!e.sp) { e.sp = { step: 1, fr: [], done: false }; stripGen(e); }
+      return e.sp;
+    }
+    async function stripGen(e) {
+      const sp = e.sp;
+      try {
+        const v = document.createElement('video'); v.muted = true; v.preload = 'auto'; v.src = e.url;
+        await new Promise((ok) => { v.addEventListener('loadeddata', ok, { once: true }); v.addEventListener('error', ok, { once: true }); setTimeout(ok, 8000); });
+        if (!v.videoWidth) { sp.done = true; return; }
+        const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : (e.dur || 1), step = Math.max(0.5, dur / 48); sp.step = step;
+        const h = 60, w = Math.max(8, Math.round(h * v.videoWidth / v.videoHeight));
+        for (let k = 0, t = step / 2; t < dur + step / 2; k++, t += step) {
+          await seekV(v, Math.max(0, Math.min(t, dur - 0.05)));
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          try { cv.getContext('2d').drawImage(v, 0, 0, w, h); } catch (_) {}
+          sp.fr.push(cv);
+          await new Promise((r) => setTimeout(r, 25));
+        }
+        v.removeAttribute('src'); try { v.load(); } catch (_) {}
+        sp.done = true; stripRefresh();
+      } catch (_) { sp.done = true; }
+    }
+    function stripCv(proj, tin, frz, spd, wpx) {
+      const sp = stripOf(proj.slice(2)); if (!sp || !sp.done || !sp.fr.length) return null;
+      const W = Math.max(8, Math.min(4000, Math.round(wpx))), H = 60, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const x = cv.getContext('2d'), tw = sp.fr[0].width;
+      for (let px = 0; px < W; px += tw) {
+        const t = frz ? tin : tin + ((px + tw / 2) / pps) * spd, k = Math.min(sp.fr.length - 1, Math.max(0, Math.floor(t / sp.step)));
+        x.drawImage(sp.fr[k], px, 0);
+      }
+      cv.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;';
+      return cv;
+    }
     function barEl(o, kind, label, start, dur) {
       const el = document.createElement('div');
       el.className = 'ed-bar2 ' + kind + (sel && sel.id === o.id ? ' sel' : ''); el.dataset.id = o.id;
-      if (kind === 'ov' && o.proj && !o.tx) { const th = thumbOf(o.proj); if (th) { el.style.backgroundImage = 'url("' + th + '")'; el.classList.add('th'); } }
+      if (kind === 'ov' && o.proj && !o.tx) { const th = thumbOf(o.proj); if (th) { el.style.backgroundImage = 'url("' + th + '")'; el.classList.add('th'); } const mo = medOf(o.proj); if (mo && mo.kind === 'vid') { const scv = stripCv(o.proj, o.in, o.frz, 1, dur * pps - 4); if (scv) el.appendChild(scv); } }
       el.style.left = (start * pps) + 'px'; el.style.width = Math.max(8, dur * pps) + 'px';
       el.style.top = ((o.tk | 0) * trh(kind) + 3) + 'px'; el.style.bottom = 'auto'; el.style.height = (trh(kind) - 6) + 'px';
       const t = document.createElement('span'); t.textContent = label; el.appendChild(t);
@@ -13224,6 +13262,45 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       track(e, (dx, ev) => go(ev), () => {});
     }
     ruler.addEventListener('pointerdown', scrubDown);
+    /* v81-bak: copia de seguridad (línea de tiempo + archivos) */
+    {
+      const top = $('#edExport'), fi = document.createElement('input'); fi.type = 'file'; fi.accept = '.tpbak'; fi.hidden = true;
+      const mkb = (id, txt, tip) => { const b = document.createElement('button'); b.className = 'btn'; b.id = id; b.type = 'button'; b.textContent = txt; b.title = tip; b.setAttribute('aria-label', tip); return b; };
+      const bs = mkb('edBak', '💾', 'Enregistrer une copie du montage (timeline + fichiers)'), bo = mkb('edBakOpen', '📂', 'Ouvrir une copie enregistrée');
+      top.parentNode.insertBefore(bs, top); top.parentNode.insertBefore(bo, top); top.parentNode.appendChild(fi);
+      const pad = (n) => String(n).padStart(10, '0');
+      const idsOf = (t, set) => { if (!t || typeof t !== 'object') return; for (const m of (t.media || [])) if (m && typeof m.id === 'string') set.add(m.id); for (const a of (t.audio || [])) if (a) set.add(a.src || a.id); for (const c of Object.values(t.comp || {})) idsOf(c, set); };
+      bs.addEventListener('click', async () => {
+        try {
+          saveE();
+          const raw = localStorage.getItem(storeKey()) || '{}', o = JSON.parse(raw), ids = new Set(); idsOf(o, ids);
+          const items = [], blobs = [];
+          for (const id of ids) { const r = await audGet(id); if (!r || !r.blob) continue; const meta = Object.assign({}, r); delete meta.blob; meta._type = r.blob.type || ''; meta._size = r.blob.size; items.push(meta); blobs.push(r.blob); }
+          const head = new Blob([JSON.stringify({ v: 1, edit: raw, items })]);
+          const file = new Blob(['TPBK1', pad(head.size), head, ...blobs], { type: 'application/octet-stream' });
+          const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = 'taller-edit-' + new Date().toISOString().slice(0, 10) + '.tpbak'; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 60000); toast('💾 Copie enregistrée ({n} fichiers)'.replace('{n}', items.length));
+        } catch (_) { toast('Impossible d'enregistrer la copie.'); }
+      });
+      bo.addEventListener('click', () => fi.click());
+      fi.addEventListener('change', async () => {
+        const f = fi.files && fi.files[0]; fi.value = ''; if (!f) return;
+        try {
+          const h0 = await f.slice(0, 15).text(); if (h0.slice(0, 5) !== 'TPBK1') throw 0;
+          const hl = +h0.slice(5), hd = JSON.parse(await f.slice(15, 15 + hl).text());
+          if (!hd || hd.v !== 1 || typeof hd.edit !== 'string' || !Array.isArray(hd.items)) throw 0;
+          if (!confirm('Ouvrir cette copie remplace votre montage actuel. Continuer ?')) return;
+          stop(); let pos = 15 + hl;
+          for (const it of hd.items) {
+            const sz = +it._size || 0, blob = f.slice(pos, pos + sz, it._type || ''); pos += sz;
+            const rec = Object.assign({}, it); delete rec._size; delete rec._type; rec.blob = blob;
+            await audPut(rec);
+            const old = medEls.get(it.id); if (old) { medEls.delete(it.id); try { URL.revokeObjectURL(old.url); } catch (_) {} } medLoading.delete(it.id); bufs.delete(it.id);
+          }
+          localStorage.setItem(storeKey(), hd.edit); loadE(); sel = null; changed(); toast('📂 Copie ouverte ({n} fichiers)'.replace('{n}', hd.items.length));
+        } catch (_) { toast('Ce fichier n'est pas une copie de l'éditeur.'); }
+      });
+    }
     /* v81-home */
     {
       const goHome = () => { stop(); setT(0); scroll.scrollLeft = 0; };
@@ -13988,7 +14065,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const b = await bufOf(id);
         if (!b) { noAud.add(id); continue; }
         if (c.out - c.in < 0.03) continue;
-        out.push({ buffer: b, start: o.s, gain: vol / 100, in: c.in, out: Math.min(c.out, b.duration), fadeIn: 0.02, fadeOut: 0.03 });
+        out.push({ buffer: b, start: o.s, gain: vol / 100, in: c.in, out: Math.min(c.out, b.duration), fadeIn: c.afi == null ? 0.02 : c.afi, fadeOut: c.afo == null ? 0.03 : c.afo });
       }
     }
     // Para dejar de reproducir también los videos.
@@ -14958,6 +15035,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (m && m.kind === 'vid' && c.start == null) {
         insp.append(e4h('div', 'ei-sec', e4('clipAudio')));
         insp.append(kRow(e4('vol'), 0, 150, 1, '%', { audio: true, base: () => (c.vol == null ? 100 : c.vol), set: (v) => { c.vol = v; } }, local));
+        { const len = Math.max(0.1, lenOf(c));
+          insp.append(kRow('Fondu entrant du son', 0, Math.min(10, len), 0.1, ' s', { audio: true, base: () => (c.afi == null ? 0.02 : c.afi), set: (v) => { c.afi = v; } }, local));
+          insp.append(kRow('Fondu sortant du son', 0, Math.min(10, len), 0.1, ' s', { audio: true, base: () => (c.afo == null ? 0.03 : c.afo), set: (v) => { c.afo = v; } }, local)); }
         if (c.spd !== 1) insp.append(e4h('p', 'ei-hint', e4('spdMute')));
       }
       if (c.kf || c.tf) {
