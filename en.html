@@ -12573,7 +12573,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       for (const o of layout(TL)) {
         const c = o.c;
-        if (!isVid(c) || c.spd !== 1) continue;
+        if (!isVid(c) || c.spd !== 1 || c.frz) continue; /* v81-frz */
         const vol = c.vol == null ? 100 : c.vol, id = c.proj.slice(2);
         if (vol <= 0 || noAud.has(id)) continue;
         const b = await bufOf(id);
@@ -13962,7 +13962,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     async function e4VidAudio(out) {
       for (const o of layout()) {
         const c = o.c;
-        if (!isVid(c) || c.spd !== 1) continue;
+        if (!isVid(c) || c.spd !== 1 || c.frz) continue; /* v81-frz */
         const vol = c.vol == null ? 100 : c.vol, id = c.proj.slice(2);
         if (vol <= 0 || noAud.has(id)) continue;
         const b = await bufOf(id);
@@ -15066,10 +15066,12 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const c = o.c, m = isM(c.proj) ? medOf(c.proj) : null;
       if (m && m.kind === 'img') { toast(CPS.frzPhoto); return; }
       const cut = Math.min(c.out - 1e-3, c.in + Math.max(0, T - o.s) * c.spd), cl = (v) => JSON.parse(JSON.stringify(v));
-      const F = cl(c), B2 = cl(c); F.id = newId(); B2.id = newId();
-      F.in = cut; F.out = cut + 1; F.spd = 1; F.frz = 1; F.tr = null; F.full = false; B2.in = cut; B2.tr = null;
-      c.out = cut; c.full = false;
-      E.clips.splice(E.clips.indexOf(c) + 1, 0, F, B2);
+      const F = cl(c); F.id = newId();
+      F.in = cut; F.out = cut + 1.5; F.spd = 1; F.frz = 1; F.tr = null; F.full = false; delete F.vol;
+      const ix = E.clips.indexOf(c);
+      if (cut <= c.in + 0.05) { F.in = c.in; F.out = c.in + 1.5; E.clips.splice(ix, 0, F); }
+      else if (cut >= c.out - 0.05) { F.in = Math.max(c.in, c.out - 0.04); F.out = F.in + 1.5; E.clips.splice(ix + 1, 0, F); }
+      else { const B2 = cl(c); B2.id = newId(); B2.in = cut; B2.tr = null; c.out = cut; c.full = false; E.clips.splice(ix + 1, 0, F, B2); }
       sel = { kind: 'clip', id: F.id }; lastShots.clear(); changed(); toast(CPS.frzDone);
     }
     let edClip = null;
