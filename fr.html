@@ -13127,7 +13127,20 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const in0 = c.in, out0 = c.out, dmax = c.frz ? 3600 : durOf(c.proj);
       if (part === 'm') {
         el.style.zIndex = 4;
-        track(e, (dx) => { el.style.transform = 'translateX(' + dx + 'px)'; el.style.opacity = '0.85'; el.style.cursor = 'grabbing'; }, (moved, ev) => {
+        /* v81-bajar */
+        const rO = $('#edRowO'), canOv = isM(c.proj);
+        track(e, (dx, ev) => { const dy = canOv && ev && nearOv(ev) ? ev.clientY - e.clientY : 0; el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; el.style.opacity = '0.85'; el.style.cursor = 'grabbing'; if (rO && canOv) rO.classList.toggle('ov-hot', !!(ev && nearOv(ev) && E.clips.length > 1)); }, (moved, ev) => {
+          if (rO) rO.classList.remove('ov-hot');
+          if (moved && canOv && ev && nearOv(ev) && E.clips.length > 1) {
+            const L0 = layout(), o0 = L0.find((q) => q.c === c);
+            if (o0) {
+              const ns = Math.max(0, o0.s + (ev.clientX - e.clientX) / pps);
+              const ov = Object.assign({}, c, { start: ns, dur: (c.out - c.in) / c.spd, tk: 0 }); delete ov.tr; delete ov.full;
+              E.clips = E.clips.filter((x) => x !== c); if (!E.ov) E.ov = []; E.ov.push(ov);
+              sel = { kind: 'ov', id: ov.id }; changed(); toast('🧩 « {n} » passée en Superposition'.replace('{n}', (E.media.find((m) => 'm:' + m.id === c.proj) || {}).name || ''));
+              return;
+            }
+          }
           if (!moved) { const L = layout(), o = L.find((q) => q.c === c); if (o) setT(o.s + (ev.clientX - el.getBoundingClientRect().left) / pps); render(); return; }
           // lugar nuevo: según dónde quedó el centro del bloque
           const L = layout(), o = L.find((q) => q.c === c), cx = ((o.s + o.e) / 2) * pps + (ev.clientX - e.clientX);
