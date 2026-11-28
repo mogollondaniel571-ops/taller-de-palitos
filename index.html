@@ -12448,7 +12448,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (!depth && playing && !edExp) for (const o of medEls.values()) if (o.kind === 'vid') for (const vv of [o.el, o.ov]) if (vv && !vidUsed.has(vv) && !vv.paused) vv.pause();
       return ok;
     }
-    function previewSize() { const [rw, rh] = resWH(), k = Math.min(1, 960 / Math.max(rw, rh)); return [Math.round(rw * k), Math.round(rh * k)]; }
+    /* v81-lite: modo ligero para PCs lentas (solo la vista previa) */
+    let LITE; { let v = null; try { v = localStorage.getItem('tp-lite'); } catch (_) {} LITE = v == null ? ((navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4) : v === '1'; }
+    let lastPaintT = 0;
+    function previewSize() { const [rw, rh] = resWH(), k = Math.min(1, (LITE ? 540 : 960) / Math.max(rw, rh)); return [Math.round(rw * k), Math.round(rh * k)]; }
     /* --- caja con 4 puntitos sobre la vista previa: mover y escalar --- */
     const box = document.createElement('div');
     box.style.cssText = 'position:absolute;display:none;z-index:4;box-sizing:border-box;border:1.5px solid #9b82ff;pointer-events:none';
@@ -12615,6 +12618,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       T = pFrom + (performance.now() - pT0) / 1000;
       const end = videoEnd();
       if (T >= end) { T = end; stop(); paint(); placeHead(true); return; }
+      if (LITE) { const nw = performance.now(); if (nw - lastPaintT < 30) { raf = requestAnimationFrame(loop); return; } lastPaintT = nw; }
       paint(); placeHead(true);
       raf = requestAnimationFrame(loop);
     }
@@ -13101,6 +13105,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : (e.dur || 1), step = Math.max(0.5, dur / 48); sp.step = step;
         const h = 60, w = Math.max(8, Math.round(h * v.videoWidth / v.videoHeight));
         for (let k = 0, t = step / 2; t < dur + step / 2; k++, t += step) {
+          while (playing) await new Promise((r) => setTimeout(r, 400));
           await seekV(v, Math.max(0, Math.min(t, dur - 0.05)));
           const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
           try { cv.getContext('2d').drawImage(v, 0, 0, w, h); } catch (_) {}
@@ -13300,6 +13305,13 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           localStorage.setItem(storeKey(), hd.edit); loadE(); sel = null; changed(); toast('📂 Copia abierta ({n} archivos)'.replace('{n}', hd.items.length));
         } catch (_) { toast('Ese archivo no es una copia del editor.'); }
       });
+    }
+    /* v81-lite-ui */
+    {
+      const top = $('#edFs'), lb = document.createElement('button'); lb.className = 'btn'; lb.id = 'edLite'; lb.type = 'button'; lb.textContent = '🍃';
+      const sync = () => { lb.title = 'Modo ligero: vista previa más liviana para PCs lentas (no cambia la exportación)'; lb.setAttribute('aria-label', lb.title); lb.classList.toggle('on', LITE); lb.style.outline = LITE ? '2px solid #5be0a0' : ''; };
+      lb.addEventListener('click', () => { LITE = !LITE; try { localStorage.setItem('tp-lite', LITE ? '1' : '0'); } catch (_) {} sync(); toast(LITE ? '🍃 Modo ligero ACTIVADO: vista previa más liviana (el video exportado sale igual de bueno)' : '🍃 Modo ligero desactivado: vista previa en alta calidad'); if (isOpen) paint(); });
+      top.parentNode.insertBefore(lb, top); sync();
     }
     /* v81-home */
     {
