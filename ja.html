@@ -1219,6 +1219,46 @@ body:not(.is-pro) #ed .ed-join:not(.on)::after { content: '👑'; position: abso
 .ed-row.o.ov-hint { outline: 2px dashed #ffd24a; outline-offset: -2px; background: rgba(255, 210, 74, 0.14); position: relative; }
 .ed-row.o.ov-hint::after { content: attr(data-hint); position: sticky; left: 8px; top: 0; display: inline-block; padding: 0.15rem 0.5rem; margin: 3px 0 0 8px; border-radius: 6px; background: #ffd24a; color: #1a1a1a; font: 800 0.72rem/1.4 var(--font-body); pointer-events: none; white-space: nowrap; }
 .ed-row.o.ov-hot { background: rgba(255, 210, 74, 0.34); outline-width: 3px; }
+/* v81-ui */
+html body #ed .ed-lib { display: grid; grid-template-columns: 54px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+html body #ed .ed-tabs { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 4px; padding: 0.5rem 0.3rem; border-bottom: 0; border-right: 1px solid var(--line); overflow-y: auto; background: rgba(0,0,0,0.18); }
+html body #ed .ed-tabs button { width: 100%; height: 44px; padding: 0; font-size: 1.25rem; display: grid; place-items: center; flex: none; }
+html body #ed .ed-tabs button span { display: none; }
+html body #ed .ed-lcol { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.ed-lh { display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.6rem 0.2rem; }
+.ed-lh b { flex: 1; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ed-lh button { width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 1px solid var(--line); background: var(--raise); color: #fff; cursor: pointer; font-weight: 800; padding: 0; }
+.ed-lib .ed-lib-tip { display: none; }
+.ed-lib.tipon .ed-lib-tip { display: block; }
+.ed-ls { padding: 0.3rem 0.6rem 0.2rem; display: grid; gap: 0.4rem; flex: none; }
+.ed-ls input { width: 100%; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--line); background: var(--raise); color: #fff; padding: 0.4rem 0.6rem; font: inherit; font-size: 0.8rem; }
+.ed-chips { display: none; gap: 4px; flex-wrap: wrap; }
+.ed-lib[data-lt="med"] .ed-chips { display: flex; }
+.ed-chips button { border-radius: 99px; border: 1px solid var(--line); background: transparent; color: #cfcadf; font-size: 0.68rem; padding: 0.15rem 0.55rem; cursor: pointer; }
+.ed-chips button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ed-lib[data-lt="med"] .ed-lib-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ed-lib[data-lt="med"] .ed-lib-list > li { grid-column: 1 / -1; }
+.ed-lib[data-lt="med"] .ed-lib-list > li[data-k] { grid-column: auto; flex-direction: column; align-items: stretch; margin-left: 0 !important; padding: 0.35rem; }
+.ed-lib[data-lt="med"] li[data-k] .ic { width: 100%; height: 4.2rem; }
+.ed-lib[data-lt="med"] li[data-k] .tx { flex: none; }
+.ed-lib[data-lt="med"] li[data-k] .tx small { display: none; }
+.ed-lib[data-lt="med"] li[data-k] > span:last-child:not(.tx) { display: flex; justify-content: flex-end; gap: 3px; }
+.ed-lib-list > li.hid { display: none !important; }
+html body #ed .ed-tl { grid-template-columns: 2.6rem minmax(0, 1fr); }
+html body #ed .ed-labels span { justify-content: center; padding-left: 0; font-size: 1.05rem; }
+.ei-sd { border-top: 1px solid var(--line); padding-top: 0.35rem; }
+.ei-sd > summary { cursor: pointer; font: 800 0.7rem/1.6 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: #cfcadf; list-style: none; display: flex; align-items: center; gap: 0.35rem; }
+.ei-sd > summary::before { content: '▾'; color: #a9a3bd; }
+.ei-sd:not([open]) > summary::before { content: '▸'; }
+.ei-sd > :not(summary) { margin-top: 0.4rem; }
+.ei-sd { display: block; }
+.ei-sd[open] { display: grid; gap: 0.1rem; }
+html body #ed .ed-stage { position: relative; }
+#edMini { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(13,14,20,0.82); border: 1px solid var(--line); z-index: 3; }
+#edMini button { width: 34px; height: 34px; border-radius: 8px; border: 0; background: transparent; color: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; }
+#edMini button:hover:not(:disabled) { background: var(--raise2); }
+#edMini button:disabled { opacity: 0.35; cursor: default; }
+#edMini svg { width: 18px; height: 18px; }
 /* tbi-compact */
 html body #ed .ed-bar { gap: 2px; }
 html body #ed .ed-bar .ed-time { min-width: 6.6rem; }
@@ -14489,7 +14529,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         });
         if (F.folders.length) ex.insertBefore(fb, ex.firstChild);
         const li = libItem(isAu ? '🎵' : m.kind === 'img' ? '🖼️' : '🎬', m.name, isAu ? 'サウンド · ' + fmtSec(m.dur || 0) : m.kind === 'img' ? e4('photo') : e4('video') + ' · ' + fmtSec(m.dur || 0), (t) => (isAu ? placeSnd(m, t) : t != null && dropOnOv() ? placeOv(m, t) : placeMedia(m, t)), { img: m.thumb, extra: ex, onFolder: (fid) => { if ((F.map[m.id] || '') !== fid) move(m, fid); } });
-        if (F.map[m.id]) li.style.marginLeft = '14px';
+        li.dataset.k = m.kind; if (F.map[m.id]) li.style.marginLeft = '14px';
         return li;
       };
       const all = (E.media || []).slice().reverse();
@@ -14524,6 +14564,39 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (F.folders.length) ul.appendChild(head(null));
       for (const m of all.filter((m) => !F.map[m.id])) ul.appendChild(item(m));
       if (!F.folders.length) { const e = document.createElement('li'); e.style.cssText = 'opacity:.55;font-size:.74rem;padding:6px 10px;list-style:none'; e.textContent = FOLS.keep; ul.appendChild(e); }
+    }
+    {
+      const lib = $('.ed-lib'), tabsEl = $('.ed-tabs'), col = document.createElement('div'); col.className = 'ed-lcol';
+      const hd = document.createElement('div'); hd.className = 'ed-lh';
+      const hb = document.createElement('b'), hq = document.createElement('button'); hq.type = 'button'; hq.textContent = '?'; hq.title = 'ヘルプ'; hq.setAttribute('aria-label', 'ヘルプ');
+      hq.addEventListener('click', () => lib.classList.toggle('tipon')); hd.append(hb, hq);
+      const sr = document.createElement('div'); sr.className = 'ed-ls';
+      const si = document.createElement('input'); si.type = 'search'; si.placeholder = '検索…'; si.addEventListener('keydown', (e) => e.stopPropagation());
+      const chips = document.createElement('div'); chips.className = 'ed-chips'; let chipK = '';
+      [['', 'すべて'], ['img', '写真'], ['vid', '動画'], ['au', '音声']].forEach(([k, t]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; if (!k) b.className = 'on'; b.addEventListener('click', () => { chipK = k; for (const x of chips.children) x.classList.toggle('on', x === b); filt(); }); chips.append(b); });
+      sr.append(si, chips);
+      const ul0 = $('#edLibList');
+      col.append(hd, $('#edLibTip'), sr, $('#edFab'), ul0); lib.insertBefore(col, $('#edLibFile'));
+      function filt() {
+        const q = si.value.trim().toLowerCase();
+        for (const li of ul0.children) {
+          const k = li.dataset.k; let hide = false;
+          if (q && !li.textContent.toLowerCase().includes(q) && !(li.title || '').toLowerCase().includes(q)) hide = true;
+          if (chipK && k && k !== chipK) hide = true;
+          li.classList.toggle('hid', hide);
+        }
+      }
+      si.addEventListener('input', filt);
+      let lastTab = null;
+      new MutationObserver(() => {
+        const on = tabsEl.querySelector('button[aria-pressed="true"]');
+        lib.dataset.lt = libTab; hb.textContent = on ? (on.title || '') : '';
+        if (lastTab !== libTab) { lastTab = libTab; si.value = ''; chipK = ''; for (const x of chips.children) x.classList.toggle('on', !x.dataset.k && x === chips.children[0]); }
+        filt();
+      }).observe(ul0, { childList: true });
+      for (const sp of document.querySelectorAll('.ed-labels span')) { const t = sp.textContent.trim(); if (t) { sp.title = t; sp.textContent = t.split(' ')[0]; } }
+      const mini = document.createElement('div'); mini.id = 'edMini'; $('#edStage').appendChild(mini);
+      for (const id of ['edSplit', 'edSpeed', 'edBg', 'edDel']) { const b = document.createElement('button'); b.type = 'button'; b.dataset.src = id; b.addEventListener('click', () => { const s = $('#' + id); if (s && !s.disabled) s.click(); }); mini.append(b); }
     }
     {
       const tb = document.createElement('button');
@@ -14680,7 +14753,30 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       row.append(lab, kb, inp, out);
       return row;
     }
-    function edInsp() {
+        function miniSync() {
+      const m = $('#edMini'); if (!m) return;
+      for (const b of m.children) { const s = $('#' + b.dataset.src); if (!s) continue; if (b.dataset.h !== s.innerHTML) { b.innerHTML = s.querySelector('svg') ? s.querySelector('svg').outerHTML : s.textContent.slice(0, 2); b.dataset.h = s.innerHTML; } b.disabled = s.disabled; b.title = s.title || s.getAttribute('aria-label') || ''; }
+    }
+    function inspFold() {
+      miniSync();
+      if (!insp.querySelector('.ei-row')) return;
+      const kids = Array.from(insp.children), s = selObj();
+      const head = []; let i = 0;
+      while (i < kids.length && /^(H4|SMALL|P)$/.test(kids[i].tagName) && !kids[i].classList.contains('ei-sec')) head.push(kids[i++]);
+      let FS = {}; try { FS = JSON.parse(localStorage.getItem('tp-fold') || '{}'); } catch (_) {}
+      const mk = (title) => { const d = document.createElement('details'); d.className = 'ei-sd'; d.open = FS[title] !== 0; const sm = document.createElement('summary'); sm.textContent = title; d.append(sm);
+        d.addEventListener('toggle', () => { try { FS[title] = d.open ? 1 : 0; localStorage.setItem('tp-fold', JSON.stringify(FS)); } catch (_) {} }); return d; };
+      let cur = mk(s && s.kind === 'clip' ? '変形' : '設定'); const out = [cur];
+      for (; i < kids.length; i++) {
+        const k = kids[i];
+        if (k.classList.contains('ei-sec') && cur.firstChild.textContent.toLowerCase() === k.textContent.trim().toLowerCase()) { k.remove(); continue; }
+        if (k.classList.contains('ei-sec')) { cur = mk(k.textContent.trim()); out.push(cur); k.remove(); continue; }
+        cur.append(k);
+      }
+      insp.append(...out.filter((d) => d.children.length > 1));
+    }
+    function edInsp() { edInsp0(); try { inspFold(); } catch (_) {} }
+    function edInsp0() {
       if (!isOpen) return;
       if (e4drag) return;
       insp.textContent = '';
