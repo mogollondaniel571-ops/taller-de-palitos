@@ -12375,7 +12375,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         if (e.kind === 'vid') local = Math.min(local, Math.max(0, (e.dur || local) - 0.05));
         const ox = sized(bufO, w, h); ox.setTransform(1, 0, 0, 1, 0, 0); ox.globalAlpha = 1; ox.clearRect(0, 0, w, h);
         ovT = true;
-        try { if (mediaShot(ox, o, local, w, h)) applyTf(ox, o, local, w, h); } finally { ovT = false; }
+        try { if (mediaShot(ox, o, o.frz ? o.in : local, w, h)) applyTf(ox, o, local, w, h); } finally { ovT = false; }
         let FR = null; { const tfx = TL.fx.filter((q) => q.tg === o.id && Tg >= q.start && Tg < q.start + q.dur); if (tfx.length) FR = fxApply(tfx, ox, Tg, w, h); }
         if (FR && FR.flash > 0) { ox.save(); ox.globalCompositeOperation = 'source-atop'; ox.fillStyle = 'rgba(255,255,255,' + FR.flash.toFixed(3) + ')'; ox.fillRect(0, 0, w, h); ox.restore(); }
         if (o.gh) ovGhost(ax, o, Tg - o.start, local, w, h);
@@ -13135,7 +13135,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
             const L0 = layout(), o0 = L0.find((q) => q.c === c);
             if (o0) {
               const ns = Math.max(0, o0.s + (ev.clientX - e.clientX) / pps);
-              const ov = Object.assign({}, c, { start: ns, dur: (c.out - c.in) / c.spd, tk: 0 }); delete ov.tr; delete ov.full;
+              const ov = Object.assign({}, c, { start: ns, dur: (c.out - c.in) / c.spd, tk: 0 }); delete ov.tr; delete ov.full; ov.spd = 1; ov.out = ov.in + ov.dur;
               E.clips = E.clips.filter((x) => x !== c); if (!E.ov) E.ov = []; E.ov.push(ov);
               sel = { kind: 'ov', id: ov.id }; changed(); toast('🧩 “{n}” moved to Overlay'.replace('{n}', (E.media.find((m) => 'm:' + m.id === c.proj) || {}).name || ''));
               return;
@@ -13195,6 +13195,17 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         }
         render(); paint();
       }, (moved, ev) => {
+        /* v81-ovmain */
+        if (moved && kind === 'ov' && !o.tx && part === 'm' && ev && o.proj) {
+          const rb = rowV.getBoundingClientRect(), sr = scroll.getBoundingClientRect();
+          if (ev.clientX >= sr.left && ev.clientX <= sr.right && ev.clientY >= rb.top - 10 && ev.clientY <= rb.bottom + 10) {
+            const L0 = layout(), c = Object.assign({}, o, { spd: 1, tr: null, full: false });
+            c.out = c.in + o.dur; delete c.start; delete c.dur; delete c.tk; delete c.hid; delete c.gh;
+            let k = L0.findIndex((q) => o.start < (q.s + q.e) / 2); if (k < 0) k = E.clips.length;
+            E.ov = E.ov.filter((x) => x !== o); E.clips.splice(k, 0, c);
+            sel = { kind: 'clip', id: c.id }; lastShots.clear(); changed(); return;
+          }
+        }
         if (moved) { o.tk = fitLane(list, kind, o, o.tk | 0, o.start, lenB(o, kind)); changed(); }
         else setT((ev.clientX - inner.getBoundingClientRect().left) / pps);
       });
