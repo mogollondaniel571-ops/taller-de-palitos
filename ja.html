@@ -11937,13 +11937,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function efxLines(ax, w, h, a) { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = 'rgba(0,0,0,' + a + ')'; for (let y = 0; y < h; y += 4) ax.fillRect(0, y, w, 2); ax.restore(); }
 
     const FXD = {
-      shk: { fz: 40, fx: 40, fy: 40, hz: 2.5, zm: 8, rt: 3, fl: 0, sd: 7, orb: 35, jl: 25, cv: 0 },
+      shk: { fz: 40, fx: 40, fy: 40, hz: 2.5, zm: 8, rt: 3, fl: 0, sd: 7, orb: 35, jl: 25, cv: 0, hd: 60, so: 0.25, mr: 1 },
       ghost: { gz: 60, gw: 100, gh: 100, n: 2, op: 70, rp: 1, c1: '#00e5ff', c2: '#ff2bd6', tn: 1, gl: 60 }
     };
-    const FXR = { fx: [0, 100, 1, '%'], fy: [0, 100, 1, '%'], fz: [0, 100, 1, '%'], hz: [0.5, 12, 0.1, ' Hz'], orb: [0, 100, 1, '%'], jl: [0, 100, 1, '%'], zm: [0, 40, 1, '%'], rt: [0, 15, 0.5, '°'], fl: [0, 100, 1, '%'], sd: [1, 99, 1, ''], sm: [0, 100, 1, '%'],
+    const FXR = { fx: [0, 100, 1, '%'], fy: [0, 100, 1, '%'], fz: [0, 100, 1, '%'], hz: [0.5, 12, 0.1, ' Hz'], orb: [0, 100, 1, '%'], jl: [0, 100, 1, '%'], zm: [0, 40, 1, '%'], rt: [0, 15, 0.5, '°'], fl: [0, 100, 1, '%'], sd: [1, 99, 1, ''], sm: [0, 100, 1, '%'], hd: [0, 100, 1, '%'], so: [0, 1.5, 0.05, ' s'],
       gz: [10, 200, 1, '%'], gw: [20, 300, 1, '%'], gh: [20, 300, 1, '%'], n: [1, 4, 1, ''], op: [10, 100, 1, '%'], rp: [1, 6, 1, 'x'], gl: [0, 100, 1, '%'] };
-    const FXO = { shk: ['fz', 'hz'], ghost: ['gz', 'gw', 'gh', 'n', 'op', 'rp', 'c1', 'c2', 'tn', 'gl'] };
+    const FXO = { shk: ['fz', 'hz', 'hd', 'so', 'mr'], ghost: ['gz', 'gw', 'gh', 'n', 'op', 'rp', 'c1', 'c2', 'tn', 'gl'] };
     const FXU = {fx: '強さ X', fy: '強さ Y', sp: '速さ', zm: 'ズームの脈動', rt: '傾き', fl: 'フラッシュ', sd: 'シード', sm: 'なめらかさ', cv: 'カーブ', hz: '速さ', orb: '円運動', jl: '強い衝撃', fz: '強さ', cv0: '一定', cv1: '上がる', cv2: '下がる', cv3: '打って落ち着く', gz: '拡大量', gw: '横に伸ばす', gh: '縦に伸ばす', n: 'ゴースト数', op: '不透明度', rp: '繰り返し', c1: '色1', c2: '色2', tn: '色をつける', gl: 'ネオンの光', reset: '初期値に戻す'};
+    Object.assign(FXU, {hd: '強さ（なめらか ↔ キレ）', so: 'ゆっくり終わる（秒）', mr: '端をミラー'});
     function fxp(f) { const d = FXD[f.k]; if (!d) return null; if (!f.p) f.p = {}; for (const k of Object.keys(d)) if (f.p[k] == null) f.p[k] = d[k]; return f.p; }
     const FXK = new Set(['fz','fx','fy','hz','zm','rt','fl','orb','jl','gz','gw','gh','op','gl']);
     function fxv(f, loc) { const P = fxp(f); if (!f.kf) return P; const o = Object.assign({}, P); for (const k of Object.keys(f.kf)) if (FXK.has(k) && f.kf[k] && f.kf[k].length) o[k] = kfAt(f.kf[k], loc, P[k]); return o; }
@@ -12328,6 +12329,16 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
     }
     // Devuelve false si alguna escena todavía está cargando.
+    function mirTiles(ctx, img, x, y, W, H, w, h, all) {
+      ctx.drawImage(img, x, y, W, H);
+      const xs = [0], ys = [0];
+      if (all || x > 0.5) xs.push(-1); if (all || x + W < w - 0.5) xs.push(1);
+      if (all || y > 0.5) ys.push(-1); if (all || y + H < h - 0.5) ys.push(1);
+      for (const j of ys) for (const i of xs) {
+        if (!i && !j) continue;
+        ctx.save(); ctx.translate(x + i * W + (i ? W : 0), y + j * H + (j ? H : 0)); ctx.scale(i ? -1 : 1, j ? -1 : 1); ctx.drawImage(img, 0, 0, W, H); ctx.restore();
+      }
+    }
     function drawE(ctx, Tg, w, h, getSc, TL, depth) {
       TL = TL || E; depth = depth | 0;
       if (!depth) vidUsed.clear();
@@ -12357,7 +12368,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       if (!depth && TL.ov && TL.ov.length) ovDraw(ax, Tg, w, h, TL);
       // efectos de la pista roja
-      let { sx, sy, sc, flash, rot } = fxApply(TL.fx.filter((f) => !f.tg), ax, Tg, w, h);
+      let { sx, sy, sc, flash, rot, mr } = fxApply(TL.fx.filter((f) => !f.tg), ax, Tg, w, h);
       // pista de cámara: acercar, alejar, golpe de zoom y paneos
       let cz = 1, cx = 0, cy = 0;
       for (const f of TL.cam) {
@@ -12372,7 +12383,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       cx = clampV(cx, -((cz - 1) * w) / 2, ((cz - 1) * w) / 2); cy = clampV(cy, -((cz - 1) * h) / 2, ((cz - 1) * h) / 2);
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
       ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
-      if (rot) { ctx.translate(w / 2 + sx + cx, h / 2 + sy + cy); ctx.rotate(rot); ctx.drawImage(ax.canvas, -(w * zz) / 2, -(h * zz) / 2, w * zz, h * zz); ctx.setTransform(1, 0, 0, 1, 0, 0); }
+      if (rot) { ctx.translate(w / 2 + sx + cx, h / 2 + sy + cy); ctx.rotate(rot); if (mr) mirTiles(ctx, ax.canvas, -(w * zz) / 2, -(h * zz) / 2, w * zz, h * zz, w, h, true); else ctx.drawImage(ax.canvas, -(w * zz) / 2, -(h * zz) / 2, w * zz, h * zz); ctx.setTransform(1, 0, 0, 1, 0, 0); }
+      else if (mr) mirTiles(ctx, ax.canvas, sx + cx - ((zz - 1) * w) / 2, sy + cy - ((zz - 1) * h) / 2, w * zz, h * zz, w, h, false);
       else ctx.drawImage(ax.canvas, sx + cx - ((zz - 1) * w) / 2, sy + cy - ((zz - 1) * h) / 2, w * zz, h * zz);
       if (flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + flash.toFixed(3) + ')'; ctx.fillRect(0, 0, w, h); }
       ctx.restore();
@@ -12625,10 +12637,75 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       return beatCache.get(a.id);
     }
     const BTS = {add: 'ビート', tip: '赤い線の位置にビートのマークを置く（Bキー）', del_: 'このビートを消す', made: 'ビート {t}', noau: '赤い線を音声の上に置いてビートを打ってください', gone: 'ビートを消しました'};
+    Object.assign(BTS, {auto: '⚡ 自動', autoTip: '音が急に大きくなる所に自動でビートを置く', sens: '感度', few: '少なめ', many: '多め', go: 'ビートを検出', clr: 'この音のビートを消す', none: '強い音の立ち上がりが見つかりません。感度を上げてください。', found: '{n}個のビートを置きました', noaud: '音声を選ぶか、赤い線を音声の上に置いてください', busy: '音声を解析中…', hint: '波形が急に上がる所にビートを置きます。その音声のビートは置き換わります。赤い線とバーがビートに吸着します。', cleared: 'この音のビートを消しました'});
     const bKey = () => 'tp-edbeat-' + PROF.dbName();
     function bRead() { let a = []; try { a = JSON.parse(localStorage.getItem(bKey()) || '[]'); } catch (_) {} return Array.isArray(a) ? a.filter((v) => isFinite(+v) && +v >= 0).map(Number).sort((x, y) => x - y).slice(0, 600) : []; }
     function bWrite(a) { try { localStorage.setItem(bKey(), JSON.stringify(a)); } catch (_) {} }
     const auAt = (t) => E.audio.find((a) => t >= a.start - 1e-6 && t <= a.start + (a.out - a.in) + 1e-6);
+
+    /* --- beats automáticos: un beat en cada subida brusca del audio --- */
+    async function autoBeatTimes(a, sens) {
+      const b = await bufOf(a.src || a.id); if (!b) return null;
+      const sr = b.sampleRate, ch = b.getChannelData(0), hop = Math.max(1, Math.round(sr * 0.01)), win = hop * 2;
+      const i0 = Math.max(0, Math.floor(a.in * sr)), i1 = Math.min(ch.length, Math.floor(a.out * sr)), n = Math.floor((i1 - i0 - win) / hop);
+      if (n < 20) return [];
+      const env = new Float32Array(n);
+      for (let f = 0; f < n; f++) { let s = 0; const p = i0 + f * hop; for (let k = 0; k < win; k += 2) { const v = ch[p + k]; s += v * v; } env[f] = Math.sqrt(s / (win / 2)); }
+      const fl = new Float32Array(n), ratio = new Float32Array(n); let sum = 0, cnt = 0;
+      for (let f = 0; f < n; f++) {
+        let m = 0, c = 0; for (let k = Math.max(0, f - 12); k < f; k++) { m += env[k]; c++; } m = c ? m / c : env[f];
+        fl[f] = Math.max(0, env[f] - m); ratio[f] = env[f] / (m + 1e-4); sum += fl[f]; cnt++;
+      }
+      const mean = sum / cnt; let vr = 0; for (let f = 0; f < n; f++) vr += (fl[f] - mean) * (fl[f] - mean);
+      const sd = Math.sqrt(vr / cnt), kk = 3.4 - sens * 0.028, thr = mean + kk * sd, rmin = 1.5 - sens * 0.004, gap = 0.4 - sens * 0.0033;
+      const cand = [];
+      for (let f = 3; f < n - 3; f++) { if (fl[f] < thr || ratio[f] < rmin) continue; let top = true; for (let k = -6; k <= 6; k++) { const q = f + k; if (q >= 0 && q < n && fl[q] > fl[f]) { top = false; break; } } if (top) cand.push(f); }
+      cand.sort((x, y) => fl[y] - fl[x]);
+      const got = [];
+      for (const f of cand) { const t = (i0 + f * hop) / sr; if (got.every((u) => Math.abs(u - t) >= gap)) got.push(t); }
+      got.sort((x, y) => x - y);
+      return got.map((t) => Math.round((a.start + (t - a.in)) * 1000) / 1000);
+    }
+    let beatPop = null;
+    function beatAutoBtn(after) {
+      const ab = document.createElement('button'); ab.type = 'button'; ab.className = 'btn small'; ab.id = 'edBeatAuto'; ab.textContent = BTS.auto; ab.title = BTS.autoTip;
+      ab.addEventListener('click', (e) => { e.stopPropagation(); beatPanel(ab); });
+      after.after(ab);
+    }
+    function pickAudio() {
+      if (sel && sel.kind === 'au') { const a = E.audio.find((x) => x.id === sel.id); if (a) return a; }
+      return auAt(T) || (E.audio.length === 1 ? E.audio[0] : null);
+    }
+    function beatPanel(btn) {
+      if (beatPop) { beatPop.remove(); beatPop = null; return; }
+      const p = document.createElement('div'); beatPop = p;
+      p.style.cssText = 'position:fixed;z-index:400;width:250px;padding:12px;border-radius:12px;background:#23233a;color:#fff;box-shadow:0 12px 36px rgba(0,0,0,.55);font:0.8rem/1.35 var(--font-body)';
+      const r = btn.getBoundingClientRect(); p.style.left = Math.max(8, Math.min(window.innerWidth - 262, r.left)) + 'px'; p.style.bottom = (window.innerHeight - r.top + 8) + 'px';
+      let sv = 50; try { sv = +localStorage.getItem('tp-beatsens') || 50; } catch (_) {}
+      const t1 = document.createElement('b'); t1.textContent = '🥁 ' + BTS.autoTip; t1.style.display = 'block'; t1.style.marginBottom = '6px';
+      const lb = document.createElement('div'); lb.style.cssText = 'display:flex;justify-content:space-between;opacity:.8'; lb.innerHTML = '<span></span><span></span>'; lb.children[0].textContent = BTS.few; lb.children[1].textContent = BTS.many;
+      const rg = document.createElement('input'); rg.type = 'range'; rg.min = '0'; rg.max = '100'; rg.value = String(sv); rg.style.cssText = 'width:100%'; rg.addEventListener('keydown', (e) => e.stopPropagation());
+      rg.addEventListener('change', () => { try { localStorage.setItem('tp-beatsens', rg.value); } catch (_) {} });
+      const go = document.createElement('button'); go.type = 'button'; go.className = 'btn small'; go.textContent = BTS.go; go.style.cssText = 'width:100%;margin-top:8px';
+      const cl = document.createElement('button'); cl.type = 'button'; cl.className = 'btn small'; cl.textContent = BTS.clr; cl.style.cssText = 'width:100%;margin-top:6px';
+      const hn = document.createElement('p'); hn.textContent = BTS.hint; hn.style.cssText = 'margin:8px 0 0;opacity:.7;font-size:.72rem';
+      const rng = (a) => [a.start - 1e-6, a.start + (a.out - a.in) + 1e-6];
+      go.addEventListener('click', async () => {
+        const a = pickAudio(); if (!a) { toast('🥁 ' + BTS.noaud); return; }
+        go.disabled = true; const old = go.textContent; go.textContent = BTS.busy;
+        let ts = null; try { ts = await autoBeatTimes(a, +rg.value); } catch (_) { ts = null; }
+        go.disabled = false; go.textContent = old;
+        if (ts == null) { toast('🥁 ' + BTS.noaud); return; }
+        const [lo, hi] = rng(a), keep = bRead().filter((v) => v < lo || v > hi);
+        if (!ts.length) { toast('🥁 ' + BTS.none); return; }
+        bWrite(keep.concat(ts).sort((x, y) => x - y).slice(0, 600)); beatMarks();
+        toast('🥁 ' + BTS.found.replace('{n}', ts.length)); try { localStorage.setItem('tp-beatsens', rg.value); } catch (_) {}
+      });
+      cl.addEventListener('click', () => { const a = pickAudio(); if (!a) { toast('🥁 ' + BTS.noaud); return; } const [lo, hi] = rng(a); bWrite(bRead().filter((v) => v < lo || v > hi)); beatMarks(); toast('🥁 ' + BTS.cleared); });
+      p.append(t1, lb, rg, go, cl, hn); document.body.appendChild(p);
+      const off = (ev) => { if (!p.contains(ev.target) && ev.target !== btn) { p.remove(); beatPop = null; window.removeEventListener('pointerdown', off, true); } };
+      setTimeout(() => window.addEventListener('pointerdown', off, true), 0);
+    }
     function beatToggle() {
       if (!auAt(T)) { toast('🥁 ' + BTS.noau); return; }
       const a = bRead(), k = a.findIndex((v) => Math.abs(v - T) < Math.max(0.05, 6 / pps));
@@ -12790,10 +12867,11 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         for (const o of list) o.tk = used.indexOf(o.tk);
       }
     }
-    function snapPts(skip) {
-      const p = [0, T];
+    function snapPts(skip, opt) {
+      const p = [0]; if (!opt || opt.head !== false) p.push(T);
       for (const kind of ['ov', 'fx', 'cam', 'au']) for (const q of lanesOf(kind)) { if (q !== skip) p.push(q.start, q.start + lenB(q, kind)); }
-      for (const o of layout()) p.push(o.s, o.e);
+      if (!opt || opt.scenes !== false) for (const o of layout()) p.push(o.s, o.e);
+      for (const b of bRead()) if (auAt(b)) p.push(b);
       return p;
     }
     function snapNear(v, pts) { let best = null, bd = 8 / pps; for (const p of pts) { const d = Math.abs(p - v); if (d < bd) { bd = d; best = p; } } return best; }
@@ -12849,10 +12927,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         }
       });
       rowO.textContent = '';
-      for (const f of (E.ov || [])) { const m0 = medOf(f.proj); const b = barEl(f, 'ov', (f.tx ? '🔤 ' + f.tx.t.replace(/\s+/g, ' ').slice(0, 30) : (m0 && m0.kind === 'vid' ? '🎬 ' : '🖼️ ') + ((m0 && m0.name) || '')), f.start, f.dur); if (f.hid) b.style.opacity = '0.35'; { const kk = Object.assign({}, f.kf); if (f.tkf) for (const q of Object.keys(f.tkf)) kk['t_' + q] = f.tkf[q]; e4diamonds(b, keyTimes(kk), (t) => t * pps, 0, f.dur, (t) => { sel = { kind: 'ov', id: f.id }; render(); setT(f.start + t); placeHead(true); }); } rowO.appendChild(b); }
+      for (const f of (E.ov || [])) { const m0 = medOf(f.proj); const b = barEl(f, 'ov', (f.tx ? '🔤 ' + f.tx.t.replace(/\s+/g, ' ').slice(0, 30) : (m0 && m0.kind === 'vid' ? '🎬 ' : '🖼️ ') + ((m0 && m0.name) || '')), f.start, f.dur); if (f.hid) b.style.opacity = '0.35'; { const kk = Object.assign({}, f.kf); if (f.tkf) for (const q of Object.keys(f.tkf)) kk['t_' + q] = f.tkf[q]; e4diamonds(b, keyTimes(kk), (t) => t * pps, 0, f.dur, (t) => { sel = { kind: 'ov', id: f.id }; render(); setT(f.start + t); placeHead(true); }, { skip: f, fromX: (cx, l) => (cx - l) / pps, tl: (v) => f.start + v, loc: (v) => v - f.start, lists: () => Object.values(f.kf || {}).concat(Object.values(f.tkf || {})) }); } rowO.appendChild(b); }
       // efectos
       rowF.textContent = '';
-      for (const f of E.fx) { const be = barEl(f, 'fx', (f.tg ? '🎯 ' : '') + FX_NAME[f.k], f.start, f.dur); e4diamonds(be, keyTimes(f.kf), (t) => t * pps, 0, f.dur, (t) => { sel = { kind: 'fx', id: f.id }; render(); setT(f.start + t); placeHead(true); }); rowF.appendChild(be); }
+      for (const f of E.fx) { const be = barEl(f, 'fx', (f.tg ? '🎯 ' : '') + FX_NAME[f.k], f.start, f.dur); e4diamonds(be, keyTimes(f.kf), (t) => t * pps, 0, f.dur, (t) => { sel = { kind: 'fx', id: f.id }; render(); setT(f.start + t); placeHead(true); }, { skip: f, fromX: (cx, l) => (cx - l) / pps, tl: (v) => f.start + v, loc: (v) => v - f.start, lists: () => Object.values(f.kf || {}) }); rowF.appendChild(be); }
       rowC.textContent = '';
       for (const f of E.cam) rowC.appendChild(barEl(f, 'cam', CAM_NAME[f.k], f.start, f.dur));
       // sonidos
@@ -12929,10 +13007,15 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           E.clips = list; changed();
         });
       } else {
-        track(e, (dx) => {
-          const dt = (dx / pps) * c.spd;
+        const lo0 = layout().find((q) => q.c === c), cs0 = lo0 ? lo0.s : 0, cpts = snapPts(null, { head: false, scenes: false });
+        track(e, (dx, ev) => {
+          const dt = (dx / pps) * c.spd, free = !(ev && ev.altKey);
           if (part === 'l') { if (!c.frz) c.in = clampV(in0 + dt, 0, c.out - MIN * c.spd); }
           else c.out = clampV(out0 + dt, c.in + MIN * c.spd, dmax);
+          if (free) {
+            const en = cs0 + (c.out - c.in) / c.spd, sn = snapNear(en, cpts);
+            if (sn != null && sn > cs0 + MIN) { const nd = (sn - cs0) * c.spd; if (part === 'l') { if (!c.frz) c.in = clampV(c.out - nd, 0, c.out - MIN * c.spd); } else c.out = clampV(c.in + nd, c.in + MIN * c.spd, dmax); }
+          }
           c.full = Math.abs(c.out - dmax) < 1e-3;
           lastShots.clear(); render(); paint();
         }, () => changed());
@@ -12963,8 +13046,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
             o.dur = d0 + (s0 - ns); o.start = ns;
           } else { let ne = s0 + d0 + dt; const sn = snapNear(ne, pts); if (sn != null) ne = sn; o.dur = Math.max(0.05, ne - s0); }
         } else {
-          if (part === 'l') { const d = clampV(dt, -Math.min(in0, s0), out0 - in0 - 0.1); o.in = in0 + d; o.start = s0 + d; }
-          else o.out = clampV(out0 + dt, in0 + 0.1, bmax);
+          if (part === 'l') { let d = clampV(dt, -Math.min(in0, s0), out0 - in0 - 0.1); const sn = snapNear(s0 + d, pts); if (sn != null) d = clampV(sn - s0, -Math.min(in0, s0), out0 - in0 - 0.1); o.in = in0 + d; o.start = s0 + d; }
+          else { let no = out0 + dt; const sn = snapNear(s0 + (no - in0), pts); if (sn != null) no = in0 + (sn - s0); o.out = clampV(no, in0 + 0.1, bmax); }
         }
         render(); paint();
       }, (moved, ev) => {
@@ -12976,7 +13059,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function scrubDown(e) {
       if (e.button !== 0) return;
       stop();
-      const go = (ev) => setT((ev.clientX - inner.getBoundingClientRect().left) / pps);
+      const spts = snapPts(null, { head: false });
+      const go = (ev) => { let t = (ev.clientX - inner.getBoundingClientRect().left) / pps; if (!ev.altKey) { const sn = snapNear(t, spts); if (sn != null) t = sn; } setT(t); };
       go(e);
       track(e, (dx, ev) => go(ev), () => {});
     }
@@ -13244,7 +13328,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       au: 'あなたのサウンド：🔊トラックにドラッグするか、タップで赤い線に置けます。▶で試聴。',
       fab: '255個のサウンド（🎙️は本物の録音）。タップで試聴と調整、🔊トラックにドラッグで使えます。'
     };
-    const timeAt = (clientX) => Math.max(0, (clientX - inner.getBoundingClientRect().left) / pps);
+    const timeAt = (clientX) => { const t = Math.max(0, (clientX - inner.getBoundingClientRect().left) / pps), sn = snapNear(t, snapPts(null, { head: false })); return sn == null ? t : sn; };
     function overTL(ev) {
       const r = $('.ed-tl').getBoundingClientRect(), sr = scroll.getBoundingClientRect();
       return ev.clientX >= sr.left && ev.clientX <= sr.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
@@ -13933,7 +14017,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       return o;
     }
     function fxApply(list, ax, Tg, w, h) {
-      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0, rot = 0; const act = [];
+      let sx = 0, sy = 0, sc = 1, flash = 0, imp = 0, rot = 0, mr = 0; const act = [];
       for (const f of list) {
         if (Tg < f.start || Tg >= f.start + f.dur) continue;
         const u = (Tg - f.start) / f.dur;
@@ -13941,18 +14025,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           const a = (f.k === 'shk2' ? 0.022 : 0.009) * w, q = Math.floor(Tg * 30);
           sx += (hash01(q * 2 + 1) - 0.5) * 2 * a; sy += (hash01(q * 2 + 2) - 0.5) * 2 * a; sc = Math.max(sc, 1 + (2.4 * a) / w);
         } else if (f.k === 'shk') {
-          const P = Object.assign({}, fxv(f, Tg - f.start), { zm: 0, rt: 0, fl: 0, cv: 0 }), cu = 1, t_ = Tg - f.start, W1 = 1, PH = fxPh(f, t_), ph = P.sd * 1.713, orb = P.orb / 100;
-          const org = (o) => { let v = 0; [[1, 1], [1.63, 0.55], [2.71, 0.3]].forEach((m, i) => { v += m[1] * Math.sin(PH * m[0] + ph * (i + 1) * 1.37 + o * 2.1); }); return v / 1.85; };
-          let nx = org(0) * (1 - orb) + Math.cos(PH + ph) * orb, ny = org(1) * (1 - orb) + Math.sin(PH + ph) * orb;
-          const slot = Math.floor(t_ / 0.3), jf = t_ / 0.3 - slot, jl = P.jl / 100;
-          for (const sl of [slot - 1, slot]) {
-            const rr = hash01(P.sd * 17 + sl * 5 + 3), fp = sl === slot ? jf : jf + 1;
-            if (rr > 0.55) { const mag = (rr - 0.55) * 2.2 * jl * 2.4 * Math.exp(-fp * 5), th = hash01(P.sd * 31 + sl * 7) * Math.PI * 2; nx += Math.cos(th) * mag; ny += Math.sin(th) * mag; }
-          }
-          const nr = Math.sin(PH * 0.8 + ph * 2.3) * 0.6 + nx * 0.4, nz = 0.5 + 0.5 * Math.sin(PH * 1.3 + ph * 3.1);
-          const A = 0.08;
-          sx += nx * (P.fz / 100) * A * w * cu; sy += ny * (P.fz / 100) * A * h * cu;
-          if (P.fl > 0) flash = Math.max(flash, 0.9 * (P.fl / 100) * cu * Math.max(0, nz - 0.25));
+          const P = fxv(f, Tg - f.start), t_ = Tg - f.start, so = Math.max(0, +P.so || 0);
+          const cu = so > 0.01 ? fxSm(clampV((f.dur - t_) / so, 0, 1)) : 1;
+          const nb = fxPh(f, t_) / (Math.PI * 2), k0 = Math.floor(nb), fr = nb - k0, sd = P.sd, qh = clampV((P.hd == null ? 60 : P.hd) / 100, 0, 1);
+          const pt = (j, ax) => { if (j <= 0) return 0; const th = j * 2.399963 + (hash01(sd * 131 + j * 7 + 1) - 0.5) * 1.3, m = 0.45 + 0.55 * hash01(sd * 71 + j * 13 + 5); return ax ? Math.sin(th) * m : Math.cos(th) * m; };
+          const eio = fr < 0.5 ? 4 * fr * fr * fr : 1 - Math.pow(-2 * fr + 2, 3) / 2, spr = 1 - Math.exp(-6.5 * fr) * Math.cos(11 * fr), ee = eio + (spr - eio) * qh;
+          const nx = pt(k0, 0) + (pt(k0 + 1, 0) - pt(k0, 0)) * ee, ny = pt(k0, 1) + (pt(k0 + 1, 1) - pt(k0, 1)) * ee;
+          const A = 0.08 * (P.fz / 100) * cu;
+          sx += nx * A * w; sy += ny * A * h; if (P.mr) mr = 1;
         } else if (f.k === 'ghost') act.push({ k: 'ghost', u, t: Tg - f.start, g: { p: fxv(f, Tg - f.start) } });
         else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
         else if (f.k === 'imp') imp = (Math.floor((Tg - f.start) * 12) % 2) ? 2 : 1;
@@ -13968,7 +14048,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         ax.putImageData(im, 0, 0);
       }
       if (act.length) efxPost(ax, w, h, act);
-      return { sx, sy, sc, flash, rot };
+      return { sx, sy, sc, flash, rot, mr };
     }
     function placeFxT(k, d, t) {
       const f = { id: newId(), k, start: t == null ? T : t, dur: d };
@@ -14364,7 +14444,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       ib.type = 'button'; ib.className = 'btn small'; ib.id = 'edImport'; ib.textContent = e4('impBtn'); ib.title = e4('imp');
       ib.addEventListener('click', () => medFile.click());
       $('#edAdd').before(ib);
-      { const bb = document.createElement('button'); bb.type = 'button'; bb.className = 'btn small'; bb.id = 'edBeat'; bb.textContent = '🥁 ' + BTS.add; bb.title = BTS.tip; bb.addEventListener('click', () => beatToggle()); $('#edAdd').before(bb); const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'btn small'; tb.id = 'edTxt'; tb.textContent = '🔤 ' + TXS.btn; tb.addEventListener('click', () => txAdd()); bb.before(tb); }
+      { const bb = document.createElement('button'); bb.type = 'button'; bb.className = 'btn small'; bb.id = 'edBeat'; bb.textContent = '🥁 ' + BTS.add; bb.title = BTS.tip; bb.addEventListener('click', () => beatToggle()); $('#edAdd').before(bb); beatAutoBtn(bb); const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'btn small'; tb.id = 'edTxt'; tb.textContent = '🔤 ' + TXS.btn; tb.addEventListener('click', () => txAdd()); bb.before(tb); }
       ed.dataset.drop = e4('drop');
       const hasFiles = (e) => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
       ed.addEventListener('dragover', (e) => { if (!hasFiles(e)) return; e.preventDefault(); e.stopPropagation(); ed.classList.add('e4drop'); });
@@ -14394,17 +14474,45 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
 
     /* --- marcas en la línea de tiempo --- */
-    function e4diamonds(el, times, toX, lo, hi, pick) {
+    function e4diamonds(el, times, toX, lo, hi, pick, mv) {
       for (const t of times) {
         if (t < lo - 1e-6 || t > hi + 1e-6) continue;
         const d = document.createElement('i'); d.className = 'e4kd'; d.style.left = toX(t) + 'px'; el.appendChild(d);
-        if (pick) { d.style.pointerEvents = 'auto'; d.style.cursor = 'pointer'; d.style.width = d.style.height = '12px'; d.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); ev.preventDefault(); pick(t); }); }
+        if (pick) {
+          d.style.pointerEvents = 'auto'; d.style.cursor = mv ? 'ew-resize' : 'pointer'; d.style.width = d.style.height = '12px';
+          d.addEventListener('pointerdown', (ev) => {
+            ev.stopPropagation(); ev.preventDefault();
+            if (!mv || ev.button !== 0) { pick(t); return; }
+            const left = el.getBoundingClientRect().left, x0 = ev.clientX; let moved = false, nt = t;
+            const pts = snapPts(mv.skip || null, { head: false }); pts.push(mv.tl(lo), mv.tl(hi));
+            const mm = (e2) => {
+              if (!moved && Math.abs(e2.clientX - x0) < 4) return;
+              moved = true; let v = mv.fromX(e2.clientX, left);
+              if (!e2.altKey) { const sn = snapNear(mv.tl(v), pts); if (sn != null) v = mv.loc(sn); }
+              nt = clampV(Math.round(v * 1000) / 1000, lo, hi); d.style.left = toX(nt) + 'px'; d.style.zIndex = 5;
+            };
+            const uu = () => {
+              window.removeEventListener('pointermove', mm); window.removeEventListener('pointerup', uu); window.removeEventListener('pointercancel', uu);
+              if (!moved) { pick(t); return; }
+              for (const ls of mv.lists()) {
+                if (!ls) continue;
+                for (const k of ls) if (Math.abs(k.t - t) < 0.0016) { k.t = nt; k.__m = 1; }
+                ls.sort((a, b) => a.t - b.t);
+                for (let i = ls.length - 1; i > 0; i--) if (Math.abs(ls[i].t - ls[i - 1].t) < 0.004) ls.splice(ls[i].__m ? i - 1 : i, 1);
+                for (const k of ls) delete k.__m;
+              }
+              changed();
+              if (mv.after) mv.after(nt);
+            };
+            window.addEventListener('pointermove', mm); window.addEventListener('pointerup', uu); window.addEventListener('pointercancel', uu);
+          });
+        }
       }
     }
     function keyTimes(kf) { const s = new Set(); if (kf) for (const p of Object.keys(kf)) for (const k of kf[p] || []) s.add(Math.round(k.t * 1000) / 1000); return [...s].sort((a, b) => a - b); }
     function edDecorate(el, c) {
       if (c.frz) { const q = document.createElement('span'); q.className = 'e4mk'; q.style.cssText = 'left:6px;right:auto;top:4px'; q.textContent = '🧊'; el.appendChild(q); }
-      e4diamonds(el, keyTimes(c.kf), (t) => ((t - c.in) / c.spd) * pps, c.in, c.out, (t) => { sel = { kind: 'clip', id: c.id }; render(); const o = layout().find((q) => q.c === c); setT(o ? o.s + (t - c.in) / c.spd : T); placeHead(true); });
+      e4diamonds(el, keyTimes(c.kf), (t) => ((t - c.in) / c.spd) * pps, c.in, c.out, (t) => { sel = { kind: 'clip', id: c.id }; render(); const o = layout().find((q) => q.c === c); setT(o ? o.s + (t - c.in) / c.spd : T); placeHead(true); }, { fromX: (cx, l) => c.in + ((cx - l) / pps) * c.spd, tl: (v) => { const o = layout().find((q) => q.c === c); return o ? o.s + (v - c.in) / c.spd : v; }, loc: (v) => { const o = layout().find((q) => q.c === c); return o ? c.in + (v - o.s) * c.spd : v; }, lists: () => Object.values(c.kf || {}) });
       if (isM(c.proj)) { const m = medOf(c.proj), b = document.createElement('span'); b.className = 'e4mk'; b.textContent = m && m.kind === 'img' ? '🖼️' : '🎬'; el.appendChild(b); el.title = nameOf(c.proj); }
     }
     function edDecoAu(el, a) {
@@ -14412,7 +14520,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const fi = Math.min(len, a.fadeIn == null ? 0.05 : a.fadeIn), fo = Math.min(len, a.fadeOut == null ? 0.1 : a.fadeOut);
       if (fi > 0.15) { const s = document.createElement('i'); s.className = 'e4fi'; s.style.width = fi * pps + 'px'; el.appendChild(s); }
       if (fo > 0.15) { const s = document.createElement('i'); s.className = 'e4fo'; s.style.width = fo * pps + 'px'; el.appendChild(s); }
-      e4diamonds(el, (a.kv || []).map((k) => k.t), (t) => (t - a.in) * pps, a.in, a.out, (t) => { sel = { kind: 'au', id: a.id }; render(); setT(a.start + (t - a.in)); placeHead(true); });
+      e4diamonds(el, (a.kv || []).map((k) => k.t), (t) => (t - a.in) * pps, a.in, a.out, (t) => { sel = { kind: 'au', id: a.id }; render(); setT(a.start + (t - a.in)); placeHead(true); }, { skip: a, fromX: (cx, l) => a.in + (cx - l) / pps, tl: (v) => a.start + (v - a.in), loc: (v) => a.in + (v - a.start), lists: () => [a.kv] });
     }
 
     /* --- panel de propiedades (derecha) --- */
@@ -14520,9 +14628,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
             } else if (key === 'c1' || key === 'c2') {
               inp = document.createElement('input'); inp.type = 'color'; inp.value = P[key];
               inp.addEventListener('input', () => { P[key] = inp.value; upd(); }); inp.addEventListener('change', () => changed());
-            } else if (key === 'tn') {
-              inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!P.tn; t.textContent = FXU.tn;
-              inp.addEventListener('change', () => { P.tn = inp.checked ? 1 : 0; changed(); });
+            } else if (key === 'tn' || key === 'mr') {
+              inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!P[key]; t.textContent = FXU[key];
+              inp.addEventListener('change', () => { P[key] = inp.checked ? 1 : 0; changed(); });
             } else {
               const R = FXR[key]; inp = document.createElement('input'); inp.type = 'range'; inp.min = R[0]; inp.max = R[1]; inp.step = R[2]; inp.value = P[key]; out.textContent = ' ' + P[key] + R[3];
               inp.addEventListener('input', () => { P[key] = +inp.value; out.textContent = ' ' + P[key] + R[3]; upd(); }); inp.addEventListener('change', () => changed());
