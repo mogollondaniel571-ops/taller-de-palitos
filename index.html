@@ -12143,7 +12143,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (Array.isArray(o.ov) && T0.ov) for (const c of o.ov.slice(0, 100)) {
         if (!c || typeof c.proj !== 'string' || c.proj.slice(0, 2) !== 'm:') continue;
         const dur = clampV(num(c.dur, 3), 0.1, 3600), i0 = Math.max(0, num(c.in, 0));
-        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), tx: c.tx ? e4tx(c.tx) : undefined, tkf: c.tx ? e4tkf(c.tkf) : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
+        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, tx: c.tx ? e4tx(c.tx) : undefined, tkf: c.tx ? e4tkf(c.tkf) : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
       }
       for (const f of Array.isArray(o.cam) ? o.cam.slice(0, 200) : []) {
         if (!f || !CAM_NAME[f.k]) continue;
@@ -12152,7 +12152,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const c of Array.isArray(o.clips) ? o.clips.slice(0, 200) : []) {
         if (!c || typeof c.proj !== 'string') continue;
         const tr = c.tr && TR_KINDS.includes(c.tr.k) ? { k: c.tr.k, d: clampV(num(c.tr.d, 0.6), 0.2, 1.3) } : null;
-        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150) });
+        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150) });
       }
       for (const f of Array.isArray(o.fx) ? o.fx.slice(0, 200) : []) {
         if (!f || !FX_NAME[f.k]) continue;
@@ -12274,11 +12274,11 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       return true;
     }
     function lastShot(c, w, h, getSc) {
-      const k = c.id + '|' + c.in + '|' + c.out + '|' + w;
+      const k = c.id + '|' + c.in + '|' + c.out + '|' + w + '|' + (c.fh | 0) + (c.fv | 0) + (c.frz | 0);
       if (lastShots.has(k)) return lastShots.get(k);
-      if (isVid(c)) return vidEnd(c, w, h, k);
+      if (isVid(c) && !c.frz) return vidEnd(c, w, h, k);
       const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-      if (!clipShot(cv.getContext('2d'), c, Math.max(c.in, c.out - 1e-4), w, h, getSc)) return null;
+      if (!clipShot(cv.getContext('2d'), c, c.frz ? c.in : Math.max(c.in, c.out - 1e-4), w, h, getSc)) return null;
       lastShots.set(k, cv);
       return cv;
     }
@@ -12335,7 +12335,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       else {
         let k = L.findIndex((o) => Tg < o.e - 1e-9);
         if (k < 0) k = L.length - 1;
-        const o = L[k], c = o.c, local = Math.min(c.out - 1e-4, c.in + Math.max(0, Tg - o.s) * c.spd);
+        const o = L[k], c = o.c, local = c.frz ? Math.min(c.out - 1e-4, c.in) : Math.min(c.out - 1e-4, c.in + Math.max(0, Tg - o.s) * c.spd);
         ok = clipShot(ax, c, local, w, h, getSc);
         const hd1 = c.tr && k > 0 ? trHalf(o, L[k - 1]) : 0;
         if (ok && hd1 > 0 && Tg - o.s < hd1) {
@@ -12490,7 +12490,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           }
           continue;
         }
-        if (isM(c.proj)) continue;
+        if (isM(c.proj) || c.frz) continue;
         const rec = recOf(c.proj);
         const items = c.proj === state.id ? audioClips : ((rec && rec.audio) || []);
         for (const it of items.slice(0, 12)) {
@@ -12567,8 +12567,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         if (x > l + w - 40 || x < l) scroll.scrollLeft = Math.max(0, x - 60);
       }
       $('#edTime').textContent = fmt(T) + ' / ' + fmt(videoEnd());
+      try { capSync(); } catch (_) {}
     }
     function syncBtns() {
+      try { extraSync(); } catch (_) {}
       const c = sel && sel.kind === 'clip' ? E.clips.find((x) => x.id === sel.id) : null;
       $('#edSplit').disabled = !c && !E.clips.length;
       $('#edSpeed').disabled = !c;
@@ -12910,7 +12912,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       sel = { kind: 'clip', id: c.id }; if (!isM(c.proj) && !isC(c.proj)) lastProj = c.proj;
       for (const x of rowV.querySelectorAll('.ed-clip.sel')) x.classList.remove('sel');
       el.classList.add('sel'); syncBtns();
-      const in0 = c.in, out0 = c.out, dmax = durOf(c.proj);
+      const in0 = c.in, out0 = c.out, dmax = c.frz ? 3600 : durOf(c.proj);
       if (part === 'm') {
         el.style.zIndex = 4;
         track(e, (dx) => { el.style.transform = 'translateX(' + dx + 'px)'; el.style.opacity = '0.85'; el.style.cursor = 'grabbing'; }, (moved, ev) => {
@@ -12926,7 +12928,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       } else {
         track(e, (dx) => {
           const dt = (dx / pps) * c.spd;
-          if (part === 'l') c.in = clampV(in0 + dt, 0, c.out - MIN * c.spd);
+          if (part === 'l') { if (!c.frz) c.in = clampV(in0 + dt, 0, c.out - MIN * c.spd); }
           else c.out = clampV(out0 + dt, c.in + MIN * c.spd, dmax);
           c.full = Math.abs(c.out - dmax) < 1e-3;
           lastShots.clear(); render(); paint();
@@ -13062,6 +13064,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (!o) { toast('Pon la línea roja encima de una escena para cortarla ahí.'); return; }
       const c = o.c, cut = c.in + (T - o.s) * c.spd;
       const b = { id: newId(), proj: c.proj, in: cut, out: c.out, spd: c.spd, tr: null, full: c.full, kf: c.kf ? JSON.parse(JSON.stringify(c.kf)) : undefined, tf: c.tf ? Object.assign({}, c.tf) : undefined, mk: c.mk, mki: c.mki, mkt: c.mkt, vol: c.vol };
+      if (c.fh) b.fh = 1; if (c.fv) b.fv = 1; if (c.frz) b.frz = 1;
       c.out = cut; c.full = false;
       E.clips.splice(E.clips.indexOf(c) + 1, 0, b);
       sel = { kind: 'clip', id: b.id }; changed();
@@ -13582,7 +13585,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (e.kind === 'img') { drawFit(x, e.el, e.el.naturalWidth, e.el.naturalHeight, w, h); return true; }
       const v = e.el; vidUsed.add(e);
       if (!edExp) {
-        if (playing) {
+        if (playing && !c.frz) {
           try { v.playbackRate = c.spd; } catch (_) {}
           if (v.paused) { try { v.currentTime = local; } catch (_) {} v.play().catch(() => {}); }
           else if (Math.abs(v.currentTime - local) > 0.3) { try { v.currentTime = local; } catch (_) {} }
@@ -13656,7 +13659,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       x.restore();
     }
-    function applyTf(x, c, local, w, h) { applyTf0(x, c, local, w, h); if (c.mk) applyMask(x, c, local, w, h); }
+    function applyTf(x, c, local, w, h) { if (c.fh || c.fv) flipCv(x, c, w, h); applyTf0(x, c, local, w, h); if (c.mk) applyMask(x, c, local, w, h); }
     // Último cuadro de un video (para la transición), buscado aparte.
     const vePend = new Set();
     async function medReady(id) { const e = medEls.get(id); if (e) return e; return (await medLoad(id)) || null; }
@@ -13780,7 +13783,6 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const lb = document.createElement('button');
       lb.type = 'button'; lb.dataset.tab = 'lay'; lb.setAttribute('aria-pressed', 'false'); lb.title = e4('lay');
       lb.innerHTML = '🧩<span></span>'; lb.querySelector('span').textContent = e4('lay');
-      const tabs = $('.ed-tabs'); tabs.insertBefore(lb, tabs.children[2] || null);
       lb.addEventListener('click', () => { libTab = 'lay'; stopLibPrev(); stopFab(); renderLib(); });
       TIPS.lay = e4('layTip');
     }
@@ -14385,6 +14387,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     }
     function keyTimes(kf) { const s = new Set(); if (kf) for (const p of Object.keys(kf)) for (const k of kf[p] || []) s.add(Math.round(k.t * 1000) / 1000); return [...s].sort((a, b) => a - b); }
     function edDecorate(el, c) {
+      if (c.frz) { const q = document.createElement('span'); q.className = 'e4mk'; q.style.cssText = 'left:6px;right:auto;top:4px'; q.textContent = '🧊'; el.appendChild(q); }
       e4diamonds(el, keyTimes(c.kf), (t) => ((t - c.in) / c.spd) * pps, c.in, c.out, (t) => { sel = { kind: 'clip', id: c.id }; render(); const o = layout().find((q) => q.c === c); setT(o ? o.s + (t - c.in) / c.spd : T); placeHead(true); });
       if (isM(c.proj)) { const m = medOf(c.proj), b = document.createElement('span'); b.className = 'e4mk'; b.textContent = m && m.kind === 'img' ? '🖼️' : '🎬'; el.appendChild(b); el.title = nameOf(c.proj); }
     }
@@ -14539,6 +14542,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       insp.append(e4h('h4', '', (m ? (m.kind === 'img' ? '🖼️ ' : '🎬 ') : '🎞️ ') + nameOf(c.proj)), e4h('small', 'ei-sub', (m ? e4(m.kind === 'img' ? 'photo' : 'video') : e4('scene')) + ' · ' + fmtSec(lenOf(c))));
       if (local == null) insp.append(e4h('p', 'ei-hint', e4('outHint')));
       if (c.tx) txInsp(c, local);
+      edMirrorUi(c);
       if (m && m.tx) { const eb = e4h('button', 'btn small', TXS.edit); eb.type = 'button'; eb.style.cssText = 'width:100%;margin-top:6px'; eb.addEventListener('click', () => txCard(m)); insp.append(eb); }
       if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m, c)); insp.append(bgb); }
       insp.append(e4h('div', 'ei-sec', e4('tf')));
@@ -14699,6 +14703,103 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const bb = mk('edBack', '', '', () => exitComp()); bb.hidden = true; bb.classList.add('e4back');
       $('#edSpeed').after(bm, bc, bu);
       const bar = $('#edSplit').parentNode; bar.insertBefore(bb, bar.firstChild);
+    }
+    const CPS = {frz: '🧊 Congelar', frzTip: 'Congela la escena donde está la línea roja (queda quieta 1 s; la puedes estirar)', frzPhoto: 'Es una foto: ya está quieta.', frzNone: 'Pon la línea roja encima de una escena.', frzDone: 'Congelado. Estira la barra para que dure más.', mir: '🪞 Espejo', mirTip: 'Refleja la imagen elegida (izquierda ↔ derecha)', mirV: '↕ Espejo vertical', mirH: '↔ Espejo', mirNone: 'Elige una escena o una foto primero.', cap: '🧩 Capas', capTip: 'Sube o baja las capas que están bajo la línea roja (se activa con 2 o más objetos)', capTitle: 'Capas: la de arriba tapa a las de abajo', capBase: 'Escena (fondo)', copied: '📋 Copiado', pasted: '📋 Pegado', nocopy: 'Elige algo primero para copiarlo.', up: 'Subir', dn: 'Bajar'};
+    const bufM = document.createElement('canvas');
+    function flipCv(x, c, w, h) {
+      const t = sized(bufM, w, h); t.setTransform(1, 0, 0, 1, 0, 0); t.globalAlpha = 1; t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, w, h); t.drawImage(x.canvas, 0, 0);
+      x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = 'copy'; x.translate(c.fh ? w : 0, c.fv ? h : 0); x.scale(c.fh ? -1 : 1, c.fv ? -1 : 1); x.drawImage(bufM, 0, 0); x.restore();
+    }
+    const edTarget = () => { if (!sel) return null; if (sel.kind === 'ov') return (E.ov || []).find((x) => x.id === sel.id) || null; if (sel.kind === 'clip') return E.clips.find((x) => x.id === sel.id) || null; return null; };
+    function edMirror(axis) {
+      const c = edTarget(); if (!c) { toast(CPS.mirNone); return; }
+      if (axis === 'v') { if (c.fv) delete c.fv; else c.fv = 1; } else { if (c.fh) delete c.fh; else c.fh = 1; }
+      lastShots.clear(); changed();
+    }
+    function edMirrorUi(c) {
+      const r = e4h('div', 'ei-row'); r.style.cssText = 'display:flex;gap:6px;margin:6px 0';
+      const b1 = e4h('button', 'btn small' + (c.fh ? ' on' : ''), CPS.mirH), b2 = e4h('button', 'btn small' + (c.fv ? ' on' : ''), CPS.mirV); b1.type = b2.type = 'button'; b1.style.flex = b2.style.flex = '1';
+      b1.addEventListener('click', () => edMirror('h')); b2.addEventListener('click', () => edMirror('v')); r.append(b1, b2); insp.append(r);
+    }
+    function edFreeze() {
+      const L = layout(), o = L.find((q) => T > q.s + 0.02 && T < q.e - 0.02) || L.find((q) => T >= q.s && T < q.e);
+      if (!o) { toast(CPS.frzNone); return; }
+      const c = o.c, m = isM(c.proj) ? medOf(c.proj) : null;
+      if (m && m.kind === 'img') { toast(CPS.frzPhoto); return; }
+      const cut = Math.min(c.out - 1e-3, c.in + Math.max(0, T - o.s) * c.spd), cl = (v) => JSON.parse(JSON.stringify(v));
+      const F = cl(c), B2 = cl(c); F.id = newId(); B2.id = newId();
+      F.in = cut; F.out = cut + 1; F.spd = 1; F.frz = 1; F.tr = null; F.full = false; B2.in = cut; B2.tr = null;
+      c.out = cut; c.full = false;
+      E.clips.splice(E.clips.indexOf(c) + 1, 0, F, B2);
+      sel = { kind: 'clip', id: F.id }; lastShots.clear(); changed(); toast(CPS.frzDone);
+    }
+    let edClip = null;
+    function edCopy() {
+      if (!sel) { toast(CPS.nocopy); return false; }
+      const list = sel.kind === 'clip' ? E.clips : lanesOf(sel.kind, E), o = list.find((x) => x.id === sel.id);
+      if (!o) { toast(CPS.nocopy); return false; }
+      edClip = { kind: sel.kind, o: JSON.parse(JSON.stringify(o)) }; toast(CPS.copied); return true;
+    }
+    function edPaste() {
+      if (!edClip) { toast(CPS.nocopy); return; }
+      const o = JSON.parse(JSON.stringify(edClip.o)); o.id = newId();
+      if (edClip.kind === 'clip') {
+        o.tr = null; const L = layout(); let idx = E.clips.length; const k = L.findIndex((q) => T < (q.s + q.e) / 2); if (k >= 0) idx = k;
+        E.clips.splice(idx, 0, o); sel = { kind: 'clip', id: o.id };
+      } else {
+        o.start = Math.max(0, T); if (edClip.kind === 'au') o.src = edClip.o.src || edClip.o.id;
+        const lst = lanesOf(edClip.kind, E); lst.push(o); sel = { kind: edClip.kind, id: o.id };
+      }
+      lastShots.clear(); changed(); toast(CPS.pasted);
+    }
+    const ovNow = () => (E.ov || []).map((o, i) => ({ o, i })).filter((q) => T >= q.o.start - 1e-6 && T < q.o.start + q.o.dur).sort((a, b) => ((b.o.tk | 0) - (a.o.tk | 0)) || (b.i - a.i)).map((q) => q.o);
+    function capSync() {
+      const b = $('#edLay'); if (!b) return; const n = ovNow().length; b.disabled = n < 2;
+      if (n < 2 && capBox) capClose();
+    }
+    function extraSync() {
+      const t = edTarget(), m = $('#edMir'); if (m) m.disabled = !t;
+      const f = $('#edFrz'); if (f) f.disabled = !E.clips.length;
+      capSync();
+    }
+    let capBox = null;
+    function capClose() { if (capBox) { capBox.remove(); capBox = null; } }
+    function capOpen() {
+      capClose();
+      const ord = ovNow(); if (ord.length < 2) return;
+      const bx = document.createElement('div'); capBox = bx;
+      const r = $('#edLay').getBoundingClientRect();
+      bx.style.cssText = 'position:fixed;z-index:99998;left:' + Math.max(8, Math.min(innerWidth - 300, r.left)) + 'px;bottom:' + (innerHeight - r.top + 6) + 'px;width:290px;max-height:60vh;overflow:auto;background:#1c1e30;border:1px solid #3a3f5c;border-radius:12px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);color:#eee;font-size:0.82rem';
+      bx.append(e4h('div', '', CPS.capTitle));
+      bx.firstChild.style.cssText = 'font-weight:700;margin:2px 4px 8px';
+      ord.forEach((o, k) => {
+        const m = medOf(o.proj), row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 4px;border-radius:8px;cursor:pointer' + (sel && sel.id === o.id ? ';background:#2c2f4a' : '');
+        const th = document.createElement('span'); th.style.cssText = 'width:34px;height:34px;border-radius:6px;background:#2a2d44 center/cover no-repeat;flex:none;display:flex;align-items:center;justify-content:center'; if (m && m.thumb) th.style.backgroundImage = 'url("' + m.thumb + '")'; else th.textContent = o.tx ? '🔤' : '🖼️';
+        const nm = document.createElement('span'); nm.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; nm.textContent = o.tx ? '🔤 ' + o.tx.t.replace(/\s+/g, ' ').slice(0, 24) : ((m && m.name) || '…');
+        const mkb = (t, tip, fn, dis) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.textContent = t; b.title = tip; b.disabled = !!dis; b.addEventListener('click', (ev) => { ev.stopPropagation(); fn(); }); return b; };
+        const up = ord[k - 1], dn = ord[k + 1], swap = (q) => { const t0 = o.tk | 0; o.tk = q.tk | 0; q.tk = t0; if ((o.tk | 0) === (q.tk | 0)) { o.tk = (q.tk | 0) + (q === up ? 1 : -1); } lastShots.clear(); changed(); capOpen(); };
+        row.append(th, nm, mkb('▲', CPS.up, () => swap(up), !up), mkb('▼', CPS.dn, () => swap(dn), !dn));
+        row.addEventListener('click', () => { sel = { kind: 'ov', id: o.id }; render(); capOpen(); });
+        bx.appendChild(row);
+      });
+      const base = document.createElement('div'); base.style.cssText = 'padding:6px 4px;opacity:.7;border-top:1px solid #3a3f5c;margin-top:6px'; base.textContent = '🎞️ ' + CPS.capBase; bx.appendChild(base);
+      document.body.appendChild(bx);
+    }
+    window.addEventListener('pointerdown', (e) => { if (capBox && !capBox.contains(e.target) && e.target.id !== 'edLay') capClose(); }, true);
+    window.addEventListener('keydown', (e) => {
+      if (!isOpen || !$('#edExpBox').hidden) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'c') { e.preventDefault(); e.stopImmediatePropagation(); edCopy(); }
+      else if (k === 'v') { e.preventDefault(); e.stopImmediatePropagation(); edPaste(); }
+      else if (k === 'x') { e.preventDefault(); e.stopImmediatePropagation(); if (edCopy()) del(); }
+    }, true);
+    {
+      const mk = (id, txt, tip, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.id = id; b.textContent = txt; b.title = tip; b.addEventListener('click', fn); return b; };
+      const bf = mk('edFrz', CPS.frz, CPS.frzTip, edFreeze), bm = mk('edMir', CPS.mir, CPS.mirTip, () => edMirror('h')), bl = mk('edLay', CPS.cap, CPS.capTip, () => { if (capBox) capClose(); else capOpen(); });
+      $('#edSplit').after(bf, bm, bl);
+      bl.disabled = true;
     }
     $('#btnEditor').addEventListener('click', openEd);
     // teclas del editor (no llegan al animador)
