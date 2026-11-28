@@ -13196,6 +13196,21 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       track(e, (dx, ev) => go(ev), () => {});
     }
     ruler.addEventListener('pointerdown', scrubDown);
+    /* v81-home */
+    {
+      const goHome = () => { stop(); setT(0); scroll.scrollLeft = 0; };
+      const hb = document.createElement('button'); hb.type = 'button'; hb.className = 'btn small'; hb.id = 'edHome'; hb.textContent = '⏮'; hb.title = 'Go to start (Home)'; hb.setAttribute('aria-label', 'Go to start (Home)');
+      hb.addEventListener('click', goHome); const tm = $('#edTime'); tm.parentNode.insertBefore(hb, tm);
+      $('.ed-tl').addEventListener('wheel', (e) => {
+        if (e.ctrlKey) return;
+        const onRuler = e.target === ruler || ruler.contains(e.target);
+        if (e.shiftKey || onRuler || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { e.preventDefault(); scroll.scrollLeft += (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY); }
+      }, { passive: false });
+      window.addEventListener('keydown', (e) => {
+        if (!isOpen || e.key !== 'Home' || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
+        e.preventDefault(); goHome();
+      }, true);
+    }
     for (const r of [rowV, rowO, rowF, rowC, rowA]) r.addEventListener('pointerdown', (e) => { if (e.target === r) { sel = null; render(); scrubDown(e); } });
     function zoomTo(np, anchorX) {
       const ax = anchorX == null ? scroll.clientWidth / 2 : anchorX;
