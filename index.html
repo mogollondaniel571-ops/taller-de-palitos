@@ -12442,7 +12442,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       else ctx.drawImage(ax.canvas, sx + cx - ((zz - 1) * w) / 2, sy + cy - ((zz - 1) * h) / 2, w * zz, h * zz);
       if (flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + flash.toFixed(3) + ')'; ctx.fillRect(0, 0, w, h); }
       ctx.restore();
-      if (!depth && playing && !edExp) for (const o of medEls.values()) if (o.kind === 'vid' && !vidUsed.has(o) && !o.el.paused) o.el.pause();
+      if (!depth && playing && !edExp) for (const o of medEls.values()) if (o.kind === 'vid') for (const vv of [o.el, o.ov]) if (vv && !vidUsed.has(vv) && !vv.paused) vv.pause();
       return ok;
     }
     function previewSize() { const [rw, rh] = resWH(), k = Math.min(1, 960 / Math.max(rw, rh)); return [Math.round(rw * k), Math.round(rh * k)]; }
@@ -13837,12 +13837,17 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (sw && sh) { const k = Math.min(w / sw, h / sh), dw = sw * k, dh = sh * k; try { x.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh); } catch (_) {} }
       x.restore();
     }
+    /* v81-ovvid: las superposiciones usan su propio reproductor para no pelearse con el de la línea principal */
+    function ovVid(e) {
+      if (!e.ov) { const n = document.createElement('video'); n.muted = true; n.playsInline = true; n.preload = 'auto'; n.src = e.url; n.addEventListener('seeked', () => { if (isOpen && !playing && !edExp) paint(); }); e.ov = n; }
+      return e.ov;
+    }
     function mediaShot(x, c, local, w, h) {
       if (c.tx) { txPaintClip(x, c, local, w, h); return true; }
       const e = medEl(c.proj.slice(2));
       if (!medOf(c.proj) || !e) { placeholder(x, w, h, '…'); return false; }
       if (e.kind === 'img') { drawFit(x, e.el, e.el.naturalWidth, e.el.naturalHeight, w, h); return true; }
-      const v = e.el; vidUsed.add(e);
+      const v = ovT ? ovVid(e) : e.el; vidUsed.add(v);
       if (v.readyState >= 1 && !v.videoWidth) { placeholder(x, w, h, HVS.ph); if (!e.warned) { e.warned = true; hevcCard(); } return false; }
       if (!edExp) {
         if (playing && !c.frz) {
@@ -13966,7 +13971,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const o of (E.ov || [])) {
         if (t < o.start || t >= o.start + o.dur) continue;
         const e = await medReady(o.proj.slice(2));
-        if (e && e.kind === 'vid') await seekV(e.el, Math.min(o.in + (t - o.start), Math.max(0, (e.dur || 1) - 0.05)));
+        if (e && e.kind === 'vid') await seekV(ovVid(e), Math.min(o.in + (t - o.start), Math.max(0, (e.dur || 1) - 0.05)));
       }
     }
     // Sonido de los videos (solo a velocidad normal).
@@ -13983,7 +13988,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
     }
     // Para dejar de reproducir también los videos.
-    { const st0 = stop; stop = function () { st0(); for (const e of medEls.values()) if (e.kind === 'vid' && !e.el.paused) e.el.pause(); if (isOpen) edInsp(); }; }
+    { const st0 = stop; stop = function () { st0(); for (const e of medEls.values()) if (e.kind === 'vid') { if (!e.el.paused) e.el.pause(); if (e.ov && !e.ov.paused) e.ov.pause(); } if (isOpen) edInsp(); }; }
 
     /* --- importar --- */
     const medFile = document.createElement('input');
