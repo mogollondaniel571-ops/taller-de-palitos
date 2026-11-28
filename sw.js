@@ -1,5 +1,5 @@
 // Stickman Workshop: funciona sin internet. Cambia VERSION en cada actualización.
-const VERSION = 'tp-v89';
+const VERSION = 'tp-v90';
 const CORE = ['./', 'index.html', 'en.html', 'ja.html', 'zh.html', 'fr.html', 'manifest.webmanifest', 'privacidad.html', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));

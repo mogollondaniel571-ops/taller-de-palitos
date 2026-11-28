@@ -12204,7 +12204,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (Array.isArray(o.ov) && T0.ov) for (const c of o.ov.slice(0, 100)) {
         if (!c || typeof c.proj !== 'string' || c.proj.slice(0, 2) !== 'm:') continue;
         const dur = clampV(num(c.dur, 3), 0.1, 3600), i0 = Math.max(0, num(c.in, 0));
-        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, tx: c.tx ? e4tx(c.tx) : undefined, tkf: c.tx ? e4tkf(c.tkf) : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
+        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, rev: c.rev ? 1 : undefined, cr: e4cr(c.cr), tx: c.tx ? e4tx(c.tx) : undefined, tkf: c.tx ? e4tkf(c.tkf) : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
       }
       for (const f of Array.isArray(o.cam) ? o.cam.slice(0, 200) : []) {
         if (!f || !CAM_NAME[f.k]) continue;
@@ -12213,7 +12213,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const c of Array.isArray(o.clips) ? o.clips.slice(0, 200) : []) {
         if (!c || typeof c.proj !== 'string') continue;
         const tr = c.tr && TR_KINDS.includes(c.tr.k) ? { k: c.tr.k, d: clampV(num(c.tr.d, 0.6), 0.2, 1.3) } : null;
-        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150), afi: c.afi == null ? undefined : clampV(num(c.afi, 0), 0, 10), afo: c.afo == null ? undefined : clampV(num(c.afo, 0), 0, 10) });
+        T0.clips.push({ id: String(c.id || newId()), proj: c.proj, in: Math.max(0, num(c.in, 0)), out: Math.max(0, num(c.out, 1)), spd: SPDS.includes(+c.spd) ? +c.spd : 1, tr, full: !!c.full, kf: e4kf(c.kf), tf: e4tf(c.tf), fh: c.fh ? 1 : undefined, fv: c.fv ? 1 : undefined, frz: c.frz ? 1 : undefined, mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, vol: c.vol == null ? undefined : clampV(num(c.vol, 100), 0, 150), afi: c.afi == null ? undefined : clampV(num(c.afi, 0), 0, 10), afo: c.afo == null ? undefined : clampV(num(c.afo, 0), 0, 10), rev: c.rev ? 1 : undefined, cr: e4cr(c.cr) });
       }
       for (const f of Array.isArray(o.fx) ? o.fx.slice(0, 200) : []) {
         if (!f || !FX_NAME[f.k]) continue;
@@ -12374,7 +12374,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const list = TL.ov.filter((o) => !o.hid && Tg >= o.start && Tg < o.start + o.dur).sort((a, b) => (a.tk | 0) - (b.tk | 0));
       for (const o of list) {
         const e = o.tx ? { kind: 'img' } : medEl(o.proj.slice(2)); if (!e) continue;
-        let local = o.in + (Tg - o.start);
+        let local = o.rev ? Math.max(o.in, o.out - 1e-3 - (Tg - o.start)) : o.in + (Tg - o.start);
         if (e.kind === 'vid') local = Math.min(local, Math.max(0, (e.dur || local) - 0.05));
         const ox = sized(bufO, w, h); ox.setTransform(1, 0, 0, 1, 0, 0); ox.globalAlpha = 1; ox.clearRect(0, 0, w, h);
         ovT = true;
@@ -12406,7 +12406,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       else {
         let k = L.findIndex((o) => Tg < o.e - 1e-9);
         if (k < 0) k = L.length - 1;
-        const o = L[k], c = o.c, local = c.frz ? Math.min(c.out - 1e-4, c.in) : Math.min(c.out - 1e-4, c.in + Math.max(0, Tg - o.s) * c.spd);
+        const o = L[k], c = o.c, local = c.frz ? Math.min(c.out - 1e-4, c.in) : c.rev ? Math.max(c.in, c.out - 1e-3 - Math.max(0, Tg - o.s) * c.spd) : Math.min(c.out - 1e-4, c.in + Math.max(0, Tg - o.s) * c.spd);
         ok = clipShot(ax, c, local, w, h, getSc);
         const hd1 = c.tr && k > 0 ? trHalf(o, L[k - 1]) : 0;
         if (ok && hd1 > 0 && Tg - o.s < hd1) {
@@ -12970,7 +12970,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function leafProjs(TL, t, set, d) {
       const L = layout(TL); if (!L.length) return;
       let k = L.findIndex((o) => t < o.e - 1e-9); if (k < 0) k = L.length - 1;
-      const o = L[k], c = o.c, local = Math.min(c.out - 1e-4, c.in + Math.max(0, t - o.s) * c.spd);
+      const o = L[k], c = o.c, local = c.rev ? Math.max(c.in, c.out - 1e-3 - Math.max(0, t - o.s) * c.spd) : Math.min(c.out - 1e-4, c.in + Math.max(0, t - o.s) * c.spd);
       leafAdd(c, local, set, d);
       if (c.tr && k > 0 && t - o.s < trHalf(o, L[k - 1])) { const p = L[k - 1].c; leafAdd(p, Math.max(p.in, p.out - 1e-4), set, d); }
       if (L[k + 1] && L[k + 1].c.tr && t >= L[k + 1].s - trHalf(L[k + 1], o)) leafAdd(L[k + 1].c, L[k + 1].c.in, set, d);
@@ -13400,10 +13400,11 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (edSplitAudio()) return;
       const L = layout(), o = L.find((q) => T > q.s + 0.02 && T < q.e - 0.02);
       if (!o) { toast('Put the red line over a scene to cut it there.'); return; }
-      const c = o.c, cut = c.in + (T - o.s) * c.spd;
+      const c = o.c, cut = c.rev ? c.out - (T - o.s) * c.spd : c.in + (T - o.s) * c.spd;
       const b = { id: newId(), proj: c.proj, in: cut, out: c.out, spd: c.spd, tr: null, full: c.full, kf: c.kf ? JSON.parse(JSON.stringify(c.kf)) : undefined, tf: c.tf ? Object.assign({}, c.tf) : undefined, mk: c.mk, mki: c.mki, mkt: c.mkt, vol: c.vol };
-      if (c.fh) b.fh = 1; if (c.fv) b.fv = 1; if (c.frz) b.frz = 1;
-      c.out = cut; c.full = false;
+      if (c.fh) b.fh = 1; if (c.fv) b.fv = 1; if (c.frz) b.frz = 1; if (c.cr) b.cr = c.cr.slice(); if (c.afo != null) { b.afo = c.afo; delete c.afo; }
+      if (c.rev) { b.rev = 1; b.in = c.in; b.out = cut; c.in = cut; } else { c.out = cut; }
+      c.full = false;
       E.clips.splice(E.clips.indexOf(c) + 1, 0, b);
       sel = { kind: 'clip', id: b.id }; changed();
       toast('✂️ Scene cut at ' + fmt(T) + '.');
@@ -13844,6 +13845,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     const isM = (p) => typeof p === 'string' && p.slice(0, 2) === 'm:';
     const medOf = (p) => (E.media || []).find((m) => 'm:' + m.id === p) || null;
     function mDur(p) { const m = medOf(p); return !m ? 0 : m.kind === 'img' ? 3600 : Math.max(MIN, m.dur || 1); }
+    function e4cr(a) { if (!Array.isArray(a) || a.length !== 4) return undefined; const r = a.map((v) => clampV(Math.round(isFinite(+v) ? +v : 0), 0, 45)); return r.every((q) => !q) ? undefined : r; }
     function e4media(a) {
       if (!Array.isArray(a)) return [];
       return a.filter((m) => m && typeof m.id === 'string' && (m.kind === 'img' || m.kind === 'vid' || m.kind === 'au')).slice(0, 300)
@@ -13912,10 +13914,10 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       return pr;
     }
     function medEl(id) { const e = medEls.get(id); if (!e) medLoad(id); return e || null; }
-    function drawFit(x, src, sw, sh, w, h) {
+    function drawFit(x, src, sw, sh, w, h, cr) {
       x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1;
       if (ovT) x.clearRect(0, 0, w, h); else { x.fillStyle = '#000000'; x.fillRect(0, 0, w, h); }
-      if (sw && sh) { const k = Math.min(w / sw, h / sh), dw = sw * k, dh = sh * k; try { x.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh); } catch (_) {} }
+      if (sw && sh) { let sx = 0, sy = 0, cw = sw, ch = sh; if (cr) { sx = sw * cr[0] / 100; sy = sh * cr[1] / 100; cw = Math.max(1, sw * (1 - (cr[0] + cr[2]) / 100)); ch = Math.max(1, sh * (1 - (cr[1] + cr[3]) / 100)); } const k = Math.min(w / cw, h / ch), dw = cw * k, dh = ch * k; try { x.drawImage(src, sx, sy, cw, ch, (w - dw) / 2, (h - dh) / 2, dw, dh); } catch (_) {} }
       x.restore();
     }
     /* v81-ovvid: las superposiciones usan su propio reproductor para no pelearse con el de la línea principal */
@@ -13927,11 +13929,11 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (c.tx) { txPaintClip(x, c, local, w, h); return true; }
       const e = medEl(c.proj.slice(2));
       if (!medOf(c.proj) || !e) { placeholder(x, w, h, '…'); return false; }
-      if (e.kind === 'img') { drawFit(x, e.el, e.el.naturalWidth, e.el.naturalHeight, w, h); return true; }
+      if (e.kind === 'img') { drawFit(x, e.el, e.el.naturalWidth, e.el.naturalHeight, w, h, c.cr); return true; }
       const v = ovT ? ovVid(e) : e.el; vidUsed.add(v);
       if (v.readyState >= 1 && !v.videoWidth) { placeholder(x, w, h, HVS.ph); if (!e.warned) { e.warned = true; hevcCard(); } return false; }
       if (!edExp) {
-        if (playing && !c.frz) {
+        if (playing && !c.frz && !c.rev) {
           try { v.playbackRate = c.spd; } catch (_) {}
           if (v.paused) { try { v.currentTime = local; } catch (_) {} v.play().catch(() => {}); }
           else if (Math.abs(v.currentTime - local) > 0.3) { try { v.currentTime = local; } catch (_) {} }
@@ -13940,7 +13942,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           if (Math.abs(v.currentTime - local) > 0.02 && !v.seeking) { try { v.currentTime = local; } catch (_) {} }
         }
       }
-      drawFit(x, v, v.videoWidth, v.videoHeight, w, h);
+      drawFit(x, v, v.videoWidth, v.videoHeight, w, h, c.cr);
       return true;
     }
     // Zoom, posición, giro y opacidad del clip (con ◆) sobre fondo negro.
@@ -14038,7 +14040,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       let k = L.findIndex((o) => t < o.e - 1e-9);
       if (k < 0) k = L.length - 1;
       if (k < 0) return;
-      const o = L[k], c = o.c, local = Math.min(c.out - 1e-4, c.in + Math.max(0, t - o.s) * c.spd);
+      const o = L[k], c = o.c, local = c.rev ? Math.max(c.in, c.out - 1e-3 - Math.max(0, t - o.s) * c.spd) : Math.min(c.out - 1e-4, c.in + Math.max(0, t - o.s) * c.spd);
       if (isM(c.proj)) {
         const e = await medReady(c.proj.slice(2));
         if (e && e.kind === 'vid') await seekV(e.el, local);
@@ -14052,7 +14054,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       for (const o of (E.ov || [])) {
         if (t < o.start || t >= o.start + o.dur) continue;
         const e = await medReady(o.proj.slice(2));
-        if (e && e.kind === 'vid') await seekV(ovVid(e), Math.min(o.in + (t - o.start), Math.max(0, (e.dur || 1) - 0.05)));
+        if (e && e.kind === 'vid') await seekV(ovVid(e), Math.min(o.rev ? Math.max(o.in, o.out - 1e-3 - (t - o.start)) : o.in + (t - o.start), Math.max(0, (e.dur || 1) - 0.05)));
       }
     }
     // Sonido de los videos (solo a velocidad normal).
@@ -14065,6 +14067,13 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const b = await bufOf(id);
         if (!b) { noAud.add(id); continue; }
         if (c.out - c.in < 0.03) continue;
+        if (c.rev) {
+          const sr = b.sampleRate, s0 = Math.floor(c.in * sr), s1 = Math.min(b.length, Math.floor(c.out * sr)), n = Math.max(1, s1 - s0);
+          const rb = new AudioBuffer({ length: n, numberOfChannels: b.numberOfChannels, sampleRate: sr });
+          for (let ch = 0; ch < b.numberOfChannels; ch++) { const sc = b.getChannelData(ch), ds = rb.getChannelData(ch); for (let i = 0; i < n; i++) ds[i] = sc[s1 - 1 - i] || 0; }
+          out.push({ buffer: rb, start: o.s, gain: vol / 100, in: 0, out: rb.duration, fadeIn: c.afi == null ? 0.02 : c.afi, fadeOut: c.afo == null ? 0.03 : c.afo });
+          continue;
+        }
         out.push({ buffer: b, start: o.s, gain: vol / 100, in: c.in, out: Math.min(c.out, b.duration), fadeIn: c.afi == null ? 0.02 : c.afi, fadeOut: c.afo == null ? 0.03 : c.afo });
       }
     }
@@ -14979,6 +14988,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (local == null) insp.append(e4h('p', 'ei-hint', e4('outHint')));
       if (c.tx) txInsp(c, local);
       edMirrorUi(c);
+      if (m && !m.tx && !c.tx) edRevCrop(c, m, local);
       if (m && m.tx) { const eb = e4h('button', 'btn small', TXS.edit); eb.type = 'button'; eb.style.cssText = 'width:100%;margin-top:6px'; eb.addEventListener('click', () => txCard(m)); insp.append(eb); }
       if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m, c)); insp.append(bgb); }
       insp.append(e4h('div', 'ei-sec', e4('tf')));
@@ -15160,10 +15170,22 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const b1 = e4h('button', 'btn small' + (c.fh ? ' on' : ''), CPS.mirH), b2 = e4h('button', 'btn small' + (c.fv ? ' on' : ''), CPS.mirV); b1.type = b2.type = 'button'; b1.style.flex = b2.style.flex = '1';
       b1.addEventListener('click', () => edMirror('h')); b2.addEventListener('click', () => edMirror('v')); r.append(b1, b2); insp.append(r);
     }
+    /* v81-rev */
+    function edRevCrop(c, m, local) {
+      if (m.kind === 'vid') {
+        const rb = e4h('button', 'btn small' + (c.rev ? ' on' : ''), c.rev ? '⏪ Undo reverse' : '⏪ Reverse'); rb.type = 'button'; rb.style.cssText = 'width:100%;margin:6px 0 0';
+        rb.addEventListener('click', () => { if (c.rev) delete c.rev; else c.rev = 1; lastShots.clear(); changed(); });
+        insp.append(rb);
+      }
+      insp.append(e4h('div', 'ei-sec', 'Crop'));
+      const g = (i) => (c.cr ? c.cr[i] : 0), st = (i, v) => { const a = c.cr ? c.cr.slice() : [0, 0, 0, 0]; a[i] = v; if (a.every((q) => !q)) delete c.cr; else c.cr = a; };
+      [['Left', 0], ['Top', 1], ['Right', 2], ['Bottom', 3]].forEach(([lb, i]) => insp.append(kRow(lb, 0, 45, 1, '%', { audio: true, base: () => g(i), set: (v) => st(i, v) }, local)));
+    }
     function edFreeze() {
       const L = layout(), o = L.find((q) => T > q.s + 0.02 && T < q.e - 0.02) || L.find((q) => T >= q.s && T < q.e);
       if (!o) { toast(CPS.frzNone); return; }
       const c = o.c, m = isM(c.proj) ? medOf(c.proj) : null;
+      if (c.rev) { toast('Undo the reverse first to freeze.'); return; }
       if (m && m.kind === 'img') { toast(CPS.frzPhoto); return; }
       const cut = Math.min(c.out - 1e-3, c.in + Math.max(0, T - o.s) * c.spd), cl = (v) => JSON.parse(JSON.stringify(v));
       const F = cl(c); F.id = newId();
