@@ -556,6 +556,7 @@ body.no-tracks .ftr, body.no-tracks .tl-lab { display: none; }
 .ed-it .tx small { color: #8b90a6; font-size: 0.66rem; }
 .ed-it .pl { flex: none; width: 1.7rem; height: 1.7rem; border-radius: 6px; border: 1px solid #343849; background: #12131b; color: #fff; cursor: pointer; padding: 0; }
 .ed-it.act { cursor: pointer; background: #232640; }
+.ed-it.fdrop { outline: 2px dashed var(--accent, #8b7cf6); outline-offset: -2px; background: #2c3050; }
 .ed-ghost { position: fixed; z-index: 300; pointer-events: none; padding: 0.4rem 0.7rem; border-radius: 8px; background: var(--accent); color: #fff; font: 700 0.8rem/1 var(--font-body); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); transform: translate(-50%, -130%); white-space: nowrap; }
 .ed-tl.drop .ed-scroll { outline: 2px dashed #fff; outline-offset: -2px; }
 #ed[hidden] { display: none; }
@@ -11921,14 +11922,16 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function efxLines(ax, w, h, a) { ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.fillStyle = 'rgba(0,0,0,' + a + ')'; for (let y = 0; y < h; y += 4) ax.fillRect(0, y, w, 2); ax.restore(); }
 
     const FXD = {
-      shk: { fx: 40, fy: 40, sp: 14, zm: 8, rt: 3, fl: 0, sd: 7, sm: 0, cv: 0 },
+      shk: { fz: 40, fx: 40, fy: 40, hz: 2.5, zm: 8, rt: 3, fl: 0, sd: 7, orb: 35, jl: 25, cv: 0 },
       ghost: { gz: 60, gw: 100, gh: 100, n: 2, op: 70, rp: 1, c1: '#00e5ff', c2: '#ff2bd6', tn: 1, gl: 60 }
     };
-    const FXR = { fx: [0, 100, 1, '%'], fy: [0, 100, 1, '%'], sp: [2, 40, 1, '/s'], zm: [0, 40, 1, '%'], rt: [0, 15, 0.5, '°'], fl: [0, 100, 1, '%'], sd: [1, 99, 1, ''], sm: [0, 100, 1, '%'],
+    const FXR = { fx: [0, 100, 1, '%'], fy: [0, 100, 1, '%'], fz: [0, 100, 1, '%'], hz: [0.5, 12, 0.1, ' Hz'], orb: [0, 100, 1, '%'], jl: [0, 100, 1, '%'], zm: [0, 40, 1, '%'], rt: [0, 15, 0.5, '°'], fl: [0, 100, 1, '%'], sd: [1, 99, 1, ''], sm: [0, 100, 1, '%'],
       gz: [10, 200, 1, '%'], gw: [20, 300, 1, '%'], gh: [20, 300, 1, '%'], n: [1, 4, 1, ''], op: [10, 100, 1, '%'], rp: [1, 6, 1, 'x'], gl: [0, 100, 1, '%'] };
-    const FXO = { shk: ['fx', 'fy', 'sp', 'zm', 'rt', 'fl', 'sm', 'sd', 'cv'], ghost: ['gz', 'gw', 'gh', 'n', 'op', 'rp', 'c1', 'c2', 'tn', 'gl'] };
-    const FXU = {fx: 'Fuerza X', fy: 'Fuerza Y', sp: 'Velocidad', zm: 'Zoom que late', rt: 'Inclinación', fl: 'Destello', sd: 'Semilla', sm: 'Suavidad', cv: 'Curva', cv0: 'Constante', cv1: 'Sube', cv2: 'Baja', cv3: 'Golpe que se calma', gz: 'Cuánto crece', gw: 'Estirar ancho', gh: 'Estirar alto', n: 'Fantasmas', op: 'Opacidad', rp: 'Repeticiones', c1: 'Color 1', c2: 'Color 2', tn: 'Teñir con color', gl: 'Brillo neón', reset: 'Valores por defecto'};
+    const FXO = { shk: ['fz', 'hz'], ghost: ['gz', 'gw', 'gh', 'n', 'op', 'rp', 'c1', 'c2', 'tn', 'gl'] };
+    const FXU = {fx: 'Fuerza X', fy: 'Fuerza Y', sp: 'Velocidad', zm: 'Zoom que late', rt: 'Inclinación', fl: 'Destello', sd: 'Semilla', sm: 'Suavidad', cv: 'Curva', hz: 'Velocidad', orb: 'Órbita (movimiento redondo)', jl: 'Golpes fuertes', fz: 'Fuerza', cv0: 'Constante', cv1: 'Sube', cv2: 'Baja', cv3: 'Golpe que se calma', gz: 'Cuánto crece', gw: 'Estirar ancho', gh: 'Estirar alto', n: 'Fantasmas', op: 'Opacidad', rp: 'Repeticiones', c1: 'Color 1', c2: 'Color 2', tn: 'Teñir con color', gl: 'Brillo neón', reset: 'Valores por defecto'};
     function fxp(f) { const d = FXD[f.k]; if (!d) return null; if (!f.p) f.p = {}; for (const k of Object.keys(d)) if (f.p[k] == null) f.p[k] = d[k]; return f.p; }
+    const FXK = new Set(['fz','fx','fy','zm','rt','fl','orb','jl','gz','gw','gh','op','gl']);
+    function fxv(f, loc) { const P = fxp(f); if (!f.kf) return P; const o = Object.assign({}, P); for (const k of Object.keys(f.kf)) if (FXK.has(k) && f.kf[k] && f.kf[k].length) o[k] = kfAt(f.kf[k], loc, P[k]); return o; }
     const fxCurve = (cv, u) => cv === 1 ? u : cv === 2 ? 1 - u : cv === 3 ? Math.pow(1 - u, 2.2) : 1;
     const fxSm = (x) => x * x * (3 - 2 * x);
     function fxNoise(sd, tau, sm, ax) {
@@ -12121,7 +12124,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (Array.isArray(o.ov) && T0.ov) for (const c of o.ov.slice(0, 100)) {
         if (!c || typeof c.proj !== 'string' || c.proj.slice(0, 2) !== 'm:') continue;
         const dur = clampV(num(c.dur, 3), 0.1, 3600), i0 = Math.max(0, num(c.in, 0));
-        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined });
+        T0.ov.push({ id: String(c.id || newId()), proj: c.proj, start: Math.max(0, num(c.start, 0)), dur, in: i0, out: i0 + dur, spd: 1, tk: clampV(num(c.tk, 0) | 0, 0, 7), kf: e4kf(c.kf), tf: e4tf(c.tf), mk: MKS.includes(c.mk) ? c.mk : undefined, mki: c.mki ? 1 : undefined, mkt: typeof c.mkt === 'string' ? c.mkt.slice(0, 24) : undefined, mc: /^#[0-9a-f]{6}$/i.test(c.mc || '') ? c.mc : undefined, fs: c.fs ? 1 : undefined, hid: c.hid ? 1 : undefined, gh: e4gh(c.gh) });
       }
       for (const f of Array.isArray(o.cam) ? o.cam.slice(0, 200) : []) {
         if (!f || !CAM_NAME[f.k]) continue;
@@ -12134,7 +12137,14 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       for (const f of Array.isArray(o.fx) ? o.fx.slice(0, 200) : []) {
         if (!f || !FX_NAME[f.k]) continue;
-        T0.fx.push({ id: String(f.id || newId()), k: f.k, start: Math.max(0, num(f.start, 0)), dur: clampV(num(f.dur, 0.5), 0.05, 600), tk: clampV(num(f.tk, 0) | 0, 0, 7) });
+        {
+          const nf = { id: String(f.id || newId()), k: f.k, start: Math.max(0, num(f.start, 0)), dur: clampV(num(f.dur, 0.5), 0.05, 600), tk: clampV(num(f.tk, 0) | 0, 0, 7) };
+          if (FXD[f.k]) {
+            if (f.p && typeof f.p === 'object') { nf.p = {}; for (const k of Object.keys(FXD[f.k])) { const v = f.p[k], d = FXD[f.k][k]; if (typeof d === 'string') nf.p[k] = /^#[0-9a-f]{6}$/i.test(v || '') ? v : d; else if (isFinite(+v) && v !== null) { const R = FXR[k]; nf.p[k] = R ? clampV(+v, R[0], R[1]) : +v; } } }
+            if (f.kf && typeof f.kf === 'object') { const kk = {}; let n = 0; for (const k of Object.keys(f.kf)) { if (!FXK.has(k) || !FXR[k]) continue; const c = kfClean(f.kf[k], FXR[k][0], FXR[k][1]); if (c) { kk[k] = c; n++; } } if (n) nf.kf = kk; }
+          }
+          T0.fx.push(nf);
+        }
       }
       for (const a of Array.isArray(o.audio) ? o.audio.slice(0, 60) : []) {
         if (!a || typeof a.id !== 'string') continue;
@@ -12289,6 +12299,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const ox = sized(bufO, w, h); ox.setTransform(1, 0, 0, 1, 0, 0); ox.globalAlpha = 1; ox.clearRect(0, 0, w, h);
         ovT = true;
         try { if (mediaShot(ox, o, local, w, h)) applyTf(ox, o, local, w, h); } finally { ovT = false; }
+        if (o.gh) ovGhost(ax, o, Tg - o.start, local, w, h);
         ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = 1; ax.drawImage(bufO, 0, 0); ax.restore();
       }
     }
@@ -12330,12 +12341,20 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           const a = (f.k === 'shk2' ? 0.022 : 0.009) * w, q = Math.floor(Tg * 30);
           sx += (hash01(q * 2 + 1) - 0.5) * 2 * a; sy += (hash01(q * 2 + 2) - 0.5) * 2 * a; sc = Math.max(sc, 1 + (2.4 * a) / w);
         } else if (f.k === 'shk') {
-          const P = fxp(f), cu = fxCurve(P.cv, u), tau = (Tg - f.start) * P.sp, ax_ = (P.fx / 100) * 0.05 * w * cu, ay_ = (P.fy / 100) * 0.05 * h * cu;
-          const nx = fxNoise(P.sd, tau, P.sm, 0), ny = fxNoise(P.sd, tau, P.sm, 1), nr = fxNoise(P.sd, tau, P.sm, 2), nz = Math.abs(fxNoise(P.sd, tau, P.sm, 3));
-          sx += nx * ax_; sy += ny * ay_; rot += nr * (P.rt * Math.PI / 180) * cu;
-          sc = Math.max(sc, 1 + 2 * Math.max(P.fx / 100 * 0.05, P.fy / 100 * 0.05) + Math.abs(P.rt) * Math.PI / 180 * 1.1) * (1 + (P.zm / 100) * nz * cu);
-          if (P.fl > 0) flash = Math.max(flash, 0.9 * (P.fl / 100) * cu * nz);
-        } else if (f.k === 'ghost') act.push({ k: 'ghost', u, t: Tg - f.start, g: { p: fxp(f) } });
+          const P = Object.assign({}, fxv(f, Tg - f.start), { zm: 0, rt: 0, fl: 0, cv: 0 }), cu = 1, t_ = Tg - f.start, W1 = Math.PI * 2 * P.hz, ph = P.sd * 1.713, orb = P.orb / 100;
+          const org = (o) => { let v = 0; [[1, 1], [1.63, 0.55], [2.71, 0.3]].forEach((m, i) => { v += m[1] * Math.sin(W1 * m[0] * t_ + ph * (i + 1) * 1.37 + o * 2.1); }); return v / 1.85; };
+          let nx = org(0) * (1 - orb) + Math.cos(W1 * t_ + ph) * orb, ny = org(1) * (1 - orb) + Math.sin(W1 * t_ + ph) * orb;
+          const slot = Math.floor(t_ / 0.3), jf = t_ / 0.3 - slot, jl = P.jl / 100;
+          for (const sl of [slot - 1, slot]) {
+            const rr = hash01(P.sd * 17 + sl * 5 + 3), fp = sl === slot ? jf : jf + 1;
+            if (rr > 0.55) { const mag = (rr - 0.55) * 2.2 * jl * 2.4 * Math.exp(-fp * 5), th = hash01(P.sd * 31 + sl * 7) * Math.PI * 2; nx += Math.cos(th) * mag; ny += Math.sin(th) * mag; }
+          }
+          const nr = Math.sin(W1 * 0.8 * t_ + ph * 2.3) * 0.6 + nx * 0.4, nz = 0.5 + 0.5 * Math.sin(W1 * 1.3 * t_ + ph * 3.1);
+          const A = 0.08;
+          sx += nx * (P.fz / 100) * A * w * cu; sy += ny * (P.fz / 100) * A * h * cu; rot += nr * (P.rt * Math.PI / 180) * cu;
+          sc = Math.max(sc, 1 + 2 * Math.max(P.fz / 100 * A, P.fz / 100 * A) * (1 + jl * 1.2) + Math.abs(P.rt) * Math.PI / 180 * 1.1) * (1 + (P.zm / 100) * nz * cu);
+          if (P.fl > 0) flash = Math.max(flash, 0.9 * (P.fl / 100) * cu * Math.max(0, nz - 0.25));
+        } else if (f.k === 'ghost') act.push({ k: 'ghost', u, t: Tg - f.start, g: { p: fxv(f, Tg - f.start) } });
         else if (f.k === 'flash') flash = Math.max(flash, 0.95 * (1 - u));
         else if (f.k === 'imp') imp = (Math.floor((Tg - f.start) * 12) % 2) ? 2 : 1;
         else act.push({ k: f.k, u, t: Tg - f.start });
@@ -12614,7 +12633,32 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       if (!beatCache.has(a.id)) { try { beatCache.set(a.id, detectBeats(b)); } catch (_) { beatCache.set(a.id, { times: [], bpm: 0 }); } }
       return beatCache.get(a.id);
     }
+    const BTS = {add: 'Beat', tip: 'Poner una marca de beat donde está la línea roja (tecla B)', del_: 'Quitar este beat', made: 'Beat en {t}', gone: 'Beat quitado'};
+    const bKey = () => 'tp-edbeat-' + PROF.dbName();
+    function bRead() { let a = []; try { a = JSON.parse(localStorage.getItem(bKey()) || '[]'); } catch (_) {} return Array.isArray(a) ? a.filter((v) => isFinite(+v) && +v >= 0).map(Number).sort((x, y) => x - y).slice(0, 600) : []; }
+    function bWrite(a) { try { localStorage.setItem(bKey(), JSON.stringify(a)); } catch (_) {} }
+    function beatToggle() {
+      const a = bRead(), k = a.findIndex((v) => Math.abs(v - T) < Math.max(0.05, 6 / pps));
+      if (k >= 0) { a.splice(k, 1); bWrite(a); toast('🥁 ' + BTS.gone); }
+      else { a.push(Math.round(T * 1000) / 1000); a.sort((x, y) => x - y); bWrite(a); toast('🥁 ' + BTS.made.replace('{t}', fmt(T))); }
+      beatMarks();
+    }
+    function userBeats() {
+      let lay = inner.querySelector('.ed-bl'); if (!lay) { lay = document.createElement('div'); lay.className = 'ed-bl'; lay.style.cssText = 'position:absolute;left:0;top:0;bottom:0;right:0;pointer-events:none;z-index:3'; inner.appendChild(lay); }
+      lay.textContent = '';
+      for (const bt of bRead()) {
+        const x = bt * pps;
+        const ln = document.createElement('span'); ln.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;background:rgba(0,229,255,.55);left:' + x + 'px'; lay.appendChild(ln);
+        const m = document.createElement('span'); m.title = '🥁 ' + BTS.del_; m.textContent = '▼';
+        m.style.cssText = 'position:absolute;top:0;margin-left:-7px;width:14px;text-align:center;font-size:12px;line-height:12px;color:#00e5ff;cursor:pointer;pointer-events:auto;z-index:4;left:' + x + 'px';
+        m.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
+        m.addEventListener('click', (e) => { e.stopPropagation(); bWrite(bRead().filter((v) => Math.abs(v - bt) > 1e-4)); beatMarks(); });
+        ruler.appendChild(m);
+      }
+    }
     function beatMarks() {
+      for (const q of ruler.querySelectorAll('[title^="🥁 ' + BTS.del_.slice(0, 4) + '"]')) q.remove();
+      userBeats();
       for (const a of E.audio) {
         const r = beatsOf(a);
         if (!r) continue;
@@ -13243,6 +13287,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         const tl = $('.ed-tl');
         const mv = (ev) => {
           if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) > 5) { moved = true; gh = document.createElement('div'); gh.className = 'ed-ghost'; gh.textContent = icon + ' ' + title; document.body.appendChild(gh); stop(); }
+          if (moved && opts && opts.onFolder) { const hv = document.elementFromPoint(ev.clientX, ev.clientY), fe = hv && hv.closest ? hv.closest('[data-fid]') : null; for (const q of document.querySelectorAll('[data-fid].fdrop')) if (q !== fe) q.classList.remove('fdrop'); if (fe) fe.classList.add('fdrop'); }
           if (!moved) return;
           gh.style.left = ev.clientX + 'px'; gh.style.top = ev.clientY + 'px';
           tl.classList.toggle('drop', overTL(ev));
@@ -13252,7 +13297,9 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           tl.classList.remove('drop');
           if (gh) gh.remove();
           lastUp = ev;
+          for (const q of document.querySelectorAll('[data-fid].fdrop')) q.classList.remove('fdrop');
           if (!moved) { onPlace(null); return; }
+          if (opts && opts.onFolder) { const hv = document.elementFromPoint(ev.clientX, ev.clientY), fe = hv && hv.closest ? hv.closest('[data-fid]') : null; if (fe) { opts.onFolder(fe.dataset.fid); return; } }
           if (overTL(ev)) onPlace(timeAt(ev.clientX)); else toast('Suéltalo encima de la línea de tiempo.');
         };
         window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
@@ -13483,8 +13530,8 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function mDur(p) { const m = medOf(p); return !m ? 0 : m.kind === 'img' ? 3600 : Math.max(MIN, m.dur || 1); }
     function e4media(a) {
       if (!Array.isArray(a)) return [];
-      return a.filter((m) => m && typeof m.id === 'string' && (m.kind === 'img' || m.kind === 'vid')).slice(0, 300)
-        .map((m) => ({ id: m.id.slice(0, 80), kind: m.kind, name: String(m.name || '').slice(0, 60), dur: isFinite(+m.dur) ? +m.dur : 0, thumb: typeof m.thumb === 'string' && m.thumb.length < 40000 ? m.thumb : '' }));
+      return a.filter((m) => m && typeof m.id === 'string' && (m.kind === 'img' || m.kind === 'vid' || m.kind === 'au')).slice(0, 300)
+        .map((m) => ({ id: m.id.slice(0, 80), kind: m.kind, name: String(m.name || '').slice(0, 60), dur: isFinite(+m.dur) ? +m.dur : 0, thumb: typeof m.thumb === 'string' && m.thumb.length < 40000 ? m.thumb : '', tx: m.kind === 'img' ? e4tx(m.tx) : undefined }));
     }
     const TF0 = { z: 100, x: 0, y: 0, r: 0, o: 100, mS: 100, mF: 0, mX: 0, mY: 0, mB: 0, sx: 100, sy: 100 };
     const MKP = ['mS', 'mF', 'mX', 'mY', 'mB'];
@@ -13783,10 +13830,29 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       toast((m.kind === 'img' ? '🖼️ ' : '🎬 ') + e4('placed').replace('{n}', m.name));
       return o;
     }
+    async function importSnd(f) {
+      const id = 'm' + newId();
+      try { await audPut({ id, name: f.name, blob: f, kind: 'au' }); } catch (_) { return null; }
+      let d = 0;
+      try {
+        const u = URL.createObjectURL(f), a = new Audio(); a.preload = 'metadata'; a.src = u;
+        await new Promise((ok) => { a.addEventListener('loadedmetadata', ok, { once: true }); a.addEventListener('error', ok, { once: true }); setTimeout(ok, 4000); });
+        d = isFinite(a.duration) ? a.duration : 0; a.removeAttribute('src'); a.load(); URL.revokeObjectURL(u);
+      } catch (_) { d = 0; }
+      const m = { id, kind: 'au', name: f.name.slice(0, 60), dur: d, thumb: '' };
+      if (!E.media) E.media = [];
+      E.media.push(m); saveE();
+      return m;
+    }
+    async function placeSnd(m, t) {
+      let r = null; try { r = await audGet(m.id); } catch (_) {}
+      if (!r || !r.blob) { toast('No encontré ese sonido.'); return null; }
+      return addSound(new File([r.blob], m.name, { type: r.blob.type || 'audio/mpeg' }), t == null ? T : t, m.name);
+    }
     async function importFiles(files, t, place) {
       for (const f of files) {
         const k = kindOf(f);
-        if (k === 'au') { await addSound(f, t == null ? T : t); continue; }
+        if (k === 'au') { const sm = await importSnd(f); if (sm) await placeSnd(sm, t == null ? T : t); else await addSound(f, t == null ? T : t); continue; }
         if (!k) { toast(e4('badFile').replace('{n}', f.name)); continue; }
         const m = await importOne(f, k);
         if (!m) continue;
@@ -13928,6 +13994,134 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       });
       document.body.append(wrap); draw();
     }
+    const TXS = {btn: 'Texto', title: 'Texto', ph: 'Escribe tu texto…', font: 'Letra', size: 'Tamaño', col: 'Color', ocol: 'Color del borde', ow: 'Grosor del borde', scol: 'Color de la sombra 3D', sd: 'Profundidad de la sombra 3D', ls: 'Separación de letras', bold: 'Negrita', ital: 'Cursiva', myf: 'Cargar mi letra (.ttf, .otf)…', add: 'Poner encima del video', save: 'Guardar cambios', cancel: 'Cancelar', edit: '✏️ Editar texto', fhint: 'Si una letra no está en tu compu, se ve otra parecida. Con «Cargar mi letra» puedes usar la que quieras.', ghost: '👻 Fantasma', per: 'Cada cuánto', rp: 'Repeticiones (20 = sin fin)', empty: 'Escribe algo primero.', fok: 'Letra cargada.', ferr: 'No pude cargar esa letra.', done: 'Texto listo en la pista «Encima».', upd: 'Texto actualizado.'};
+    const TXF = [['impact', 'Impact', "Impact, 'Arial Black', sans-serif"], ['gotico', 'Gótica', "'Old English Text MT', 'UnifrakturCook', Chiller, fantasy"], ['chiller', 'Chiller', "Chiller, 'Jokerman', fantasy"], ['serif', 'Georgia', "Georgia, 'Times New Roman', serif"], ['script', 'Script', "'Segoe Script', 'Brush Script MT', cursive"], ['lilita', 'Lilita One', "'Lilita One', system-ui"], ['body', 'Normal', "'Atkinson Hyperlegible', system-ui"], ['mono', 'Máquina', "ui-monospace, Consolas, monospace"]];
+    const fnKey = () => 'tp-edfonts-' + PROF.dbName();
+    const fnLoaded = new Set();
+    function fnList() { let a = []; try { a = JSON.parse(localStorage.getItem(fnKey()) || '[]'); } catch (_) {} return Array.isArray(a) ? a.filter((f) => f && typeof f.id === 'string' && typeof f.name === 'string').slice(0, 30) : []; }
+    async function fnLoadAll() {
+      for (const f of fnList()) {
+        if (fnLoaded.has(f.id)) continue;
+        try { const r = await audGet(f.id); if (r && r.blob) { const ff = new FontFace(f.name, await r.blob.arrayBuffer()); await ff.load(); document.fonts.add(ff); fnLoaded.add(f.id); } } catch (_) {}
+      }
+    }
+    const txCss = (id) => { const b = TXF.find((f) => f[0] === id); if (b) return b[2]; const u = fnList().find((f) => f.id === id); return u ? '"' + u.name + '", sans-serif' : TXF[0][2]; };
+    function e4tx(o) {
+      if (!o || typeof o !== 'object') return undefined;
+      const n = (v, d, a, b) => (isFinite(+v) ? clampV(+v, a, b) : d), c = (v, d) => (/^#[0-9a-f]{6}$/i.test(v || '') ? v : d);
+      return { t: String(o.t || '').slice(0, 200), f: String(o.f || 'impact').slice(0, 40), z: n(o.z, 18, 4, 80), c: c(o.c, '#ffffff'), o: c(o.o, '#000000'), ow: n(o.ow, 4, 0, 30), sc: c(o.sc, '#555555'), sd: n(o.sd, 0, 0, 40), ls: n(o.ls, 0, -10, 40), b: o.b ? 1 : 0, i: o.i ? 1 : 0 };
+    }
+    function txRender(tx, w, h) {
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d');
+      const px = Math.max(8, Math.round(tx.z / 100 * h));
+      x.font = (tx.i ? 'italic ' : '') + (tx.b ? 'bold ' : '') + px + 'px ' + txCss(tx.f);
+      x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.miterLimit = 2;
+      if ('letterSpacing' in x) x.letterSpacing = (tx.ls / 100 * px) + 'px';
+      const lines = String(tx.t || ' ').split('\n'), lh = px * 1.15, y0 = h / 2 - (lines.length - 1) * lh / 2, d = Math.round(tx.sd / 100 * px), lw = tx.ow / 100 * px * 2;
+      lines.forEach((ln, k) => {
+        const y = y0 + k * lh;
+        for (let i = d; i >= 1; i--) { const o = i * 0.8; x.fillStyle = tx.sc; x.fillText(ln, w / 2 + o, y + o); if (lw > 0 && i % 2 === 0) { x.strokeStyle = tx.sc; x.lineWidth = lw; x.strokeText(ln, w / 2 + o, y + o); } }
+        if (lw > 0) { x.strokeStyle = tx.o; x.lineWidth = lw; x.strokeText(ln, w / 2, y); }
+        x.fillStyle = tx.c; x.fillText(ln, w / 2, y);
+      });
+      return cv;
+    }
+    async function txCard(m) {
+      await fnLoadAll();
+      const edit = !!m, tx = e4tx(edit ? m.tx : { t: '', f: 'impact', z: 18, c: '#ffffff', o: '#000000', ow: 4, sc: '#555555', sd: 0, ls: 0, b: 1, i: 0 });
+      const wrap = e4h('div', 'e4bg'), card = e4h('div', 'e4bg-card'); wrap.append(card);
+      card.append(e4h('h3', '', TXS.title));
+      const [rw, rh] = resWH(), sc = Math.min(1, 1280 / rw), W = Math.round(rw * sc), Hh = Math.round(rh * sc);
+      const view = document.createElement('canvas'); view.className = 'e4bg-pv'; view.width = 480; view.height = Math.round(480 * Hh / W); card.append(view);
+      const ta = document.createElement('textarea'); ta.rows = 2; ta.placeholder = TXS.ph; ta.value = tx.t; ta.style.cssText = 'width:100%;padding:8px;border-radius:8px;border:1px solid #3a3f5c;background:#14162a;color:inherit;font:inherit;margin:6px 0'; ta.addEventListener('keydown', (e) => e.stopPropagation()); card.append(ta);
+      const row = (lbl, el) => { const r = e4h('label', 'e4bg-row'); r.append(e4h('span', '', lbl), el); card.append(r); return r; };
+      const fs = document.createElement('select'); const fill = () => { fs.textContent = ''; for (const f of TXF.map((q) => [q[0], q[1]]).concat(fnList().map((q) => [q.id, '★ ' + q.name]))) { const o = document.createElement('option'); o.value = f[0]; o.textContent = f[1]; fs.appendChild(o); } fs.value = tx.f; }; fill();
+      const rng = (min, max, step, key) => { const i = document.createElement('input'); i.type = 'range'; i.min = min; i.max = max; i.step = step; i.value = tx[key]; return i; };
+      const col = (key) => { const i = document.createElement('input'); i.type = 'color'; i.value = tx[key]; return i; };
+      const zS = rng(4, 80, 1, 'z'), cC = col('c'), oC = col('o'), owS = rng(0, 30, 1, 'ow'), sC = col('sc'), sdS = rng(0, 40, 1, 'sd'), lsS = rng(-10, 40, 1, 'ls');
+      const bC = document.createElement('input'); bC.type = 'checkbox'; bC.checked = !!tx.b; const iC = document.createElement('input'); iC.type = 'checkbox'; iC.checked = !!tx.i;
+      row(TXS.font, fs); row(TXS.size, zS); row(TXS.col, cC); row(TXS.ocol, oC); row(TXS.ow, owS); row(TXS.scol, sC); row(TXS.sd, sdS); row(TXS.ls, lsS); row(TXS.bold, bC); row(TXS.ital, iC);
+      const fb = e4h('button', 'btn small', TXS.myf); fb.type = 'button'; const ff = document.createElement('input'); ff.type = 'file'; ff.accept = '.ttf,.otf,.woff,.woff2'; ff.hidden = true; card.append(fb, ff);
+      card.append(e4h('p', 'ei-hint', TXS.fhint));
+      const msg = e4h('p', 'ei-hint', ''); card.append(msg);
+      const foot = e4h('div', 'e4bg-row'), sv = e4h('button', 'btn small', edit ? TXS.save : TXS.add), cn = e4h('button', 'btn small', TXS.cancel); sv.type = cn.type = 'button'; foot.append(sv, cn); card.append(foot);
+      const read = () => { tx.t = ta.value; tx.f = fs.value; tx.z = +zS.value; tx.c = cC.value; tx.o = oC.value; tx.ow = +owS.value; tx.sc = sC.value; tx.sd = +sdS.value; tx.ls = +lsS.value; tx.b = bC.checked ? 1 : 0; tx.i = iC.checked ? 1 : 0; };
+      const draw = () => { read(); const x = view.getContext('2d'); x.fillStyle = '#3a3d55'; x.fillRect(0, 0, view.width, view.height); x.drawImage(txRender(Object.assign({}, tx, { t: tx.t || TXS.ph }), view.width, view.height), 0, 0); };
+      for (const el of [ta, fs, zS, cC, oC, owS, sC, sdS, lsS, bC, iC]) { el.addEventListener('input', draw); el.addEventListener('change', draw); }
+      fb.addEventListener('click', () => ff.click());
+      ff.addEventListener('change', async () => {
+        const f = (ff.files || [])[0]; ff.value = ''; if (!f) return;
+        try {
+          const nm = f.name.replace(/\.[^.]+$/, '').replace(/[^\w \-]/g, '').slice(0, 30) || 'Mi letra', id = 'font' + newId();
+          const face = new FontFace(nm, await f.arrayBuffer()); await face.load(); document.fonts.add(face);
+          await audPut({ id, name: nm, blob: f, kind: 'font' });
+          const a = fnList(); a.push({ id, name: nm }); localStorage.setItem(fnKey(), JSON.stringify(a)); fnLoaded.add(id);
+          tx.f = id; fill(); msg.textContent = TXS.fok; draw();
+        } catch (_) { msg.textContent = TXS.ferr; }
+      });
+      const close = () => wrap.remove();
+      cn.addEventListener('click', close); wrap.addEventListener('pointerdown', (ev) => { if (ev.target === wrap) close(); });
+      let busy = false;
+      sv.addEventListener('click', async () => {
+        if (busy) return; read(); if (!tx.t.trim()) { msg.textContent = TXS.empty; return; }
+        busy = true;
+        try {
+          const blob = await new Promise((ok) => txRender(tx, W, Hh).toBlob(ok, 'image/png'));
+          if (!blob) { busy = false; return; }
+          const nm = ('🔤 ' + tx.t.replace(/\s+/g, ' ').trim()).slice(0, 40);
+          if (edit) {
+            await audPut({ id: m.id, name: nm, blob, kind: 'img' });
+            const old = medEls.get(m.id); if (old) { try { URL.revokeObjectURL(old.url); } catch (_) {} medEls.delete(m.id); }
+            await medLoad(m.id, 'img');
+            const th = document.createElement('canvas'); th.width = 128; th.height = 72; const tc = th.getContext('2d'); tc.fillStyle = '#2a2d44'; tc.fillRect(0, 0, 128, 72); tc.drawImage(txRender(tx, W, Hh), 0, 0, 128, 72);
+            m.name = nm; m.thumb = th.toDataURL('image/jpeg', 0.72); m.tx = e4tx(tx);
+            lastShots.clear(); changed(); if (libTab === 'med') renderLib(); toast(TXS.upd);
+          } else {
+            const nm2 = await importOne(new File([blob], nm + '.png', { type: 'image/png' }), 'img');
+            if (nm2) {
+              nm2.name = nm; nm2.tx = e4tx(tx);
+              const th = document.createElement('canvas'); th.width = 128; th.height = 72; const tc = th.getContext('2d'); tc.fillStyle = '#2a2d44'; tc.fillRect(0, 0, 128, 72); tc.drawImage(txRender(tx, W, Hh), 0, 0, 128, 72); nm2.thumb = th.toDataURL('image/jpeg', 0.72);
+              saveE(); placeOv(nm2, null); if (libTab === 'med') renderLib(); toast(TXS.done);
+            }
+          }
+        } catch (_) {}
+        busy = false; close();
+      });
+      document.body.append(wrap); draw(); ta.focus();
+    }
+    const bufG = document.createElement('canvas');
+    const GHD = { gz: 60, gw: 100, gh: 100, n: 2, op: 70, per: 1.2, rp: 1, c1: '#7dff6b', c2: '#ffffff', tn: 1, gl: 40 };
+    const GHR = { gz: [10, 200, 1, '%'], gw: [20, 300, 1, '%'], gh: [20, 300, 1, '%'], n: [1, 4, 1, ''], op: [10, 100, 1, '%'], per: [0.3, 4, 0.1, ' s'], rp: [1, 20, 1, 'x'], gl: [0, 100, 1, '%'] };
+    function e4gh(o) {
+      if (!o || typeof o !== 'object') return undefined;
+      const r = {}; for (const k of Object.keys(GHD)) { const d = GHD[k], v = o[k]; if (typeof d === 'string') r[k] = /^#[0-9a-f]{6}$/i.test(v || '') ? v : d; else if (k === 'tn') r[k] = v === 0 || v === false ? 0 : 1; else r[k] = isFinite(+v) ? clampV(+v, GHR[k][0], GHR[k][1]) : d; }
+      return r;
+    }
+    function ovGhost(ax, o, t, local, w, h) {
+      const g = o.gh; if (!g || t < 0) return;
+      const tf = tfAt(o, local), cx = w / 2 + (tf.x / 100) * w, cy = h / 2 + (tf.y / 100) * h, n = Math.max(1, g.n | 0), per = Math.max(0.2, g.per), gz = g.gz / 100, c1 = fxHex(g.c1), c2 = fxHex(g.c2);
+      for (let i = n - 1; i >= 0; i--) {
+        const tt = t - i * 0.14 * per; if (tt < 0) continue;
+        if (g.rp < 20 && tt / per >= g.rp) continue;
+        const ph = (tt / per) % 1, e = 1 - Math.pow(1 - ph, 2.2), a = (g.op / 100) * Math.pow(1 - ph, 1.3), sx = 1 + gz * e * (g.gw / 100), sy = 1 + gz * e * (g.gh / 100);
+        const gx = sized(bufG, w, h); gx.setTransform(1, 0, 0, 1, 0, 0); gx.globalCompositeOperation = 'source-over'; gx.globalAlpha = 1; gx.filter = 'none'; gx.clearRect(0, 0, w, h); gx.drawImage(bufO, 0, 0);
+        if (g.tn) { const q = n > 1 ? i / (n - 1) : 0; gx.globalCompositeOperation = 'source-in'; gx.fillStyle = 'rgb(' + [0, 1, 2].map((k) => Math.round(c1[k] + (c2[k] - c1[k]) * q)).join(',') + ')'; gx.fillRect(0, 0, w, h); gx.globalCompositeOperation = 'source-over'; }
+        ax.save(); ax.setTransform(1, 0, 0, 1, 0, 0); ax.globalAlpha = Math.min(1, a);
+        if (g.gl > 0 && 'filter' in ax) ax.filter = 'blur(' + (w * 0.004 * (g.gl / 100) * (1 + e * 2)).toFixed(1) + 'px)';
+        ax.drawImage(bufG, cx - cx * sx, cy - cy * sy, w * sx, h * sy); ax.restore();
+      }
+    }
+    function ghostUi(c) {
+      insp.append(e4h('div', 'ei-sec', TXS.ghost));
+      const tb = e4h('button', 'btn small' + (c.gh ? ' on' : ''), c.gh ? '👻 ON' : '👻 OFF'); tb.type = 'button'; tb.style.cssText = 'width:100%;margin-bottom:4px';
+      tb.addEventListener('click', () => { if (!PRO.has()) { PRO.ask('fx'); return; } if (c.gh) delete c.gh; else c.gh = e4gh({}); lastShots.clear(); done(false); });
+      insp.append(tb);
+      if (!c.gh) return;
+      const G = c.gh;
+      for (const k of ['gz', 'gw', 'gh', 'n', 'op', 'per', 'rp', 'gl']) { const R = GHR[k]; insp.append(kRow(k === 'per' ? TXS.per : k === 'rp' ? TXS.rp : (FXU[k] || k), R[0], R[1], R[2], R[3], { base: () => G[k], set: (v) => { G[k] = v; } }, null)); }
+      for (const k of ['c1', 'c2']) { const lab = e4h('label', 'ei-row'); const i = document.createElement('input'); i.type = 'color'; i.value = G[k]; i.addEventListener('input', () => { G[k] = i.value; quick(); }); i.addEventListener('change', () => done(false)); i.addEventListener('keydown', (e) => e.stopPropagation()); lab.append(e4h('span', 'ei-lab', FXU[k] || k), i); insp.append(lab); }
+      const tl = e4h('label', 'ei-row'); const ti = document.createElement('input'); ti.type = 'checkbox'; ti.checked = !!G.tn; ti.addEventListener('change', () => { G.tn = ti.checked ? 1 : 0; done(false); }); tl.append(e4h('span', 'ei-lab', FXU.tn || 'Tint'), ti); insp.append(tl);
+    }
     function bgExtra(m, x) {
       const w = document.createElement('span'); w.style.cssText = 'display:flex;gap:4px';
       const ob = document.createElement('button'); ob.type = 'button'; ob.className = 'pl'; ob.textContent = '🔼'; ob.title = 'Poner encima del video'; ob.setAttribute('aria-label', ob.title + ': ' + m.name);
@@ -13940,17 +14134,76 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       }
       w.append(x); return w;
     }
+    const FOLS = {nf: 'Nueva carpeta', nfPh: 'Nombre de la carpeta', mk: 'Crear', none: 'Sin carpeta', rn: 'Cambiar nombre', dl: 'Borrar carpeta (los archivos no se borran)', mv: 'Mover a carpeta', moved: 'Movido a «{n}»', empty: 'Vacía. Arrastra archivos aquí.', dup: 'Ya existe una carpeta con ese nombre.', keep: 'Tus carpetas y archivos se quedan guardados en este dispositivo.'};
+    const fkey = () => 'tp-edfold-' + PROF.dbName();
+    function fRead() { let o = null; try { o = JSON.parse(localStorage.getItem(fkey()) || 'null'); } catch (_) {} const r = { folders: [], map: {} }; if (o && Array.isArray(o.folders)) r.folders = o.folders.filter((f) => f && typeof f.id === 'string').slice(0, 200).map((f) => ({ id: f.id, name: String(f.name || '').slice(0, 40), open: f.open !== false })); if (o && o.map && typeof o.map === 'object') for (const k of Object.keys(o.map)) if (typeof o.map[k] === 'string') r.map[k] = o.map[k]; return r; }
+    function fWrite(F) { try { localStorage.setItem(fkey(), JSON.stringify(F)); } catch (_) {} try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (_) {} }
     function renderMedia() {
       const ul = $('#edLibList'); ul.textContent = '';
       $('#edLibTip').textContent = e4('medTip');
       const up = libItem('⬆', e4('imp'), e4('impSub'), () => medFile.click());
       up.classList.add('act'); ul.appendChild(up);
-      for (const m of (E.media || []).slice().reverse()) {
+      const F = fRead(), have = new Set((E.media || []).map((m) => m.id));
+      for (const k of Object.keys(F.map)) if (!have.has(k) || !F.folders.some((f) => f.id === F.map[k])) delete F.map[k];
+      const redo = () => { fWrite(F); renderMedia(); };
+      // nueva carpeta
+      const nrow = document.createElement('li'); nrow.className = 'ed-it'; nrow.style.cssText = 'display:flex;gap:6px;align-items:center;padding:6px 8px';
+      const ni = document.createElement('input'); ni.type = 'text'; ni.maxLength = 40; ni.placeholder = '📁 ' + FOLS.nfPh; ni.style.cssText = 'flex:1;min-width:0;padding:6px 8px;border-radius:8px;border:1px solid #3a3f5c;background:#14162a;color:inherit';
+      const nb = document.createElement('button'); nb.type = 'button'; nb.className = 'btn small'; nb.textContent = FOLS.mk;
+      const mkF = () => { const n = ni.value.trim().slice(0, 40); if (!n) return; if (F.folders.some((f) => f.name.toLowerCase() === n.toLowerCase())) { toast(FOLS.dup); return; } F.folders.push({ id: 'f' + newId(), name: n, open: true }); redo(); };
+      nb.addEventListener('click', mkF); ni.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') mkF(); });
+      nrow.append(ni, nb); ul.appendChild(nrow);
+      const move = (m, fid) => { if (fid) F.map[m.id] = fid; else delete F.map[m.id]; const fo = F.folders.find((f) => f.id === fid); if (fo) toast(FOLS.moved.replace('{n}', fo.name)); redo(); };
+      const item = (m) => {
+        const isAu = m.kind === 'au';
         const x = document.createElement('button'); x.type = 'button'; x.className = 'pl'; x.textContent = '✕';
         x.title = e4('delMed'); x.setAttribute('aria-label', e4('delMed') + ': ' + m.name);
         x.addEventListener('click', (ev) => { ev.stopPropagation(); delMedia(m); });
-        ul.appendChild(libItem(m.kind === 'img' ? '🖼️' : '🎬', m.name, m.kind === 'img' ? e4('photo') : e4('video') + ' · ' + fmtSec(m.dur || 0), (t) => (t != null && dropOnOv() ? placeOv(m, t) : placeMedia(m, t)), { img: m.thumb, extra: bgExtra(m, x) }));
+        const ex = isAu ? (() => { const w = document.createElement('span'); w.style.cssText = 'display:flex;gap:4px'; w.append(x); return w; })() : bgExtra(m, x);
+        const fb = document.createElement('button'); fb.type = 'button'; fb.className = 'pl'; fb.textContent = '📁'; fb.title = FOLS.mv; fb.setAttribute('aria-label', FOLS.mv + ': ' + m.name);
+        fb.addEventListener('click', (ev) => {
+          ev.stopPropagation(); menu.textContent = ''; menu.append(askLine(FOLS.mv));
+          for (const f of F.folders) menu.append(menuBtn('📁 ' + f.name + (F.map[m.id] === f.id ? '  ✓' : ''), () => { closeMenu(); move(m, f.id); }));
+          if (F.map[m.id]) menu.append(menuBtn('↩ ' + FOLS.none, () => { closeMenu(); move(m, ''); }));
+          menuFor = 'mv' + m.id; placeMenu(fb);
+        });
+        if (F.folders.length) ex.insertBefore(fb, ex.firstChild);
+        const li = libItem(isAu ? '🎵' : m.kind === 'img' ? '🖼️' : '🎬', m.name, isAu ? 'Sonido · ' + fmtSec(m.dur || 0) : m.kind === 'img' ? e4('photo') : e4('video') + ' · ' + fmtSec(m.dur || 0), (t) => (isAu ? placeSnd(m, t) : t != null && dropOnOv() ? placeOv(m, t) : placeMedia(m, t)), { img: m.thumb, extra: ex, onFolder: (fid) => { if ((F.map[m.id] || '') !== fid) move(m, fid); } });
+        if (F.map[m.id]) li.style.marginLeft = '14px';
+        return li;
+      };
+      const all = (E.media || []).slice().reverse();
+      const head = (fo) => {
+        const li = document.createElement('li'); li.className = 'ed-it'; li.dataset.fid = fo ? fo.id : ''; li.style.cssText = 'cursor:pointer;display:flex;gap:6px;align-items:center;padding:7px 8px;font-weight:700';
+        const cnt = all.filter((m) => (F.map[m.id] || '') === (fo ? fo.id : '')).length;
+        const t = document.createElement('span'); t.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; t.textContent = (fo ? (fo.open ? '📂 ' : '📁 ') : '🗂️ ') + (fo ? fo.name : FOLS.none) + ' (' + cnt + ')';
+        li.appendChild(t);
+        if (fo) {
+          li.addEventListener('click', () => { fo.open = !fo.open; redo(); });
+          const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'pl'; rb.textContent = '✎'; rb.title = FOLS.rn; rb.setAttribute('aria-label', FOLS.rn + ': ' + fo.name);
+          rb.addEventListener('click', (ev) => {
+            ev.stopPropagation(); const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 40; inp.value = fo.name; inp.style.cssText = 'flex:1;min-width:0;padding:4px 6px;border-radius:6px;border:1px solid #3a3f5c;background:#14162a;color:inherit';
+            let done = false; const fin = (ok) => { if (done) return; done = true; const n = inp.value.trim().slice(0, 40); if (ok && n && !F.folders.some((f) => f !== fo && f.name.toLowerCase() === n.toLowerCase())) fo.name = n; redo(); };
+            inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') fin(true); else if (e.key === 'Escape') fin(false); });
+            inp.addEventListener('blur', () => fin(true)); inp.addEventListener('click', (e) => e.stopPropagation());
+            li.replaceChild(inp, t); inp.focus(); inp.select();
+          });
+          const db = document.createElement('button'); db.type = 'button'; db.className = 'pl'; db.textContent = '🗑'; db.title = FOLS.dl; db.setAttribute('aria-label', FOLS.dl + ': ' + fo.name);
+          db.addEventListener('click', (ev) => { ev.stopPropagation(); F.folders = F.folders.filter((f) => f !== fo); for (const k of Object.keys(F.map)) if (F.map[k] === fo.id) delete F.map[k]; redo(); });
+          li.append(rb, db);
+        }
+        return li;
+      };
+      for (const fo of F.folders) {
+        ul.appendChild(head(fo));
+        if (!fo.open) continue;
+        const mine = all.filter((m) => F.map[m.id] === fo.id);
+        if (!mine.length) { const e = document.createElement('li'); e.className = 'ed-it'; e.style.cssText = 'opacity:.55;font-size:.78rem;padding:4px 22px;cursor:default'; e.textContent = FOLS.empty; ul.appendChild(e); }
+        for (const m of mine) ul.appendChild(item(m));
       }
+      if (F.folders.length) ul.appendChild(head(null));
+      for (const m of all.filter((m) => !F.map[m.id])) ul.appendChild(item(m));
+      if (!F.folders.length) { const e = document.createElement('li'); e.style.cssText = 'opacity:.55;font-size:.74rem;padding:6px 10px;list-style:none'; e.textContent = FOLS.keep; ul.appendChild(e); }
     }
     {
       const tb = document.createElement('button');
@@ -13962,6 +14215,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       ib.type = 'button'; ib.className = 'btn small'; ib.id = 'edImport'; ib.textContent = e4('impBtn'); ib.title = e4('imp');
       ib.addEventListener('click', () => medFile.click());
       $('#edAdd').before(ib);
+      { const bb = document.createElement('button'); bb.type = 'button'; bb.className = 'btn small'; bb.id = 'edBeat'; bb.textContent = '🥁 ' + BTS.add; bb.title = BTS.tip; bb.addEventListener('click', () => beatToggle()); $('#edAdd').before(bb); const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'btn small'; tb.id = 'edTxt'; tb.textContent = '🔤 ' + TXS.btn; tb.addEventListener('click', () => txCard(null)); bb.before(tb); }
       ed.dataset.drop = e4('drop');
       const hasFiles = (e) => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
       ed.addEventListener('dragover', (e) => { if (!hasFiles(e)) return; e.preventDefault(); e.stopPropagation(); ed.classList.add('e4drop'); });
@@ -14091,11 +14345,22 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
         insp.append(e4h('h4', '', (s.kind === 'fx' ? FX_NAME : CAM_NAME)[s.o.k] || ''), e4h('small', 'ei-sub', e4(s.kind) + ' · ' + fmtSec(s.o.dur)), e4h('p', 'ei-hint', e4('stretch')));
         if (s.kind === 'fx' && FXD[s.o.k]) {
           const fo = s.o, P = fxp(fo);
+          insp.appendChild(e4h('p', 'ei-hint', 'Mueve la línea roja dentro del efecto y toca ◆ para poner un punto en cada ajuste. Así el shake puede subir, bajar o frenar suave, no solo temblar parejo.'));
           const upd = () => { try { render(); } catch (_) {} };
           for (const key of FXO[fo.k]) {
             const lab = e4h('label', 'e4fx-row'); lab.style.cssText = 'display:flex;flex-direction:column;gap:3px;margin:6px 0;font-size:0.78rem';
             const t = e4h('span', '', FXU[key] || key), out = e4h('b', '', '');
             let inp;
+            if (FXK.has(key)) {
+              const R0 = FXR[key], lf = (T >= fo.start - 1e-6 && T <= fo.start + fo.dur + 1e-6) ? T - fo.start : null;
+              insp.appendChild(kRow(FXU[key] || key, R0[0], R0[1], R0[2], R0[3], {
+                keys: () => (fo.kf && fo.kf[key]) || null,
+                keysW: () => { if (!fo.kf) fo.kf = {}; return fo.kf[key] || (fo.kf[key] = []); },
+                base: () => P[key], set: (v) => { P[key] = v; },
+                tidy: () => { if (fo.kf && fo.kf[key] && !fo.kf[key].length) delete fo.kf[key]; if (fo.kf && !Object.keys(fo.kf).length) delete fo.kf; },
+                audio: false }, lf));
+              continue;
+            }
             if (key === 'cv') {
               inp = document.createElement('select');
               for (let i = 0; i < 4; i++) { const o = document.createElement('option'); o.value = String(i); o.textContent = FXU['cv' + i]; inp.appendChild(o); }
@@ -14115,7 +14380,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
             t.appendChild(out); lab.append(t, inp); insp.appendChild(lab);
           }
           const rs = e4h('button', 'btn small', FXU.reset); rs.type = 'button';
-          rs.addEventListener('click', () => { fo.p = null; fxp(fo); changed(); });
+          rs.addEventListener('click', () => { fo.p = null; fo.kf = null; delete fo.kf; fxp(fo); changed(); });
           insp.appendChild(rs);
         }
         return;
@@ -14141,6 +14406,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       const c = s.o, m = isM(c.proj) ? medOf(c.proj) : null;
       insp.append(e4h('h4', '', (m ? (m.kind === 'img' ? '🖼️ ' : '🎬 ') : '🎞️ ') + nameOf(c.proj)), e4h('small', 'ei-sub', (m ? e4(m.kind === 'img' ? 'photo' : 'video') : e4('scene')) + ' · ' + fmtSec(lenOf(c))));
       if (local == null) insp.append(e4h('p', 'ei-hint', e4('outHint')));
+      if (m && m.tx) { const eb = e4h('button', 'btn small', TXS.edit); eb.type = 'button'; eb.style.cssText = 'width:100%;margin-top:6px'; eb.addEventListener('click', () => txCard(m)); insp.append(eb); }
       if (m && m.kind === 'img') { const bgb = e4h('button', 'btn small', e4('bgTitle')); bgb.type = 'button'; bgb.title = e4('bgTip'); bgb.style.cssText = 'width:100%;margin-top:6px'; bgb.addEventListener('click', () => bgOpen(m, c)); insp.append(bgb); }
       insp.append(e4h('div', 'ei-sec', e4('tf')));
       { const fb = e4h('button', 'btn small' + (c.fs ? ' on' : ''), e4('fs')); fb.type = 'button'; fb.style.cssText = 'width:100%;margin-bottom:4px';
@@ -14157,6 +14423,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
           tidy: () => { if (c.kf && c.kf[p] && !c.kf[p].length) delete c.kf[p]; if (c.kf && !Object.keys(c.kf).length) delete c.kf; }
         }, local));
       }
+      if (sel && sel.kind === 'ov') ghostUi(c);
       insp.append(e4h('div', 'ei-sec', e4('mask')));
       const mkRow = e4h('div', 'ei-nav'); mkRow.style.flexWrap = 'wrap';
       const mkSet = (k) => { if (k) c.mk = k; else { delete c.mk; delete c.mki; delete c.mkt; delete c.mc; if (c.kf) for (const p of MKP) delete c.kf[p]; if (c.tf) for (const p of MKP) delete c.tf[p]; if (c.kf && !Object.keys(c.kf).length) delete c.kf; if (c.tf && !Object.keys(c.tf).length) delete c.tf; } lastShots.clear(); done(false); };
@@ -14314,6 +14581,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
       else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); stop(); setT(T + (e.key === 'ArrowRight' ? 1 : -1) / 12); placeHead(true); }
       else if (e.key.toLowerCase() === 's' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); $('#edSplit').click(); }
+      else if (e.key.toLowerCase() === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); beatToggle(); }
       else if (e.key === 'Escape') { closeMenu(); return; }
       else if (e.ctrlKey || e.metaKey) return;
       e.stopImmediatePropagation();
