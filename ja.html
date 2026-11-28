@@ -1259,6 +1259,9 @@ html body #ed .ed-stage { position: relative; }
 #edMini button:hover:not(:disabled) { background: var(--raise2); }
 #edMini button:disabled { opacity: 0.35; cursor: default; }
 #edMini svg { width: 18px; height: 18px; }
+/* v81-ovth */
+.ed-bar2.ov.th { background-color: #3b3450; background-size: auto 100%; background-repeat: repeat-x; background-position: left center; border-color: #8b73e0; }
+.ed-bar2.ov.th > span { background: rgba(13,14,20,0.72); padding: 2px 6px; border-radius: 5px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; }
 /* tbi-compact */
 html body #ed .ed-bar { gap: 2px; }
 html body #ed .ed-bar .ed-time { min-width: 6.6rem; }
@@ -13084,6 +13087,7 @@ body.tablet .ed-insp select { min-height: 2.75rem; font-size: 16px; }
     function barEl(o, kind, label, start, dur) {
       const el = document.createElement('div');
       el.className = 'ed-bar2 ' + kind + (sel && sel.id === o.id ? ' sel' : ''); el.dataset.id = o.id;
+      if (kind === 'ov' && o.proj && !o.tx) { const th = thumbOf(o.proj); if (th) { el.style.backgroundImage = 'url("' + th + '")'; el.classList.add('th'); } }
       el.style.left = (start * pps) + 'px'; el.style.width = Math.max(8, dur * pps) + 'px';
       el.style.top = ((o.tk | 0) * trh(kind) + 3) + 'px'; el.style.bottom = 'auto'; el.style.height = (trh(kind) - 6) + 'px';
       const t = document.createElement('span'); t.textContent = label; el.appendChild(t);
